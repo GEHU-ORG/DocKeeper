@@ -7,9 +7,12 @@ interface BreadcrumbProps {
 }
 
 export function Breadcrumb({ path }: BreadcrumbProps) {
-  const segments = path ? path.split('/').filter(Boolean) : [];
+  // Strip GEHU-ORG from the start of the path for the breadcrumbs
+  const displayPath = path.replace(/^GEHU-ORG\/?/, '');
+  const segments = displayPath ? displayPath.split('/').filter(Boolean) : [];
+  
   const parentPath = segments.length > 1
-    ? '/browse/' + segments.slice(0, -1).join('/')
+    ? '/' + segments.slice(0, -1).join('/')
     : '/';
 
   return (
@@ -24,13 +27,12 @@ export function Breadcrumb({ path }: BreadcrumbProps) {
       <ol className="breadcrumb-list">
         <li className="breadcrumb-item">
           <Link href="/" className="breadcrumb-link">
-            datakeeper
+            GEHU-ORG
           </Link>
         </li>
-        {segments.slice(1).map((segment, idx) => {
-          const index = idx + 1; // actual index in original array
-          const segmentPath = '/browse/' + segments.slice(0, index + 1).join('/');
-          const isLast = index === segments.length - 1;
+        {segments.map((segment, idx) => {
+          const segmentPath = '/' + segments.slice(0, idx + 1).join('/');
+          const isLast = idx === segments.length - 1;
 
           return (
             <li key={segmentPath} className="breadcrumb-item">

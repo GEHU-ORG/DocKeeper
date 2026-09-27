@@ -196,8 +196,9 @@ export function FileRow({
   );
 
   if (item.type === 'folder') {
+    const cleanPath = item.path.replace(/^GEHU-ORG\//, '');
     return (
-      <Link href={`/browse/${item.path}`} className="file-row">
+      <Link href={`/${cleanPath}`} className="file-row">
         {content}
       </Link>
     );
