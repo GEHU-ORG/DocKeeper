@@ -4,7 +4,6 @@ import { authOptions } from '@/lib/auth';
 import { Octokit } from '@octokit/rest';
 
 const ORG_NAME = 'GEHU-ORG';
-const MANAGED_REPOS = ['Syllabus-GEHU', 'PYQ-GEHU', 'NOTES-GEHU'];
 
 export async function POST(req: Request) {
   try {
@@ -28,8 +27,13 @@ export async function POST(req: Request) {
     if (action === 'list-folders') {
       const allFolders = ['GEHU-ORG'];
 
+      const { data: reposList } = await octokit.repos.listForOrg({ org: ORG_NAME, per_page: 100 });
+      const managedRepos = reposList
+        .filter(r => !['DocKeeper', '.github'].includes(r.name))
+        .map(r => r.name);
+
       await Promise.all(
-        MANAGED_REPOS.map(async (repo) => {
+        managedRepos.map(async (repo) => {
           try {
             const { data: tree } = await octokit.git.getTree({
               owner: ORG_NAME,
