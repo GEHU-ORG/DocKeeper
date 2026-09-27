@@ -80,8 +80,8 @@ export function FileRow({
 
   const content = (
     <>
-      <div className="file-row-checkbox">
-        {!isReadOnly && (
+      {!isReadOnly && (
+        <div className="file-row-checkbox">
           <input
             type="checkbox"
             checked={isSelected}
@@ -92,8 +92,8 @@ export function FileRow({
             onClick={(e) => e.stopPropagation()}
             aria-label={`Select ${item.name}`}
           />
-        )}
-      </div>
+        </div>
+      )}
       <div className="file-row-icon">
         <FileIcon item={item} />
       </div>
@@ -234,14 +234,14 @@ export function FileRow({
   if (item.type === 'folder') {
     const cleanPath = item.path.replace(/^GEHU-ORG\//, '');
     return (
-      <Link href={`/${cleanPath}`} className="file-row">
+      <Link href={`/${cleanPath}`} className={`file-row ${isReadOnly ? 'readonly' : ''}`}>
         {content}
       </Link>
     );
   }
 
   return (
-    <div className="file-row">
+    <div className={`file-row ${isReadOnly ? 'readonly' : ''}`}>
       {content}
     </div>
   );

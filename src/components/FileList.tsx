@@ -65,17 +65,17 @@ export function FileList({
   return (
     <div className="file-list">
       {items.length > 0 && (
-        <div className="file-list-header">
-          <div className="file-row-checkbox">
-            {!isReadOnly && (
+        <div className={`file-list-header ${isReadOnly ? 'readonly' : ''}`}>
+          {!isReadOnly && (
+            <div className="file-row-checkbox">
               <input
                 type="checkbox"
                 checked={allSelected}
                 onChange={(e) => onSelectAll(e.target.checked)}
                 aria-label="Select all"
               />
-            )}
-          </div>
+            </div>
+          )}
           <div className="file-row-icon" />
           <div className="file-row-name header-label sortable" onClick={() => onSort('name')}>
             Name <SortIndicator column="name" />

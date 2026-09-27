@@ -421,6 +421,9 @@ a {
   gap: 8px;
   margin-bottom: 4px;
 }
+.file-list-header.readonly {
+  grid-template-columns: 44px 1fr 120px 80px 160px;
+}
 
 .header-label {
   font-size: 0.75rem;
@@ -473,6 +476,9 @@ a {
   text-decoration: none;
   color: inherit;
   background: transparent;
+}
+.file-row.readonly {
+  grid-template-columns: 44px 1fr 120px 80px 160px;
 }
 
 .file-row:last-child {
@@ -1617,6 +1623,10 @@ a.file-row:hover {
     grid-template-columns: 32px 36px 1fr;
     padding: 16px 16px;
     gap: 12px;
+  }
+  .file-list-header.readonly,
+  .file-row.readonly {
+    grid-template-columns: 36px 1fr;
   }
 
   .file-row-date,
