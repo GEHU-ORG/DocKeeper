@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { listItems, deleteItem } from '@/lib/github';
+import { listItems, deleteItem, verifyFileOwnership } from '@/lib/github';
 import { getAuthContext } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -47,6 +47,25 @@ export async function DELETE(request: NextRequest) {
     const { path } = await request.json();
     if (!path) {
       return NextResponse.json({ error: 'Path is required' }, { status: 400 });
+    }
+
+    const parts = path.split('/').filter(Boolean);
+    if (parts.length < 3) {
+      return NextResponse.json({ error: 'Invalid path format' }, { status: 400 });
+    }
+    
+    const repo = parts[1];
+    const innerPath = parts.slice(2).join('/');
+
+    // Check if the user is the one who uploaded the file
+    // username is stored in auth.value (e.g. from GitHub OAuth login)
+    const isOwner = await verifyFileOwnership(repo, innerPath, auth.value);
+    
+    if (!isOwner) {
+      return NextResponse.json(
+        { error: 'Permission denied: You can only delete files that you uploaded.' },
+        { status: 403 }
+      );
     }
 
     await deleteItem(path, auth.accessToken);
