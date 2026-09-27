@@ -29,7 +29,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       'DBMS-And-OS',
       'DBMS-LAB',
       'DBMS-MID',
-      'DocKeeper',
       'Dsa',
       'DSA-Question',
       'gehu-robotics-club',

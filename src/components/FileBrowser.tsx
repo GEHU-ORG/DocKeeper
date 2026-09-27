@@ -366,7 +366,8 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
       
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to execute plan');
+        const errorMsg = data.details ? `${data.error}:\n${data.details.join('\n')}` : (data.error || 'Failed to execute plan');
+        throw new Error(errorMsg);
       }
       
       setIsAIOrganizeOpen(false);

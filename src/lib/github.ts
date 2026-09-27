@@ -21,7 +21,9 @@ export async function listItems(path: string): Promise<FileItem[]> {
   if (parts.length === 0 || (parts.length === 1 && parts[0] === 'GEHU-ORG')) {
     // List repositories
     const { data } = await octokit.repos.listForOrg({ org: ORG_NAME, per_page: 100 });
-    return data.map(repo => ({
+    return data
+      .filter(repo => !['DocKeeper', '.github'].includes(repo.name))
+      .map(repo => ({
       id: repo.node_id,
       name: repo.name,
       type: 'folder',
