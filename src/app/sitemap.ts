@@ -6,31 +6,43 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: 'https://gehu-dockeeper.vercel.app',
       lastModified: new Date(),
       changeFrequency: 'daily',
-      priority: 1,
+      priority: 1.0,
     },
-    {
-      url: 'https://gehu-dockeeper.vercel.app/CN-LAB',
+    // High Priority: Essential Resources
+    ...[
+      'NOTES-GEHU',
+      'PYQ-GEHU',
+      'Syllabus-GEHU',
+    ].map((repo) => ({
+      url: `https://gehu-dockeeper.vercel.app/${repo}`,
       lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: 'https://gehu-dockeeper.vercel.app/Compiler-Design-Lab',
+      changeFrequency: 'weekly' as const,
+      priority: 0.9,
+    })),
+    // Medium Priority: Subjects and Labs
+    ...[
+      'CN',
+      'CN-LAB',
+      'Compiler-Design-Lab',
+      'Cpp-Oops-Question',
+      'DAA-4th-Sem-Practical',
+      'DBMS-And-OS',
+      'DBMS-LAB',
+      'DBMS-MID',
+      'DocKeeper',
+      'Dsa',
+      'DSA-Question',
+      'gehu-robotics-club',
+      'Java',
+      'Java-Practical',
+      'OS-LAB',
+      'OS-MId',
+      'web-d-mid-term',
+    ].map((repo) => ({
+      url: `https://gehu-dockeeper.vercel.app/${repo}`,
       lastModified: new Date(),
-      changeFrequency: 'weekly',
+      changeFrequency: 'weekly' as const,
       priority: 0.8,
-    },
-    {
-      url: 'https://gehu-dockeeper.vercel.app/DBMS-And-OS',
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: 'https://gehu-dockeeper.vercel.app/Dsa',
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    }
+    }))
   ];
 }
