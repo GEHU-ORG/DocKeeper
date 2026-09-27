@@ -32,15 +32,31 @@ export function JoinOrgPrompt({ username }: { username: string }) {
       </p>
 
       {success ? (
-        <div style={{ padding: '2rem', background: '#d4edda', color: '#155724', borderRadius: '12px', border: '1px solid #c3e6cb', textAlign: 'center' }}>
-          <h2 style={{ marginBottom: '1rem' }}>Invitation Sent!</h2>
-          <p>Please check your email or your <a href="https://github.com/GEHU-ORG" target="_blank" rel="noreferrer" style={{ textDecoration: 'underline' }}>GitHub dashboard</a> to accept the invitation.</p>
-          <button 
-            onClick={() => window.location.reload()}
-            style={{ marginTop: '1rem', padding: '0.8rem', background: '#155724', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
-          >
-            I have accepted it
-          </button>
+        <div style={{ padding: '2.5rem', background: '#d4edda', color: '#155724', borderRadius: '12px', border: '1px solid #c3e6cb', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+          <h2 style={{ marginBottom: '1rem', fontSize: '1.8rem', fontWeight: 'bold' }}>Invitation Sent! 🎉</h2>
+          <p style={{ marginBottom: '2rem', fontSize: '1.1rem' }}>We've sent you an invitation to join the organization on GitHub.</p>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+            <a 
+              href="https://github.com/orgs/GEHU-ORG/invitation" 
+              target="_blank" 
+              rel="noreferrer"
+              style={{
+                display: 'inline-block', padding: '1rem 2rem', background: '#155724', color: '#fff', 
+                textDecoration: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '1.1rem',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+              }}
+            >
+              Go to GitHub to Accept Invitation
+            </a>
+            
+            <button 
+              onClick={() => window.location.reload()}
+              style={{ padding: '0.8rem', background: 'transparent', color: '#155724', border: '1px solid #155724', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+            >
+              I have accepted it, reload page
+            </button>
+          </div>
         </div>
       ) : (
         <button 
