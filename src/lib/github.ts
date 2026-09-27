@@ -74,6 +74,79 @@ export async function listItems(path: string): Promise<FileItem[]> {
   }
 }
 
+export async function searchItems(path: string, query: string): Promise<FileItem[]> {
+  const parts = path.split('/').filter(Boolean);
+  const q = query.toLowerCase();
+  
+  if (parts.length === 0 || (parts.length === 1 && parts[0] === 'GEHU-ORG')) {
+    // Search repositories by name
+    const { data } = await octokit.repos.listForOrg({ org: ORG_NAME, per_page: 100 });
+    return data
+      .filter(repo => !['DocKeeper', '.github'].includes(repo.name))
+      .filter(repo => repo.name.toLowerCase().includes(q))
+      .map(repo => ({
+        id: repo.node_id,
+        name: repo.name,
+        type: 'folder',
+        path: `${ORG_NAME}/${repo.name}`,
+        uploadedAt: new Date(repo.updated_at || repo.created_at || Date.now()),
+      }));
+  }
+
+  // Searching contents inside a repository using recursive Tree API
+  const repo = parts[1];
+  const innerPath = parts.slice(2).join('/');
+  
+  try {
+    const { data: repoData } = await octokit.repos.get({ owner: ORG_NAME, repo });
+    const defaultBranch = repoData.default_branch;
+
+    const { data: treeData } = await octokit.git.getTree({
+      owner: ORG_NAME,
+      repo,
+      tree_sha: defaultBranch,
+      recursive: '1'
+    });
+
+    const results: FileItem[] = [];
+    
+    for (const item of treeData.tree) {
+      if (!item.path) continue;
+      
+      // Enforce search scope if inside a subfolder
+      if (innerPath && !item.path.startsWith(innerPath + '/')) {
+        continue;
+      }
+      
+      const filename = item.path.split('/').pop() || '';
+      if (filename.toLowerCase().includes(q)) {
+        const downloadUrl = item.type === 'blob' 
+          ? `https://raw.githubusercontent.com/${ORG_NAME}/${repo}/${defaultBranch}/${item.path}`
+          : undefined;
+
+        results.push({
+          id: item.sha || item.path,
+          name: filename,
+          type: item.type === 'tree' ? 'folder' : 'file',
+          path: `${ORG_NAME}/${repo}/${item.path}`,
+          url: downloadUrl,
+          size: item.size,
+          sha: item.sha,
+        });
+      }
+    }
+    
+    // Sort results by type (folders first) and then name
+    return results.sort((a, b) => {
+      if (a.type !== b.type) return a.type === 'folder' ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
+  } catch (e) {
+    console.error('Search failed:', e);
+    return [];
+  }
+}
+
 export async function deleteItem(path: string, userToken?: string): Promise<void> {
   const parts = path.split('/').filter(Boolean);
   if (parts.length < 2) throw new Error('Cannot delete organization or root');
