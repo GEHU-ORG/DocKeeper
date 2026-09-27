@@ -5,16 +5,16 @@ import { Providers } from "@/components/Providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "DataKeeper — Your Personal Cloud",
+  title: "GEHU RepoKeeper — Collaborative Repository Manager",
   description:
-    "A sleek, macOS Finder-inspired file manager. Upload, organize, and access your files from any device, anywhere.",
-  keywords: ["file manager", "cloud storage", "data keeper"],
-  metadataBase: new URL("https://datakeeper-dev.vercel.app"),
+    "A sleek, macOS Finder-inspired GitHub repository manager. Enable CRUD operations on any GEHU-ORG repository.",
+  keywords: ["github manager", "repository manager", "gehu repo"],
+  metadataBase: new URL("https://github.com/GEHU-ORG/RepoKeeper"),
   openGraph: {
-    title: "DataKeeper — Your Personal Cloud",
-    description: "Upload, organize, and access your files from any device.",
+    title: "GEHU RepoKeeper",
+    description: "Collaborative repository manager for GEHU-ORG.",
     type: "website",
-    url: "https://datakeeper-dev.vercel.app",
+    url: "https://github.com/GEHU-ORG/RepoKeeper",
     images: ["/og-image.png"],
   },
 };

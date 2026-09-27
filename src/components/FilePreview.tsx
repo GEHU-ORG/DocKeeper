@@ -1,6 +1,6 @@
 'use client';
 
-import { getFileCategory } from '@/lib/blob';
+import { getFileCategory } from '@/lib/github';
 import { VideoPlayer } from './VideoPlayer';
 
 interface FilePreviewProps {

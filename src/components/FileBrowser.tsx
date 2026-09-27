@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { type FileItem } from '@/lib/blob';
+import { type FileItem } from '@/lib/github';
 import { Breadcrumb } from './Breadcrumb';
 import { Toolbar } from './Toolbar';
 import { FileList, type SortConfig, type SortColumn } from './FileList';

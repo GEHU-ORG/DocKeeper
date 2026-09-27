@@ -40,42 +40,18 @@ export function UploadArea({ currentPath, onUploadComplete, inputRef }: UploadAr
       const pathname = prefix + file.name;
 
       try {
-        // 1. Get Presigned URL
-        const presignRes = await fetch('/api/upload/presigned', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ filename: pathname, contentType: file.type })
-        });
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('path', pathname);
         
-        if (!presignRes.ok) {
-          const errData = await presignRes.json();
-          throw new Error(errData.error || 'Failed to get upload URL');
-        }
-
-        const { url, key } = await presignRes.json();
-
-        // 2. Upload directly to Cloudflare R2
-        const uploadRes = await fetch(url, {
-          method: 'PUT',
-          body: file,
-          headers: {
-            'Content-Type': file.type || 'application/octet-stream',
-          }
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
         });
 
         if (!uploadRes.ok) {
-          throw new Error('Failed to upload file to storage');
-        }
-
-        // 3. Log into Postgres
-        const completeRes = await fetch('/api/upload/complete', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key, size: file.size, clientPathname: pathname })
-        });
-
-        if (!completeRes.ok) {
-          throw new Error('Failed to log file to database');
+          const errData = await uploadRes.json();
+          throw new Error(errData.error || 'Failed to upload file');
         }
 
         setUploads(prev =>

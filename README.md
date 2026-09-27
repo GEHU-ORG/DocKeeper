@@ -1,54 +1,30 @@
-# DataKeeper
+# GEHU RepoKeeper
 
-**macOS Finder-inspired cloud file manager built with Next.js and Vercel Blob.**
+A collaborative GitHub repository manager designed specifically for **GEHU-ORG**. 
 
-![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=nextdotjs&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
-![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white)
+GEHU RepoKeeper provides a sleek, macOS Finder-inspired user interface for performing CRUD operations directly on GitHub repositories within the GEHU-ORG organization.
 
----
-
-## What It Does
-
-A cloud-based personal file manager that replicates the familiar macOS Finder experience in the browser. Upload, organize, and access files from any device with zero-config serverless storage.
-
-**Key Features:**
-- **Finder-style UI** — familiar desktop-like browser experience
-- **Vercel Blob** — serverless object storage integration
-- **Drag & Drop** — intuitive upload with progress indicators
-- **File Organization** — folders, filtering, and search functionality
-
-## Architecture
-
-```
-Next.js Frontend (Finder UI) ↔ Next.js API Routes ↔ Vercel Blob Storage
-```
+## Features
+- **Organization-Wide Access**: Connects directly to GEHU-ORG via GitHub API.
+- **Visual File Manager**: Browse repositories as if they were local folders.
+- **CRUD Operations**: Read, upload, delete, and manage files in any connected repository effortlessly without touching Git commands.
+- **Secure Architecture**: Powered by Next.js App Router and `@octokit/rest`.
 
 ## Tech Stack
-
-| Component | Technology |
-|---|---|
-| Framework | Next.js |
-| Language | TypeScript |
-| Storage | Vercel Blob |
-| Deployment | Vercel |
-
-## My Role
-
-I chose Vercel Blob for zero-config deployment, designed the folder hierarchy model, and planned the file management API. Code generation was accelerated using AI tools; Blob SDK integration and responsive layout fine-tuning are mine.
+- **Framework**: Next.js 15 (App Router)
+- **Styling**: Vanilla CSS (CSS Modules)
+- **API Wrapper**: Octokit (GitHub REST API)
+- **Authentication**: NextAuth.js
 
 ## Quick Start
-
-```bash
-git clone https://github.com/AdityaPandey-DEV/DataKeeper.git && cd DataKeeper
-npm install
-npm run dev   # → http://localhost:3000
-```
+1. Clone the repository: `git clone https://github.com/GEHU-ORG/RepoKeeper.git`
+2. Install dependencies: `npm install`
+3. Setup `.env.local` with your GitHub Personal Access Token (PAT):
+   ```env
+   GITHUB_PAT=your_classic_or_fine_grained_token
+   NEXTAUTH_SECRET=generate_a_secret
+   ```
+4. Run development server: `npm run dev`
 
 ---
-
-<div align="center">
-
-*Architected & built by [Aditya Pandey](https://github.com/AdityaPandey-DEV) — AI-augmented development*
-
-</div>
+*Built to make repository management simple, usable, and aligned with the latest standards.*

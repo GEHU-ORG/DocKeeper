@@ -1,6 +1,6 @@
 'use client';
 
-import { type FileItem } from '@/lib/blob';
+import { type FileItem } from '@/lib/github';
 import { FileRow } from './FileRow';
 
 export type SortColumn = 'name' | 'size' | 'date';

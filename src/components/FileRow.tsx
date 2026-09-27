@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { type FileItem } from '@/lib/blob';
-import { getFileCategory, formatFileSize } from '@/lib/blob';
+import { type FileItem } from '@/lib/github';
+import { getFileCategory, formatFileSize } from '@/lib/github';
 
 interface FileRowProps {
   item: FileItem;
