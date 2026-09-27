@@ -6,7 +6,7 @@ export function Footer() {
       <div className="footer-inner">
         <div className="footer-left">
           <p className="footer-maintainer">
-            Maintained by <span className="footer-name">Aditya Pandey</span>
+            Maintained by <span className="footer-name">GEHU student and you</span>
           </p>
           <p className="footer-tech">
             Built with Next.js + GitHub API
