@@ -5,16 +5,16 @@ import { Providers } from "@/components/Providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "GEHU RepoKeeper — Collaborative Repository Manager",
+  title: "GEHU DocKeeper — Organization Document Manager",
   description:
-    "A sleek, macOS Finder-inspired GitHub repository manager. Enable CRUD operations on any GEHU-ORG repository.",
-  keywords: ["github manager", "repository manager", "gehu repo"],
-  metadataBase: new URL("https://github.com/GEHU-ORG/RepoKeeper"),
+    "A sleek, macOS Finder-inspired document manager. Securely upload, organize, and access files across GEHU-ORG.",
+  keywords: ["document manager", "gehu docs", "gehu org"],
+  metadataBase: new URL("https://github.com/GEHU-ORG/DocKeeper"),
   openGraph: {
-    title: "GEHU RepoKeeper",
-    description: "Collaborative repository manager for GEHU-ORG.",
+    title: "GEHU DocKeeper",
+    description: "Collaborative document manager for GEHU-ORG.",
     type: "website",
-    url: "https://github.com/GEHU-ORG/RepoKeeper",
+    url: "https://github.com/GEHU-ORG/DocKeeper",
     images: ["/og-image.png"],
   },
 };

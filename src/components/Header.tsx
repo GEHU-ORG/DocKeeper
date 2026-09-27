@@ -22,7 +22,7 @@ export function Header() {
     <header className="header">
       <div className="header-inner">
         <Link href="/" className="header-title">
-          GEHU RepoKeeper
+          GEHU DocKeeper
         </Link>
         <div className="header-actions">
           <ThemeToggle />

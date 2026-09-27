@@ -104,7 +104,7 @@ export async function deleteItem(path: string, username: string): Promise<void> 
     owner: ORG_NAME,
     repo,
     path: innerPath,
-    message: `Delete ${innerPath} by @${username} via GEHU-RepoKeeper`,
+    message: `Delete ${innerPath} by @${username} via GEHU-DocKeeper`,
     sha: data.sha,
   });
 }
@@ -137,7 +137,7 @@ export async function uploadFile(path: string, content: string | Buffer, usernam
     owner: ORG_NAME,
     repo,
     path: innerPath,
-    message: `Upload ${innerPath} by @${username} via GEHU-RepoKeeper`,
+    message: `Upload ${innerPath} by @${username} via GEHU-DocKeeper`,
     content: encodedContent,
     sha,
   });
