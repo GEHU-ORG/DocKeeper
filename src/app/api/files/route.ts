@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const path = searchParams.get('path') || '';
-    const query = searchParams.get('query') || '';
+    const query = searchParams.get('search') || searchParams.get('query') || '';
 
     // Default to listing GEHU-ORG if path is empty or matches email
     let targetPath = path;
