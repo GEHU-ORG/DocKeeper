@@ -13,29 +13,28 @@ interface BrowsePageProps {
 export default async function BrowsePage({ params }: BrowsePageProps) {
   const session = await getServerSession(authOptions);
   
+  let isReadOnly = true;
+  let username = '';
+
   if (session?.user && (session.user as any).githubUsername) {
-    const username = (session.user as any).githubUsername;
+    username = (session.user as any).githubUsername;
     const isMember = await checkOrgMembership(username);
 
-    if (!isMember) {
-      return <JoinOrgPrompt username={username} />;
+    if (isMember) {
+      isReadOnly = false;
     }
-
-    // Authenticated and in org -> Render the File Browser
-    const { path } = await params;
-    
-    // Default to GEHU-ORG if no path (root)
-    // If they navigate to /MyRepo/Folder, path is ['MyRepo', 'Folder']
-    let fullPath = 'GEHU-ORG';
-    if (path && path.length > 0) {
-      fullPath = 'GEHU-ORG/' + path.map(decodeURIComponent).join('/');
-    }
-
-    return <FileBrowser initialPath={fullPath} />;
   }
 
-  // Not authenticated -> Render Landing Page
-  return <LandingPage />;
+  // Render the File Browser
+  const { path } = await params;
+  
+  // Default to GEHU-ORG if no path (root)
+  let fullPath = 'GEHU-ORG';
+  if (path && path.length > 0) {
+    fullPath = 'GEHU-ORG/' + path.map(decodeURIComponent).join('/');
+  }
+
+  return <FileBrowser initialPath={fullPath} isReadOnly={isReadOnly} />;
 }
 
 export async function generateMetadata({ params }: BrowsePageProps): Promise<Metadata> {

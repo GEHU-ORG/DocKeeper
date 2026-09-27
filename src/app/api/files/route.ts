@@ -7,9 +7,6 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     const auth = await getAuthContext();
-    if (!auth) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     const { searchParams } = new URL(request.url);
     const path = searchParams.get('path') || '';
@@ -22,11 +19,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ items: [] });
     }
 
-    // Default to listing GEHU-ORG if path is empty or matches email (from old logic)
-    // The frontend sends the user's email as the root folder initially.
-    // Let's intercept that and treat it as the root of GEHU-ORG instead.
+    // Default to listing GEHU-ORG if path is empty or matches email
     let targetPath = path;
-    if (targetPath === auth.value || !targetPath) {
+    if (!targetPath || (auth && targetPath === auth.value)) {
        targetPath = 'GEHU-ORG';
     }
 

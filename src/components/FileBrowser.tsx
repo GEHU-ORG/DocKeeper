@@ -15,9 +15,10 @@ import { AIOrganizeDialog, type AIMove } from './AIOrganizeDialog';
 
 interface FileBrowserProps {
   initialPath: string;
+  isReadOnly?: boolean;
 }
 
-export function FileBrowser({ initialPath }: FileBrowserProps) {
+export function FileBrowser({ initialPath, isReadOnly = false }: FileBrowserProps) {
   const router = useRouter();
   const [items, setItems] = useState<FileItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -369,7 +370,20 @@ export function FileBrowser({ initialPath }: FileBrowserProps) {
 
       <div className="browser-divider" />
 
+      {isReadOnly && (
+        <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid #3b82f6', color: 'var(--text-primary)', padding: '12px 16px', borderRadius: '8px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <span style={{ fontWeight: 500 }}>You are viewing this organization in read-only mode.</span>
+          </div>
+          <button onClick={() => window.location.href = '/api/auth/signin'} style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '6px 16px', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>
+            Sign In to Manage
+          </button>
+        </div>
+      )}
+
       <Toolbar
+        isReadOnly={isReadOnly}
         onNewFolder={() => setShowNewFolder(true)}
         onUpload={() => uploadInputRef.current?.click()}
         onAIOrganize={handleAIOrganizeClick}
@@ -399,6 +413,7 @@ export function FileBrowser({ initialPath }: FileBrowserProps) {
         isLoading={isLoading}
         sortConfig={sortConfig}
         onSort={handleSort}
+        isReadOnly={isReadOnly}
       />
 
       <UploadArea

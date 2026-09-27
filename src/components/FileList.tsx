@@ -23,6 +23,7 @@ interface FileListProps {
   isLoading: boolean;
   sortConfig: SortConfig;
   onSort: (column: SortColumn) => void;
+  isReadOnly?: boolean;
 }
 
 export function FileList({
@@ -37,6 +38,7 @@ export function FileList({
   isLoading,
   sortConfig,
   onSort,
+  isReadOnly = false,
 }: FileListProps) {
   const allSelected = items.length > 0 && items.every(item =>
     selectedItems.has(item.type === 'file' ? item.url! : item.path)
@@ -65,12 +67,14 @@ export function FileList({
       {items.length > 0 && (
         <div className="file-list-header">
           <div className="file-row-checkbox">
-            <input
-              type="checkbox"
-              checked={allSelected}
-              onChange={(e) => onSelectAll(e.target.checked)}
-              aria-label="Select all"
-            />
+            {!isReadOnly && (
+              <input
+                type="checkbox"
+                checked={allSelected}
+                onChange={(e) => onSelectAll(e.target.checked)}
+                aria-label="Select all"
+              />
+            )}
           </div>
           <div className="file-row-icon" />
           <div className="file-row-name header-label sortable" onClick={() => onSort('name')}>
@@ -113,6 +117,7 @@ export function FileList({
               onMove={() => onMoveItem(item)}
               onRename={(newName) => onRenameItem(item, newName)}
               onPreview={() => onPreviewItem(item)}
+              isReadOnly={isReadOnly}
             />
           ))}
         </div>
