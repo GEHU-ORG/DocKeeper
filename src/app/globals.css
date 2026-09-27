@@ -1607,13 +1607,20 @@ a.file-row:hover {
 
   .file-list-header,
   .file-row {
-    grid-template-columns: 28px 32px 1fr 70px;
-    padding: 8px 12px;
-    gap: 6px;
+    grid-template-columns: 32px 36px 1fr;
+    padding: 12px 12px;
+    gap: 8px;
   }
 
+  .file-row-date,
   .file-row-size {
     display: none;
+  }
+
+  /* Disable hover effect on mobile */
+  .file-row:hover,
+  a.file-row:hover {
+    background: transparent;
   }
 
   /* Hide actions column in header, show on tap for rows */
@@ -1692,15 +1699,6 @@ a.file-row:hover {
 @media (max-width: 480px) {
   .header-title {
     font-size: 1.25rem;
-  }
-
-  .file-list-header,
-  .file-row {
-    grid-template-columns: 24px 32px 1fr 65px;
-  }
-
-  .file-list-header .header-label:nth-child(4) {
-    font-size: 0.6rem;
   }
 }
 
