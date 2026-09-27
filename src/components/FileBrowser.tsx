@@ -358,15 +358,23 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
 
   const handleAIOrganizeConfirm = async () => {
     try {
-      await fetch('/api/organize/execute', {
+      const res = await fetch('/api/organize/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ moves: aiMoves }),
       });
+      
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to execute plan');
+      }
+      
       setIsAIOrganizeOpen(false);
       await fetchFiles();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to execute AI plan:', err);
+      alert(err.message || 'Failed to organize files. Please try again.');
+      setIsAIOrganizeOpen(false);
     }
   };
 
