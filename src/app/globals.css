@@ -1624,15 +1624,11 @@ a.file-row:hover {
     display: none;
   }
 
-  /* Disable hover effect on mobile */
-  .file-row:hover,
-  a.file-row:hover {
-    background: transparent;
+  /* Hide header completely on mobile for a cleaner look */
+  .file-list-header {
+    display: none !important;
   }
 
-  /* Hide actions column in header and rows completely on mobile */
-  .file-list-header .file-row-actions,
-  .file-list-header .header-label:last-child,
   .file-row-actions {
     display: none !important;
   }
