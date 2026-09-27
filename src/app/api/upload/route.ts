@@ -27,6 +27,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, path: targetPath });
   } catch (error: any) {
     console.error('Error uploading file:', error);
+    if (error.status === 404) {
+      return NextResponse.json(
+        { error: 'Permission denied. You must be a member of GEHU-ORG to upload files.' },
+        { status: 403 }
+      );
+    }
     return NextResponse.json(
       { error: error.message || 'Failed to upload file' },
       { status: 500 }

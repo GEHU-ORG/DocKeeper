@@ -471,11 +471,13 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         isReadOnly={isReadOnly}
       />
 
-      <UploadArea
-        currentPath={initialPath}
-        onUploadComplete={fetchFiles}
-        inputRef={uploadInputRef}
-      />
+      {!isReadOnly && (
+        <UploadArea
+          currentPath={initialPath}
+          onUploadComplete={fetchFiles}
+          inputRef={uploadInputRef}
+        />
+      )}
 
       {/* Dialogs */}
       <NewFolderDialog
