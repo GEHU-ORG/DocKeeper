@@ -9,12 +9,12 @@ export const metadata: Metadata = {
   description:
     "A sleek, macOS Finder-inspired document manager. Securely upload, organize, and access files across GEHU-ORG.",
   keywords: ["document manager", "gehu docs", "gehu org"],
-  metadataBase: new URL("https://github.com/GEHU-ORG/DocKeeper"),
+  metadataBase: new URL("https://gehu-dockeeper.vercel.app"),
   openGraph: {
     title: "GEHU DocKeeper",
     description: "Collaborative document manager for GEHU-ORG.",
     type: "website",
-    url: "https://github.com/GEHU-ORG/DocKeeper",
+    url: "https://gehu-dockeeper.vercel.app",
     images: ["/og-image.png"],
   },
 };

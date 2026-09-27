@@ -12,11 +12,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json({ error: 'GEMINI_API_KEY environment variable is missing.' }, { status: 500 });
-    }
-
     const { path } = await req.json();
     if (!path) {
       return NextResponse.json({ error: 'Path is required' }, { status: 400 });
@@ -48,40 +43,36 @@ export async function POST(req: Request) {
       return NextResponse.json({ moves: [] });
     }
 
-    // Call Gemini API via REST
-    const prompt = `
-You are an expert file organizer. Given the following list of files in a directory, group them into logical subfolders based on their purpose or type (e.g., 'Lectures', 'Assignments', 'Source Code', 'Assets').
-Do not create too many folders; group similar things.
-
-Files to organize:
-${files.join('\n')}
-
-Respond ONLY with a valid JSON array of objects. Do not include markdown blocks or any other text.
-Format:
-[
-  { "filename": "example.pdf", "folder": "Documents" },
-  { "filename": "script.js", "folder": "Source Code" }
-]
-`;
-
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    // Call Pollinations free LLM API
+    const response = await fetch('https://text.pollinations.ai/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseMimeType: "application/json"
-        }
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert file organizer. Given a list of files, group them into logical folders based on purpose or type (e.g., "Documents", "Images", "Code"). Respond ONLY with a valid, raw JSON array of objects without markdown tags. Format: [{"filename":"name","folder":"category"}]'
+          },
+          {
+            role: 'user',
+            content: files.join(', ')
+          }
+        ]
       })
     });
 
     if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.statusText}`);
+      throw new Error(`AI API error: ${response.statusText}`);
     }
 
-    const result = await response.json();
-    const textResponse = result.candidates[0].content.parts[0].text;
-    const classifications = JSON.parse(textResponse);
+    const textResponse = await response.text();
+    let classifications = [];
+    try {
+      classifications = JSON.parse(textResponse.trim());
+    } catch (e) {
+      console.log('Failed to parse JSON, raw text was:', textResponse);
+      throw new Error('AI returned invalid JSON');
+    }
 
     const moves = [];
     for (const item of data) {
