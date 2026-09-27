@@ -139,11 +139,10 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
   const handleCreateFolder = async (name: string) => {
     setIsOperating(true);
     try {
-      const folderPath = initialPath ? `${initialPath}/${name}` : name;
       await fetch('/api/folder', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path: folderPath }),
+        body: JSON.stringify({ name, path: initialPath || 'GEHU-ORG' }),
       });
       await fetchFiles();
     } catch (error) {
