@@ -1623,24 +1623,11 @@ a.file-row:hover {
     background: transparent;
   }
 
-  /* Hide actions column in header, show on tap for rows */
+  /* Hide actions column in header and rows completely on mobile */
   .file-list-header .file-row-actions,
-  .file-list-header .header-label:last-child {
-    display: none;
-  }
-
+  .file-list-header .header-label:last-child,
   .file-row-actions {
-    display: none;
-    grid-column: 1 / -1;
-    justify-content: flex-start;
-    opacity: 1;
-    padding-top: 8px;
-    border-top: 1px solid var(--border-color);
-    margin-top: 4px;
-  }
-
-  .file-row:active .file-row-actions {
-    display: flex;
+    display: none !important;
   }
 
   .file-icon,
