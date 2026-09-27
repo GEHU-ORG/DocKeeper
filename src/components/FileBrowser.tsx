@@ -159,17 +159,29 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
     setIsOperating(true);
     try {
       if (deleteTarget.type === 'file') {
-        await fetch('/api/files', {
+        const res = await fetch('/api/files', {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ path: deleteTarget.path, url: deleteTarget.url, id: deleteTarget.id }),
         });
+        if (!res.ok) {
+          const data = await res.json();
+          alert(data.error || 'Failed to delete file');
+          setIsOperating(false);
+          return;
+        }
       } else {
-        await fetch('/api/folder', {
+        const res = await fetch('/api/folder', {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ path: deleteTarget.path, id: deleteTarget.id }),
         });
+        if (!res.ok) {
+          const data = await res.json();
+          alert(data.error || 'Failed to delete folder');
+          setIsOperating(false);
+          return;
+        }
       }
       setDeleteTarget(null);
       setSelectedItems(new Set());
@@ -190,17 +202,27 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         if (!item) continue;
 
         if (item.type === 'file') {
-          await fetch('/api/files', {
+          const res = await fetch('/api/files', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ path: item.path, url: item.url, id: item.id }),
           });
+          if (!res.ok) {
+            const data = await res.json();
+            alert(`Failed to delete ${item.name}: ${data.error}`);
+            continue;
+          }
         } else {
-          await fetch('/api/folder', {
+          const res = await fetch('/api/folder', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ path: item.path, id: item.id }),
           });
+          if (!res.ok) {
+            const data = await res.json();
+            alert(`Failed to delete ${item.name}: ${data.error}`);
+            continue;
+          }
         }
       }
       setSelectedItems(new Set());

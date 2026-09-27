@@ -229,11 +229,16 @@ export async function verifyFileOwnership(repo: string, innerPath: string, expec
 
     if (commits.length === 0) return false;
     
-    // Check if the most recent commit (or original commit) was authored by the user.
-    // For simplicity, we check if the user's login is in the commit message
-    // since we use a PAT and the API makes commits as the PAT owner (or App).
-    // We will ensure our uploads put the username in the commit message.
-    const latestCommitMsg = commits[0].commit.message;
+    // Check if the most recent commit was authored by the user via GitHub OAuth token.
+    const latestCommit = commits[0];
+    const authorLogin = latestCommit.author?.login || '';
+    
+    if (authorLogin.toLowerCase() === expectedUsername.toLowerCase()) {
+      return true;
+    }
+
+    // Fallback: Check if the user's login is in the commit message
+    const latestCommitMsg = latestCommit.commit.message;
     return latestCommitMsg.includes(`@${expectedUsername}`);
   } catch (e: any) {
     console.error('Error verifying ownership:', e);
