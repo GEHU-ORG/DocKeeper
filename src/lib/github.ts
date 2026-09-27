@@ -45,7 +45,7 @@ export async function listItems(path: string): Promise<FileItem[]> {
       return data.map(item => ({
         id: item.sha,
         name: item.name,
-        type: item.type === 'dir' ? 'folder' : 'file',
+        type: (item.type === 'dir' ? 'folder' : 'file') as 'folder' | 'file',
         path: `${ORG_NAME}/${repo}/${item.path}`,
         url: item.download_url || undefined,
         size: item.size,
