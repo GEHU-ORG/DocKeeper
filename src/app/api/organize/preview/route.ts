@@ -5,33 +5,16 @@ import { Octokit } from '@octokit/rest';
 
 const ORG_NAME = 'GEHU-ORG';
 
-function getCategoryByExtension(filename: string): string {
-  const ext = filename.split('.').pop()?.toLowerCase();
-  if (!ext) return 'Others';
-
-  const categories: Record<string, string[]> = {
-    'Documents': ['pdf', 'doc', 'docx', 'txt', 'rtf', 'csv', 'xlsx', 'xls', 'ppt', 'pptx'],
-    'Images': ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp'],
-    'Videos': ['mp4', 'mov', 'avi', 'mkv', 'webm'],
-    'Audio': ['mp3', 'wav', 'ogg', 'm4a'],
-    'Code': ['js', 'ts', 'jsx', 'tsx', 'py', 'java', 'cpp', 'c', 'html', 'css', 'json', 'md'],
-    'Archives': ['zip', 'rar', 'tar', 'gz', '7z'],
-  };
-
-  for (const [category, extensions] of Object.entries(categories)) {
-    if (extensions.includes(ext)) {
-      return category;
-    }
-  }
-
-  return 'Others';
-}
-
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!(session as any)?.accessToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json({ error: 'GEMINI_API_KEY environment variable is missing.' }, { status: 500 });
     }
 
     const { path } = await req.json();
@@ -60,15 +43,55 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Not a directory' }, { status: 400 });
     }
 
+    const files = data.filter(item => item.type === 'file').map(f => f.name);
+    if (files.length === 0) {
+      return NextResponse.json({ moves: [] });
+    }
+
+    // Call Gemini API via REST
+    const prompt = `
+You are an expert file organizer. Given the following list of files in a directory, group them into logical subfolders based on their purpose or type (e.g., 'Lectures', 'Assignments', 'Source Code', 'Assets').
+Do not create too many folders; group similar things.
+
+Files to organize:
+${files.join('\n')}
+
+Respond ONLY with a valid JSON array of objects. Do not include markdown blocks or any other text.
+Format:
+[
+  { "filename": "example.pdf", "folder": "Documents" },
+  { "filename": "script.js", "folder": "Source Code" }
+]
+`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: "application/json"
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Gemini API error: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    const textResponse = result.candidates[0].content.parts[0].text;
+    const classifications = JSON.parse(textResponse);
+
     const moves = [];
-    
     for (const item of data) {
       if (item.type === 'file') {
-        const category = getCategoryByExtension(item.name);
+        const classification = classifications.find((c: any) => c.filename === item.name);
+        if (!classification || !classification.folder) continue;
         
-        // If it's already in a folder named after a category, don't move it
+        const category = classification.folder;
         const currentFolder = innerPath.split('/').pop();
-        if (currentFolder === category) continue;
+        if (currentFolder === category) continue; // Already in right place
 
         const newPath = innerPath 
           ? `${ORG_NAME}/${repo}/${innerPath}/${category}/${item.name}`

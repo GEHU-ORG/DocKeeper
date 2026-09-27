@@ -56,7 +56,7 @@ export function AIOrganizeDialog({
           {isLoading ? (
             <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
               <div className="loading-spinner" style={{ margin: '0 auto 16px', width: '32px', height: '32px' }} />
-              <p>DocKeeper AI is analyzing your files...</p>
+              <p>Gemini AI is analyzing your files...</p>
               <p style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)', marginTop: '8px' }}>
                 Looking at {currentPath || 'root'} and all child folders.
               </p>
