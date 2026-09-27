@@ -171,12 +171,17 @@ export function UploadArea({ currentPath, onUploadComplete, inputRef }: UploadAr
           <line x1="12" y1="12" x2="12" y2="21" />
           <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
         </svg>
-        <p className="upload-text">
+        <p className="upload-text" style={{ fontSize: '1.05rem' }}>
           {isDragging
             ? 'Drop files here to upload'
             : isUploading
             ? 'Uploading...'
-            : '+ Upload Files — or drag & drop here'}
+            : (
+              <>
+                <span style={{ fontWeight: 600, display: 'block', marginBottom: '4px', color: 'var(--text-primary)' }}>+ Upload Files to GitHub</span>
+                <span style={{ fontSize: '0.9rem', color: 'var(--text-tertiary)' }}>Earn green commits & open-source contribution badges! 🚀 (or drag & drop here)</span>
+              </>
+            )}
         </p>
       </div>
     </div>
