@@ -81,6 +81,24 @@ export default function RootLayout({
             `,
           }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "GEHU DocKeeper",
+              "url": "https://gehu-dockeeper.vercel.app",
+              "description": "The official open-source document manager for Graphic Era Hill University (GEHU). Access BTech notes, syllabus, PYQ, and lab manuals.",
+              "publisher": {
+                "@type": "EducationalOrganization",
+                "name": "Graphic Era Hill University",
+                "alternateName": "GEHU",
+                "url": "https://gehu-dockeeper.vercel.app"
+              }
+            }),
+          }}
+        />
       </head>
       <body>
         <div className="app-shell">
