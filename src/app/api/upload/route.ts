@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
     const targetPath = path.startsWith('GEHU-ORG') ? path : `GEHU-ORG/${path}`;
 
-    await uploadFile(targetPath, buffer, auth.value);
+    await uploadFile(targetPath, buffer, auth.accessToken);
 
     return NextResponse.json({ success: true, path: targetPath });
   } catch (error: any) {

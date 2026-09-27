@@ -8,13 +8,16 @@ export const authOptions: AuthOptions = {
     GitHubProvider({
       clientId: process.env.GITHUB_CLIENT_ID || "",
       clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
-      // Ask for org access if needed, or just default user email
-      authorization: { params: { scope: 'read:user user:email' } },
+      authorization: { params: { scope: 'read:user user:email repo' } }, // Added repo scope
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-dev",
   callbacks: {
-    async jwt({ token, profile }) {
+    async jwt({ token, account, profile }) {
+      // Persist the OAuth access_token to the token right after signin
+      if (account) {
+        token.accessToken = account.access_token;
+      }
       if (profile && 'login' in profile) {
         token.githubUsername = profile.login;
       }
@@ -22,7 +25,8 @@ export const authOptions: AuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).githubUsername = token.githubUsername as string;
+        (session.user as any).githubUsername = token.githubUsername;
+        (session.user as any).accessToken = token.accessToken;
       }
       return session;
     }
@@ -32,7 +36,11 @@ export const authOptions: AuthOptions = {
 export async function getAuthContext() {
   const session = await getServerSession(authOptions);
   if (session?.user && (session.user as any).githubUsername) {
-    return { type: 'github', value: (session.user as any).githubUsername };
+    return { 
+      type: 'github', 
+      value: (session.user as any).githubUsername as string,
+      accessToken: (session.user as any).accessToken as string,
+    };
   }
   
   const cookieStore = await cookies();

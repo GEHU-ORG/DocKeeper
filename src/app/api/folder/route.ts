@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     const targetPath = path === auth.value ? `GEHU-ORG/${name}` : `${path}/${name}`;
 
-    await createFolder(targetPath, auth.value);
+    await createFolder(targetPath, auth.accessToken);
 
     return NextResponse.json({ success: true, path: targetPath });
   } catch (error: any) {
@@ -42,7 +42,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Path is required' }, { status: 400 });
     }
 
-    await deleteItem(path, auth.value);
+    await deleteItem(path, auth.accessToken);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

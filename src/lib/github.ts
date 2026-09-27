@@ -72,7 +72,7 @@ export async function listItems(path: string): Promise<FileItem[]> {
   }
 }
 
-export async function deleteItem(path: string, username: string): Promise<void> {
+export async function deleteItem(path: string, userToken?: string): Promise<void> {
   const parts = path.split('/').filter(Boolean);
   if (parts.length < 2) throw new Error('Cannot delete organization or root');
   
@@ -83,14 +83,11 @@ export async function deleteItem(path: string, username: string): Promise<void> 
      throw new Error('Deleting repositories is not supported via this UI');
   }
 
-  // Check ownership
-  const isOwner = await verifyFileOwnership(repo, innerPath, username);
-  if (!isOwner) {
-    throw new Error('Unauthorized: You can only delete files that you uploaded (must contain your @username in the commit message).');
-  }
+  // Use the user's token for authorization, or fallback to the admin token (not recommended)
+  const client = userToken ? new Octokit({ auth: userToken }) : octokit;
 
   // Get SHA
-  const { data } = await octokit.repos.getContent({
+  const { data } = await client.repos.getContent({
     owner: ORG_NAME,
     repo,
     path: innerPath,
@@ -100,24 +97,26 @@ export async function deleteItem(path: string, username: string): Promise<void> 
     throw new Error('Deleting folders is not supported. Please delete files individually.');
   }
 
-  await octokit.repos.deleteFile({
+  await client.repos.deleteFile({
     owner: ORG_NAME,
     repo,
     path: innerPath,
-    message: `Delete ${innerPath} by @${username} via GEHU-DocKeeper`,
+    message: `Delete ${innerPath} via GEHU-DocKeeper`,
     sha: data.sha,
   });
 }
 
-export async function uploadFile(path: string, content: string | Buffer, username: string): Promise<void> {
+export async function uploadFile(path: string, content: string | Buffer, userToken?: string): Promise<void> {
   const parts = path.split('/').filter(Boolean);
   if (parts.length < 2) throw new Error('Cannot upload to root');
   const repo = parts[1];
   const innerPath = parts.slice(2).join('/');
 
+  const client = userToken ? new Octokit({ auth: userToken }) : octokit;
+
   let sha: string | undefined;
   try {
-    const { data } = await octokit.repos.getContent({
+    const { data } = await client.repos.getContent({
       owner: ORG_NAME,
       repo,
       path: innerPath,
@@ -133,19 +132,19 @@ export async function uploadFile(path: string, content: string | Buffer, usernam
     ? Buffer.from(content).toString('base64')
     : content.toString('base64');
 
-  await octokit.repos.createOrUpdateFileContents({
+  await client.repos.createOrUpdateFileContents({
     owner: ORG_NAME,
     repo,
     path: innerPath,
-    message: `Upload ${innerPath} by @${username} via GEHU-DocKeeper`,
+    message: `Upload ${innerPath} via GEHU-DocKeeper`,
     content: encodedContent,
     sha,
   });
 }
 
-export async function createFolder(path: string, username: string): Promise<void> {
+export async function createFolder(path: string, userToken?: string): Promise<void> {
   // GitHub doesn't have true empty folders. Create a .keep file.
-  await uploadFile(`${path}/.keep`, '', username);
+  await uploadFile(`${path}/.keep`, '', userToken);
 }
 
 export function getFileExtension(filename: string): string {
