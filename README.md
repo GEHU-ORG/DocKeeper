@@ -1,70 +1,54 @@
-# DataKeeper ☁️
+# DataKeeper
 
-![DataKeeper Hero](https://datakeeper-dev.vercel.app/og-image.png)
+**macOS Finder-inspired cloud file manager built with Next.js and Vercel Blob.**
 
-**DataKeeper** is a scalable, enterprise-grade cloud storage engine and file management system. Built with performance and massive scale in mind, it provides a seamless Google Drive-like experience for users to upload, organize, and securely share their data.
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=nextdotjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white)
 
 ---
 
-## 🚀 Key Features
+## What It Does
 
-*   📁 **Relational Virtual File System** — Supports infinitely nested folder hierarchies using advanced SQL CTEs (Common Table Expressions).
-*   ⚡ **Direct-to-Cloud Uploads** — Bypasses server bottlenecks using **Presigned URLs**, allowing massive files to upload directly from the user's browser to the storage bucket via edge networks.
-*   🔒 **Enterprise Security & Isolation** — Implements strict user isolation at the storage bucket level. Features robust authentication via **Google OAuth** and 24-hour self-destructing **Secret Codes** for temporary secure access.
-*   🤖 **Automated Maintenance** — Built-in CRON jobs automatically sweep the database for expired links and execute multi-part chunk abortions on Cloudflare R2 to prevent storage leaks from interrupted network uploads.
-*   📱 **Responsive Drill-down UI** — A highly polished, mobile-first interface featuring glassmorphism design, instant hover animations, and an intuitive breadcrumb-based drill-down navigation system.
-*   👁️ **Inline Media Engine** — Real-time previews and playback for Videos, Audio, PDFs, and Images without needing to download them locally.
+A cloud-based personal file manager that replicates the familiar macOS Finder experience in the browser. Upload, organize, and access files from any device with zero-config serverless storage.
 
-## 🛠️ Technical Architecture
+**Key Features:**
+- **Finder-style UI** — familiar desktop-like browser experience
+- **Vercel Blob** — serverless object storage integration
+- **Drag & Drop** — intuitive upload with progress indicators
+- **File Organization** — folders, filtering, and search functionality
 
-This project was engineered to solve complex cloud storage challenges (handling large files, preventing server payload limits, minimizing egress costs) by leveraging a distributed serverless architecture:
+## Architecture
 
-*   **Frontend & API:** [Next.js 15](https://nextjs.org/) (App Router, Server Actions, React Server Components)
-*   **Database:** [Neon Serverless Postgres](https://neon.tech/) (Handling complex node trees, user relationships, and metadata)
-*   **Blob Storage:** [Cloudflare R2](https://www.cloudflare.com/developer-platform/r2/) (S3-compatible, Zero-egress bandwidth costs, highly distributed CDN)
-*   **Authentication:** [NextAuth.js](https://next-auth.js.org/) (OAuth 2.0)
-*   **Deployment:** [Vercel](https://vercel.com/) (Serverless edge functions and CRON automation)
+```
+Next.js Frontend (Finder UI) ↔ Next.js API Routes ↔ Vercel Blob Storage
+```
 
-## 🧠 Engineering Highlights for Recruiters
+## Tech Stack
 
-*   **Bypassing Vercel Payload Limits:** Standard serverless functions crash when handling files over 4MB. DataKeeper solves this by generating secure cryptographic signatures (Presigned URLs) on the backend, allowing the frontend to establish a direct PUT request to Cloudflare R2's servers.
-*   **Cost Optimization (Zero Egress):** By architecting the storage engine around Cloudflare R2 instead of AWS S3, the application achieves $0 bandwidth egress costs, allowing infinite scalability for downloads.
-*   **Robust Orphan Cleanup:** Implemented custom Node.js background scripts utilizing the `@aws-sdk/client-s3` library to scan for incomplete multi-part uploads and orphaned blobs, guaranteeing perfect parity between the Postgres Database and the physical R2 storage.
-*   **Recursive SQL Queries:** The file movement and folder deletion engine utilizes complex `WITH RECURSIVE` Common Table Expressions in PostgreSQL to rapidly resolve nested parent-child paths without overwhelming the database with N+1 queries.
+| Component | Technology |
+|---|---|
+| Framework | Next.js |
+| Language | TypeScript |
+| Storage | Vercel Blob |
+| Deployment | Vercel |
 
-## 💻 Running Locally
+## My Role
 
-### 1. Clone the repository
+I chose Vercel Blob for zero-config deployment, designed the folder hierarchy model, and planned the file management API. Code generation was accelerated using AI tools; Blob SDK integration and responsive layout fine-tuning are mine.
+
+## Quick Start
+
 ```bash
-git clone https://github.com/AdityaPandey-DEV/datakeeper.git
-cd datakeeper
+git clone https://github.com/AdityaPandey-DEV/DataKeeper.git && cd DataKeeper
 npm install
+npm run dev   # → http://localhost:3000
 ```
 
-### 2. Configure Environment Variables
-Create a `.env.local` file and provide your credentials for Neon Postgres, Cloudflare R2, and Google OAuth:
-```env
-# Database
-POSTGRES_URL="postgresql://user:password@ep-your-db.region.aws.neon.tech/neondb?sslmode=require"
+---
 
-# Cloudflare R2
-R2_ACCESS_KEY_ID="your_access_key"
-R2_SECRET_ACCESS_KEY="your_secret_key"
-R2_ENDPOINT="https://your-account-id.r2.cloudflarestorage.com"
-R2_BUCKET_NAME="datakeeper"
-R2_PUBLIC_URL="https://pub-your-custom-domain.r2.dev"
+<div align="center">
 
-# Authentication
-NEXTAUTH_SECRET="your_random_secret"
-NEXTAUTH_URL="http://localhost:3000"
-GOOGLE_CLIENT_ID="your_google_client_id"
-GOOGLE_CLIENT_SECRET="your_google_client_secret"
-```
+*Architected & built by [Aditya Pandey](https://github.com/AdityaPandey-DEV) — AI-augmented development*
 
-### 3. Start the Development Server
-```bash
-npm run dev
-```
-
-## 📜 License
-MIT
+</div>
