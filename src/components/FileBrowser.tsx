@@ -222,6 +222,7 @@ export function FileBrowser({ initialPath }: FileBrowserProps) {
             action: 'move-file',
             id: moveTarget.id,
             sourceUrl: moveTarget.url,
+            sourcePath: moveTarget.path,
             destinationPath: destPath,
           }),
         });
@@ -269,6 +270,7 @@ export function FileBrowser({ initialPath }: FileBrowserProps) {
               action: 'move-file',
               id: item.id,
               sourceUrl: item.url,
+              sourcePath: item.path,
               destinationPath: destPath,
             }),
           });
