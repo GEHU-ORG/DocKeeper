@@ -11,6 +11,7 @@ import { NewFolderDialog } from './NewFolderDialog';
 import { DeleteConfirmDialog } from './DeleteConfirmDialog';
 import { MoveDialog } from './MoveDialog';
 import { FilePreview } from './FilePreview';
+import { AIOrganizeDialog, type AIMove } from './AIOrganizeDialog';
 import { JoinOrgPrompt } from './JoinOrgPrompt';
 
 interface FileBrowserProps {
@@ -40,6 +41,12 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
   const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [isBulkMove, setIsBulkMove] = useState(false);
   const [isOperating, setIsOperating] = useState(false);
+
+  // AI Organize state
+  const [isAIOrganizeOpen, setIsAIOrganizeOpen] = useState(false);
+  const [isAILoading, setIsAILoading] = useState(false);
+  const [aiMoves, setAiMoves] = useState<AIMove[]>([]);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   // Join Org Prompt
   const [showJoinPrompt, setShowJoinPrompt] = useState(false);
@@ -324,7 +331,53 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
     }
   };
 
+  const handleAIOrganizeClick = async () => {
+    setIsAIOrganizeOpen(true);
+    setIsAILoading(true);
+    setAiMoves([]);
+    setAiError(null);
+    try {
+      const res = await fetch('/api/organize/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: initialPath }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setAiError(data.error || 'Failed to generate plan.');
+      } else if (data.moves) {
+        setAiMoves(data.moves);
+      }
+    } catch (err: any) {
+      console.error('Failed to get AI plan:', err);
+      setAiError(err.message || 'Network error.');
+    } finally {
+      setIsAILoading(false);
+    }
+  };
 
+  const handleAIOrganizeConfirm = async () => {
+    try {
+      const res = await fetch('/api/organize/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ moves: aiMoves }),
+      });
+      
+      const data = await res.json();
+      if (!res.ok) {
+        const errorMsg = data.details ? `${data.error}:\n${data.details.join('\n')}` : (data.error || 'Failed to execute plan');
+        throw new Error(errorMsg);
+      }
+      
+      setIsAIOrganizeOpen(false);
+      await fetchFiles();
+    } catch (err: any) {
+      console.error('Failed to execute AI plan:', err);
+      alert(err.message || 'Failed to organize files. Please try again.');
+      setIsAIOrganizeOpen(false);
+    }
+  };
 
   return (
     <div className="file-browser">
@@ -367,6 +420,7 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         isReadOnly={isReadOnly}
         onNewFolder={() => setShowNewFolder(true)}
         onUpload={() => uploadInputRef.current?.click()}
+        onAIOrganize={handleAIOrganizeClick}
         selectedCount={selectedItems.size}
         onMoveSelected={() => setIsBulkMove(true)}
         onDeleteSelected={() => setIsBulkDelete(true)}
@@ -448,6 +502,16 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         fileName={previewTarget?.name || ''}
         fileUrl={previewTarget?.url || ''}
         onClose={() => setPreviewTarget(null)}
+      />
+
+      <AIOrganizeDialog
+        isOpen={isAIOrganizeOpen}
+        isLoading={isAILoading}
+        moves={aiMoves}
+        error={aiError}
+        onClose={() => setIsAIOrganizeOpen(false)}
+        onConfirm={handleAIOrganizeConfirm}
+        currentPath={initialPath}
       />
     </div>
   );
