@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { listItems } from '@/lib/github';
+import { listItems, deleteItem } from '@/lib/github';
 import { getAuthContext } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -32,6 +32,30 @@ export async function GET(request: NextRequest) {
     console.error('Error in GET /api/files:', error);
     return NextResponse.json(
       { error: error.message || 'Failed to list files' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const auth = await getAuthContext();
+    if (!auth) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { path } = await request.json();
+    if (!path) {
+      return NextResponse.json({ error: 'Path is required' }, { status: 400 });
+    }
+
+    await deleteItem(path, auth.accessToken);
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('Error deleting file:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to delete file' },
       { status: 500 }
     );
   }

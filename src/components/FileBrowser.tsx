@@ -162,7 +162,7 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         await fetch('/api/files', {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: deleteTarget.url, id: deleteTarget.id }),
+          body: JSON.stringify({ path: deleteTarget.path, url: deleteTarget.url, id: deleteTarget.id }),
         });
       } else {
         await fetch('/api/folder', {
@@ -193,7 +193,7 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
           await fetch('/api/files', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url: item.url, id: item.id }),
+            body: JSON.stringify({ path: item.path, url: item.url, id: item.id }),
           });
         } else {
           await fetch('/api/folder', {
