@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { getFileCategory } from '@/lib/github';
 import { VideoPlayer } from './VideoPlayer';
 
@@ -11,9 +12,29 @@ interface FilePreviewProps {
 }
 
 export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewProps) {
-  if (!isOpen) return null;
+  const [textContent, setTextContent] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const category = getFileCategory(fileName);
+
+  useEffect(() => {
+    if (isOpen && fileUrl && (category === 'text' || category === 'code')) {
+      setIsLoading(true);
+      setError(null);
+      setTextContent(null);
+      fetch(fileUrl)
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to load content');
+          return res.text();
+        })
+        .then(text => setTextContent(text))
+        .catch(err => setError(err.message))
+        .finally(() => setIsLoading(false));
+    }
+  }, [isOpen, fileUrl, category]);
+
+  if (!isOpen) return null;
 
   const renderPreview = () => {
     switch (category) {
@@ -52,12 +73,15 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
       case 'text':
       case 'code':
         return (
-          <iframe
-            src={fileUrl}
-            className="preview-text"
-            title={fileName}
-            style={{ width: '100%', height: '65vh', background: 'white', borderRadius: 'var(--radius-md)', border: 'none' }}
-          />
+          <div className="preview-text-container" style={{ width: '100%', height: '65vh', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', overflow: 'auto', padding: '1rem', border: '1px solid var(--border-color)' }}>
+            {isLoading && <div className="loading-spinner" style={{ margin: '2rem auto' }} />}
+            {error && <div style={{ color: 'var(--error)' }}>{error}</div>}
+            {!isLoading && !error && textContent !== null && (
+              <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: '14px', whiteSpace: 'pre-wrap', wordBreak: 'break-all', color: 'var(--text-primary)' }}>
+                {textContent}
+              </pre>
+            )}
+          </div>
         );
       default:
         return (
