@@ -39,12 +39,12 @@ export function AIOrganizeDialog({
   return (
     <div className="dialog-overlay" onClick={onClose}>
       <div className="dialog-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px', width: '100%', background: 'var(--bg-primary)' }}>
-        <div className="dialog-header">
-          <h2 className="dialog-title">
+        <div className="dialog-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid var(--border-color)' }}>
+          <h2 className="dialog-title" style={{ margin: 0, display: 'flex', alignItems: 'center' }}>
             <span style={{ marginRight: '8px' }}>✨</span>
             AI Organization Plan
           </h2>
-          <button className="dialog-close" onClick={onClose} disabled={isExecuting}>
+          <button className="dialog-close" onClick={onClose} disabled={isExecuting} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px', display: 'flex' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -148,11 +148,12 @@ export function AIOrganizeDialog({
           )}
         </div>
 
-        <div className="dialog-footer">
+        <div className="dialog-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--border-color)', gap: '16px' }}>
           <button
             className="dialog-btn dialog-btn-secondary"
             onClick={onClose}
             disabled={isExecuting}
+            style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer' }}
           >
             {moves.length === 0 && !isLoading ? 'Close' : 'Cancel'}
           </button>
@@ -161,7 +162,7 @@ export function AIOrganizeDialog({
               className="dialog-btn dialog-btn-primary"
               onClick={handleConfirm}
               disabled={isExecuting}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--accent)' }}
+              style={{ flex: 1, padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'var(--accent)', color: '#fff', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 600 }}
             >
               {isExecuting && <div className="loading-spinner loading-spinner-sm" style={{ borderTopColor: 'white' }} />}
               Confirm & Organize
