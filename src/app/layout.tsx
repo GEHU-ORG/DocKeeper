@@ -99,6 +99,14 @@ export default function RootLayout({
             }),
           }}
         />
+        {/* Google AdSense Placeholder - Replace ca-pub-XXXXXXXXXXXXXXXX with your actual Publisher ID */}
+        {/*
+        <script 
+          async 
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+          crossOrigin="anonymous"
+        ></script>
+        */}
       </head>
       <body>
         <div className="app-shell">
