@@ -276,6 +276,68 @@ a {
   margin: 0 2px;
 }
 
+/* ======================================================
+   Top Header & Search (Breadcrumb row)
+   ====================================================== */
+.browser-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+  position: relative;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  position: relative;
+}
+
+.search-toggle-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  z-index: 11;
+}
+
+.search-toggle-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.search-input-wrapper {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  width: 240px;
+  transition: all var(--transition-normal);
+}
+
+.top-search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 0.8125rem;
+  width: 100%;
+}
+
+.top-search-input::placeholder {
+  color: var(--text-tertiary);
+}
+
 /* --- Divider --- */
 .browser-divider {
   height: 1px;
@@ -1616,6 +1678,37 @@ a.file-row:hover {
 
   .header-inner {
     padding: 0 16px;
+  }
+
+  .search-toggle-btn {
+    display: flex;
+  }
+
+  .search-input-wrapper {
+    position: absolute;
+    right: 36px; /* give space for the icon */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    padding: 0;
+    opacity: 0;
+    pointer-events: none;
+    background: var(--bg-secondary);
+    border-color: transparent;
+    z-index: 10;
+  }
+
+  .search-container.open .search-input-wrapper {
+    width: calc(100vw - 80px); /* Fill most of the row over the breadcrumbs */
+    padding: 6px 12px;
+    opacity: 1;
+    pointer-events: auto;
+    border-color: var(--accent);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .search-container.open .search-toggle-btn {
+    color: var(--accent);
   }
 
   .file-list-header,
