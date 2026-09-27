@@ -5,17 +5,49 @@ import { Providers } from "@/components/Providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "GEHU DocKeeper — Organization Document Manager",
+  title: {
+    template: '%s | GEHU DocKeeper',
+    default: 'GEHU DocKeeper — Graphic Era Hill University Study Material, Notes & Syllabus',
+  },
   description:
-    "A sleek, macOS Finder-inspired document manager. Securely upload, organize, and access files across GEHU-ORG.",
-  keywords: ["document manager", "gehu docs", "gehu org"],
+    "The official document manager for Graphic Era Hill University (GEHU). Access BTech notes, syllabus, previous year questions (PYQ), lab manuals, and open-source study material for GEHU Dehradun, Haldwani, and Bhimtal campuses.",
+  keywords: [
+    "Graphic Era Hill University", "GEHU", "GEHU Notes", "GEHU Syllabus", 
+    "BTech Notes", "Computer Science", "CSE Study Material", "BTech Syllabus GEHU",
+    "GEHU PYQ", "Previous Year Questions", "GEHU Dehradun", "GEHU Haldwani", 
+    "GEHU Bhimtal", "GEHU Open Source", "DocKeeper", "DataKeeper", "GitHub Education"
+  ],
+  authors: [{ name: 'Aditya Pandey' }, { name: 'GEHU Open Source Community' }],
   metadataBase: new URL("https://gehu-dockeeper.vercel.app"),
   openGraph: {
-    title: "GEHU DocKeeper",
-    description: "Collaborative document manager for GEHU-ORG.",
+    title: "GEHU DocKeeper - BTech Notes & Syllabus",
+    description: "Collaborative open-source document manager for GEHU-ORG. Find all your BTech notes, syllabus, and lab materials here.",
     type: "website",
     url: "https://gehu-dockeeper.vercel.app",
-    images: ["/og-image.png"],
+    siteName: "GEHU DocKeeper",
+    images: [{
+      url: "/og-image.png",
+      width: 1200,
+      height: 630,
+      alt: "GEHU DocKeeper Cover",
+    }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'GEHU DocKeeper - BTech Notes & Syllabus',
+    description: 'Find all your GEHU BTech notes, syllabus, and lab materials in one place.',
+    images: ['/og-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 };
 

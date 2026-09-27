@@ -44,8 +44,18 @@ export async function generateMetadata({ params }: BrowsePageProps): Promise<Met
     folderName = decodeURIComponent(path[path.length - 1]);
   }
 
+  // Format the folder name to be more readable for SEO (e.g., "CN-LAB" -> "CN LAB")
+  const readableName = folderName.replace(/-/g, ' ');
+
   return {
-    title: `${folderName} — GEHU DocKeeper`,
-    description: `Browse documents in ${folderName}`,
+    title: `${readableName} Study Material & Notes`,
+    description: `Download ${readableName} notes, syllabus, lab manuals, and study materials for Graphic Era Hill University (GEHU) BTech students. Free open-source resources.`,
+    keywords: [
+      `${readableName} GEHU`,
+      `${readableName} notes`,
+      `${readableName} syllabus`,
+      `${readableName} BTech`,
+      `GEHU Graphic Era ${readableName}`,
+    ]
   };
 }
