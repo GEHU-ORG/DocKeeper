@@ -451,7 +451,7 @@ a {
 }
 
 .file-list-items {
-  /* Smooth transitions for content changes */
+  animation: fadeIn 0.2s ease-out;
 }
 
 /* --- File Row (individual item) --- */
