@@ -1,18 +1,22 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { cookies } from 'next/headers';
 import { LandingPage } from '@/components/LandingPage';
 import { redirect } from 'next/navigation';
+import { checkOrgMembership } from '@/lib/github';
+import { JoinOrgPrompt } from '@/components/JoinOrgPrompt';
 
 export default async function HomePage() {
   const session = await getServerSession(authOptions);
-  const cookieStore = await cookies();
-  const secretCode = cookieStore.get('secret_code')?.value;
+  
+  if (session?.user && (session.user as any).githubUsername) {
+    const username = (session.user as any).githubUsername;
+    const isMember = await checkOrgMembership(username);
 
-  if (session?.user?.email) {
-    redirect(`/browse/${session.user.email}`);
-  } else if (secretCode) {
-    redirect(`/browse/${secretCode}`);
+    if (isMember) {
+      redirect(`/browse/GEHU-ORG`);
+    } else {
+      return <JoinOrgPrompt username={username} />;
+    }
   }
 
   return <LandingPage />;

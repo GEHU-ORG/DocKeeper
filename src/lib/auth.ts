@@ -1,31 +1,38 @@
 import { AuthOptions } from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
+import GitHubProvider from "next-auth/providers/github";
+import { cookies } from 'next/headers';
+import { getServerSession } from 'next-auth';
 
 export const authOptions: AuthOptions = {
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+    GitHubProvider({
+      clientId: process.env.GITHUB_CLIENT_ID || "",
+      clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
+      // Ask for org access if needed, or just default user email
+      authorization: { params: { scope: 'read:user user:email' } },
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-dev",
   callbacks: {
+    async jwt({ token, profile }) {
+      if (profile && 'login' in profile) {
+        token.githubUsername = profile.login;
+      }
+      return token;
+    },
     async session({ session, token }) {
-      if (session.user && token.email) {
-        session.user.email = token.email;
+      if (session.user) {
+        (session.user as any).githubUsername = token.githubUsername as string;
       }
       return session;
     }
   }
 };
 
-import { getServerSession } from 'next-auth';
-import { cookies } from 'next/headers';
-
 export async function getAuthContext() {
   const session = await getServerSession(authOptions);
-  if (session?.user?.email) {
-    return { type: 'user', value: session.user.email };
+  if (session?.user && (session.user as any).githubUsername) {
+    return { type: 'github', value: (session.user as any).githubUsername };
   }
   
   const cookieStore = await cookies();

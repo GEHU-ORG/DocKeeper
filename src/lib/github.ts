@@ -72,7 +72,7 @@ export async function listItems(path: string): Promise<FileItem[]> {
   }
 }
 
-export async function deleteItem(path: string): Promise<void> {
+export async function deleteItem(path: string, username: string): Promise<void> {
   const parts = path.split('/').filter(Boolean);
   if (parts.length < 2) throw new Error('Cannot delete organization or root');
   
@@ -80,8 +80,13 @@ export async function deleteItem(path: string): Promise<void> {
   const innerPath = parts.slice(2).join('/');
   
   if (!innerPath) {
-     // Delete entire repo? Too dangerous, let's just deny it.
      throw new Error('Deleting repositories is not supported via this UI');
+  }
+
+  // Check ownership
+  const isOwner = await verifyFileOwnership(repo, innerPath, username);
+  if (!isOwner) {
+    throw new Error('Unauthorized: You can only delete files that you uploaded (must contain your @username in the commit message).');
   }
 
   // Get SHA
@@ -92,8 +97,6 @@ export async function deleteItem(path: string): Promise<void> {
   });
 
   if (Array.isArray(data)) {
-    // It's a folder, we'd have to recursively delete. 
-    // GitHub doesn't have a direct folder delete. Let's just not support folder delete for now.
     throw new Error('Deleting folders is not supported. Please delete files individually.');
   }
 
@@ -101,12 +104,12 @@ export async function deleteItem(path: string): Promise<void> {
     owner: ORG_NAME,
     repo,
     path: innerPath,
-    message: `Delete ${innerPath} via GEHU-RepoKeeper`,
+    message: `Delete ${innerPath} by @${username} via GEHU-RepoKeeper`,
     sha: data.sha,
   });
 }
 
-export async function uploadFile(path: string, content: string | Buffer): Promise<void> {
+export async function uploadFile(path: string, content: string | Buffer, username: string): Promise<void> {
   const parts = path.split('/').filter(Boolean);
   if (parts.length < 2) throw new Error('Cannot upload to root');
   const repo = parts[1];
@@ -134,15 +137,15 @@ export async function uploadFile(path: string, content: string | Buffer): Promis
     owner: ORG_NAME,
     repo,
     path: innerPath,
-    message: `Upload ${innerPath} via GEHU-RepoKeeper`,
+    message: `Upload ${innerPath} by @${username} via GEHU-RepoKeeper`,
     content: encodedContent,
     sha,
   });
 }
 
-export async function createFolder(path: string): Promise<void> {
+export async function createFolder(path: string, username: string): Promise<void> {
   // GitHub doesn't have true empty folders. Create a .keep file.
-  await uploadFile(`${path}/.keep`, '');
+  await uploadFile(`${path}/.keep`, '', username);
 }
 
 export function getFileExtension(filename: string): string {
@@ -176,4 +179,63 @@ export function formatFileSize(bytes: number | undefined): string {
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
   const size = bytes / Math.pow(1024, i);
   return `${size.toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+}
+
+export async function checkOrgMembership(username: string): Promise<boolean> {
+  try {
+    await octokit.orgs.checkMembershipForUser({
+      org: ORG_NAME,
+      username,
+    });
+    return true;
+  } catch (error: any) {
+    if (error.status === 404) {
+      return false;
+    }
+    // Handle other errors (e.g. rate limit, bad PAT)
+    console.error('Error checking org membership:', error);
+    return false;
+  }
+}
+
+export async function inviteToOrg(username: string): Promise<void> {
+  // Check if they already have an invitation
+  const invitations = await octokit.orgs.listPendingInvitations({
+    org: ORG_NAME,
+  });
+  const alreadyInvited = invitations.data.some(inv => inv.login === username);
+  if (!alreadyInvited) {
+    // Send invitation (requires admin PAT for the org)
+    // We get the user ID first
+    const { data: user } = await octokit.users.getByUsername({ username });
+    await octokit.orgs.createInvitation({
+      org: ORG_NAME,
+      invitee_id: user.id,
+      role: 'direct_member',
+    });
+  }
+}
+
+export async function verifyFileOwnership(repo: string, innerPath: string, expectedUsername: string): Promise<boolean> {
+  try {
+    // Get commit history for the file
+    const { data: commits } = await octokit.repos.listCommits({
+      owner: ORG_NAME,
+      repo,
+      path: innerPath,
+      per_page: 5,
+    });
+
+    if (commits.length === 0) return false;
+    
+    // Check if the most recent commit (or original commit) was authored by the user.
+    // For simplicity, we check if the user's login is in the commit message
+    // since we use a PAT and the API makes commits as the PAT owner (or App).
+    // We will ensure our uploads put the username in the commit message.
+    const latestCommitMsg = commits[0].commit.message;
+    return latestCommitMsg.includes(`@${expectedUsername}`);
+  } catch (e: any) {
+    console.error('Error verifying ownership:', e);
+    return false;
+  }
 }
