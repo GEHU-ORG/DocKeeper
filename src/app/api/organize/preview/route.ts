@@ -8,7 +8,7 @@ const ORG_NAME = 'GEHU-ORG';
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!(session as any)?.accessToken) {
+    if (!(session as any)?.user?.accessToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     const repo = parts[1];
     const innerPath = parts.slice(2).join('/');
     
-    const octokit = new Octokit({ auth: (session as any).accessToken });
+    const octokit = new Octokit({ auth: (session as any).user.accessToken });
     
     // Fetch files in the current directory
     const { data } = await octokit.repos.getContent({

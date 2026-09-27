@@ -8,11 +8,11 @@ const ORG_NAME = 'GEHU-ORG';
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!(session as any)?.accessToken) {
+    if (!(session as any)?.user?.accessToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const octokit = new Octokit({ auth: (session as any).accessToken });
+    const octokit = new Octokit({ auth: (session as any).user.accessToken });
     const body = await req.json();
     const { action, id, sourceUrl, sourcePath, destinationPath, newName } = body;
 
