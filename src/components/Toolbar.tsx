@@ -65,7 +65,6 @@ export function Toolbar({
           </button>
         </div>
       )}
-      )}
     </div>
   );
 }

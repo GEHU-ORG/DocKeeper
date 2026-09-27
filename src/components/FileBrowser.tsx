@@ -401,15 +401,7 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
     }
   };
 
-  const [showReadOnlyBanner, setShowReadOnlyBanner] = useState(isReadOnly);
-  
-  useEffect(() => {
-    if (isReadOnly) {
-      setShowReadOnlyBanner(true);
-      const timer = setTimeout(() => setShowReadOnlyBanner(false), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [isReadOnly]);
+
 
   return (
     <div className="file-browser">
@@ -454,16 +446,7 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
 
       <div className="browser-divider" />
 
-      {showReadOnlyBanner && (
-        <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid #3b82f6', color: 'var(--text-primary)', padding: '12px 16px', borderRadius: '8px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-            <span style={{ fontWeight: 500 }}>
-              {isSignedIn ? "You must be a member of GEHU-ORG to manage files." : "You are viewing this organization in read-only mode."}
-            </span>
-          </div>
-        </div>
-      )}
+
 
       {showJoinPrompt && username && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, background: 'var(--bg-primary)', overflow: 'auto' }}>
