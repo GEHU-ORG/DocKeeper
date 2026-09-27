@@ -34,7 +34,7 @@ export default async function BrowsePage({ params }: BrowsePageProps) {
     fullPath = 'GEHU-ORG/' + path.map(decodeURIComponent).join('/');
   }
 
-  return <FileBrowser initialPath={fullPath} isReadOnly={isReadOnly} />;
+  return <FileBrowser initialPath={fullPath} isReadOnly={isReadOnly} isSignedIn={!!username} username={username} />;
 }
 
 export async function generateMetadata({ params }: BrowsePageProps): Promise<Metadata> {

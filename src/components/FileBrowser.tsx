@@ -12,13 +12,16 @@ import { DeleteConfirmDialog } from './DeleteConfirmDialog';
 import { MoveDialog } from './MoveDialog';
 import { FilePreview } from './FilePreview';
 import { AIOrganizeDialog, type AIMove } from './AIOrganizeDialog';
+import { JoinOrgPrompt } from './JoinOrgPrompt';
 
 interface FileBrowserProps {
   initialPath: string;
   isReadOnly?: boolean;
+  isSignedIn?: boolean;
+  username?: string;
 }
 
-export function FileBrowser({ initialPath, isReadOnly = false }: FileBrowserProps) {
+export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = false, username = '' }: FileBrowserProps) {
   const router = useRouter();
   const [items, setItems] = useState<FileItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,6 +47,9 @@ export function FileBrowser({ initialPath, isReadOnly = false }: FileBrowserProp
   const [isAILoading, setIsAILoading] = useState(false);
   const [aiMoves, setAiMoves] = useState<AIMove[]>([]);
   const [aiError, setAiError] = useState<string | null>(null);
+
+  // Join Org Prompt
+  const [showJoinPrompt, setShowJoinPrompt] = useState(false);
 
   // Debounce search query
   useEffect(() => {
@@ -374,11 +380,30 @@ export function FileBrowser({ initialPath, isReadOnly = false }: FileBrowserProp
         <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid #3b82f6', color: 'var(--text-primary)', padding: '12px 16px', borderRadius: '8px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-            <span style={{ fontWeight: 500 }}>You are viewing this organization in read-only mode.</span>
+            <span style={{ fontWeight: 500 }}>
+              {isSignedIn ? "You must be a member of GEHU-ORG to manage files." : "You are viewing this organization in read-only mode."}
+            </span>
           </div>
-          <button onClick={() => window.location.href = '/api/auth/signin'} style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '6px 16px', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>
-            Sign In to Manage
-          </button>
+          {isSignedIn ? (
+            <button onClick={() => setShowJoinPrompt(true)} style={{ background: '#2ea043', color: 'white', border: 'none', padding: '6px 16px', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>
+              Join Organization
+            </button>
+          ) : (
+            <button onClick={() => window.location.href = '/api/auth/signin'} style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '6px 16px', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>
+              Sign In to Manage
+            </button>
+          )}
+        </div>
+      )}
+
+      {showJoinPrompt && username && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, background: 'var(--bg-primary)', overflow: 'auto' }}>
+           <div style={{ position: 'absolute', top: '1rem', right: '2rem' }}>
+             <button onClick={() => setShowJoinPrompt(false)} style={{ padding: '8px', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-primary)' }}>
+               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+             </button>
+           </div>
+           <JoinOrgPrompt username={username} />
         </div>
       )}
 
