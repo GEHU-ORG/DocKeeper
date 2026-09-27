@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export function JoinOrgPrompt({ username }: { username: string }) {
   const [loading, setLoading] = useState(false);
@@ -20,6 +20,25 @@ export function JoinOrgPrompt({ username }: { username: string }) {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (success) {
+      // Poll every 3 seconds to check if the user has accepted the invitation
+      interval = setInterval(async () => {
+        try {
+          const res = await fetch('/api/org/check');
+          const data = await res.json();
+          if (data.isMember) {
+            window.location.href = '/'; // redirect to website
+          }
+        } catch (e) {
+          // ignore
+        }
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [success]);
 
   return (
     <div className="landing-container" style={{
@@ -51,10 +70,10 @@ export function JoinOrgPrompt({ username }: { username: string }) {
             </a>
             
             <button 
-              onClick={() => window.location.reload()}
+              onClick={() => window.location.href = '/'}
               style={{ padding: '0.8rem', background: 'transparent', color: '#155724', border: '1px solid #155724', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
             >
-              I have accepted it, reload page
+              I have accepted it, Go to Website
             </button>
           </div>
         </div>
