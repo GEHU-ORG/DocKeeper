@@ -65,9 +65,10 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
       case 'pdf':
         return (
           <iframe
-            src={fileUrl}
+            src={`https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true`}
             className="preview-pdf"
             title={fileName}
+            style={{ width: '100%', height: '70vh', border: 'none' }}
           />
         );
       case 'text':
