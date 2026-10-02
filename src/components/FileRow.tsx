@@ -97,7 +97,7 @@ export function FileRow({
       <div className="file-row-icon">
         <FileIcon item={item} />
       </div>
-      <div className="file-row-name" style={item.type === 'folder' ? { gridColumn: 'span 3' } : {}}>
+      <div className="file-row-name">
         {isRenaming ? (
           <input
             type="text"
@@ -153,16 +153,6 @@ export function FileRow({
           </div>
         )}
       </div>
-      {item.type === 'file' && (
-        <>
-          <div className="file-row-date">
-            {item.uploadedAt ? new Date(item.uploadedAt).toLocaleDateString() : ''}
-          </div>
-          <div className="file-row-size">
-            {item.size !== undefined ? formatFileSize(item.size) : ''}
-          </div>
-        </>
-      )}
       <div className="file-row-actions" onClick={(e) => e.stopPropagation()}>
         {item.type === 'file' && (
           <>
