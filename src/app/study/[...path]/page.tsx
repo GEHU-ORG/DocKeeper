@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, use } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { ChatRenderer } from '@/components/ChatRenderer';
+
 
 interface SelectedFile {
   name: string;
@@ -18,16 +19,18 @@ interface StudyItem {
   sha: string;
 }
 
-export default function StudyPage({ params }: { params: { path: string[] } }) {
+export default function StudyPage({ params: paramsPromise }: { params: Promise<{ path: string[] }> }) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const params = use(paramsPromise);
 
   // Parse path: [uni, course, dept, semester, subject] minimum
   const pathParts = params.path || [];
-  const uni = pathParts[0];
+  const uni = decodeURIComponent(pathParts[0] || '');
   const repo = uni; // repo name = uni slug
-  const subjectName = pathParts[pathParts.length - 1];
-  const subjectPath = pathParts.slice(1).join('/'); // e.g. B.Pharm/General/Semester-1/Pharmaceutics I
+  const subjectName = decodeURIComponent(pathParts[pathParts.length - 1] || '');
+  const subjectPath = pathParts.slice(1).map(decodeURIComponent).join('/'); // e.g. B.Pharm/General/Semester-1/Pharmaceutics I
+
 
   const [availableFiles, setAvailableFiles] = useState<{ PYQ: SelectedFile[]; Notes: SelectedFile[]; Syllabus: SelectedFile[] }>({ PYQ: [], Notes: [], Syllabus: [] });
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
@@ -39,7 +42,10 @@ export default function StudyPage({ params }: { params: { path: string[] } }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchFiles = useCallback(async () => {
-    if (!uni || !subjectPath) return;
+    if (!uni || !subjectPath) {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     try {
       // Fetch files from all 3 category folders

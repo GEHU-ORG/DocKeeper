@@ -37,9 +37,20 @@ export async function POST(request: NextRequest) {
     const targetPath = path === auth.value ? `UniExamPrep/${name}` : `${path}/${name}`;
     const tokenToUse = auth.type === 'github' ? auth.accessToken : undefined;
 
-    await createFolder(targetPath, tokenToUse);
+    const pathParts = targetPath.split('/').filter(Boolean);
+    const isSubjectFolder = pathParts.length === 6;
+
+    if (isSubjectFolder) {
+      // Create all 3 standard subfolders (this automatically creates the parent subject folder)
+      await createFolder(`${targetPath}/PYQ`, tokenToUse);
+      await createFolder(`${targetPath}/Notes`, tokenToUse);
+      await createFolder(`${targetPath}/Syllabus`, tokenToUse);
+    } else {
+      await createFolder(targetPath, tokenToUse);
+    }
 
     // Record folder .keep file ownership for Google users
+
     if (auth.type === 'google') {
       try {
         const session = await getServerSession(authOptions);
@@ -48,12 +59,18 @@ export async function POST(request: NextRequest) {
           if (dbUser) {
             const parts = targetPath.split('/').filter(Boolean);
             const repo = parts[1] || 'GEU';
-            const keepPath = `${targetPath}/.keep`;
-            await prisma.fileOwnership.upsert({
-              where: { filePath: keepPath },
-              create: { userId: dbUser.id, userEmail: session.user.email, filePath: keepPath, repo },
-              update: { userId: dbUser.id, userEmail: session.user.email, repo },
-            });
+            
+            const keepPaths = isSubjectFolder 
+              ? [`${targetPath}/PYQ/.keep`, `${targetPath}/Notes/.keep`, `${targetPath}/Syllabus/.keep`]
+              : [`${targetPath}/.keep`];
+
+            for (const kp of keepPaths) {
+              await prisma.fileOwnership.upsert({
+                where: { filePath: kp },
+                create: { userId: dbUser.id, userEmail: session.user.email, filePath: kp, repo },
+                update: { userId: dbUser.id, userEmail: session.user.email, repo },
+              });
+            }
           }
         }
       } catch (e) {
