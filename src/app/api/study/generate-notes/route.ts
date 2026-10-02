@@ -61,13 +61,19 @@ export async function POST(req: NextRequest) {
   
   let prompt = '';
   if (noteType === '1-pager') {
-    prompt = `You are a university exam study assistant. Analyze the provided documents (which may include Syllabus, PYQs, and Notes) for the subject "${subjectName}" and generate a highly effective 1-Pager revision sheet.
+    prompt = `You are an expert university exam study assistant. Analyze the provided documents (which may include Syllabus, PYQs, and Notes) for the subject "${subjectName}" and generate a highly effective 1-Pager revision sheet.
 
-Format your response in beautiful Markdown. Include:
+CRITICAL INSTRUCTIONS:
+- You MUST format your response in beautiful, fully complete Markdown.
+- NEVER leave a table empty. ALWAYS populate the table with the most important topics found in the documents.
+- If you cannot determine frequency from PYQs, estimate importance based on the depth of coverage in the notes.
+
+Include the following sections strictly:
 1. **Subject Overview:** Brief overview in 2-3 sentences.
-2. **🔥 Important Topics Frequency Table:** Rank the topics based on their frequency of appearance in the provided PYQs and Syllabus. Use a Markdown table with columns: [Topic, Frequency (High/Medium/Low), Key Concepts, Predicted to appear in next exam? (Yes/No)].
+2. **🔥 Important Topics Frequency Table:** Use a fully formatted Markdown table with columns: | Topic | Frequency (High/Medium/Low) | Key Concepts | Predicted for Next Exam? (Yes/No) |
+   -> You MUST provide at least 5 rows in this table.
 3. **Must-Know Concepts:** Briefly summarize the 5 most critical concepts.
-4. **Cheat Sheet / Formulas:** Any critical formulas, definitions, or memory aids (mnemonics) to memorize before the exam.
+4. **Cheat Sheet / Formulas:** Critical formulas, definitions, or memory aids (mnemonics) to memorize before the exam.
 
 Keep this strictly to a highly condensed, exam-focused 1-pager format.`;
   } else {
