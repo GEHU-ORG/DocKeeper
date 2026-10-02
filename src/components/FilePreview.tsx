@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { getFileCategory } from '@/lib/github';
 import { VideoPlayer } from './VideoPlayer';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface FilePreviewProps {
   isOpen: boolean;
@@ -67,11 +69,23 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
     switch (category) {
       case 'markdown':
         return (
-          <div className="preview-text-container markdown-body" style={{ width: '100%', height: '65vh', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', overflow: 'auto', padding: '2rem', border: '1px solid var(--border-color)', color: 'var(--text-primary)', lineHeight: '1.6' }}>
+          <div className="preview-markdown-container" style={{ 
+            width: '100%', 
+            height: '75vh', 
+            background: 'var(--bg-primary)', 
+            borderRadius: 'var(--radius-md)', 
+            overflow: 'auto', 
+            padding: '2rem 3rem', 
+            color: 'var(--text-primary)',
+          }}>
             {isLoading && <div className="loading-spinner" style={{ margin: '2rem auto' }} />}
             {error && <div style={{ color: 'var(--error)' }}>{error}</div>}
             {!isLoading && !error && textContent !== null && (
-              <div dangerouslySetInnerHTML={{ __html: textContent.replace(/\n/g, '<br/>') }} /> // Simple markdown for now, better to use marked or react-markdown
+              <div className="prose prose-invert" style={{ maxWidth: '800px', margin: '0 auto' }}>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {textContent}
+                </ReactMarkdown>
+              </div>
             )}
           </div>
         );

@@ -1984,3 +1984,117 @@ a.file-row:hover {
   align-items: center;
   justify-content: center;
 }
+
+/* ======================================================
+   Markdown Preview (ChatGPT-like)
+   ====================================================== */
+.preview-markdown-container {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text-primary);
+  font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif);
+}
+
+.preview-markdown-container .prose {
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.preview-markdown-container h1,
+.preview-markdown-container h2,
+.preview-markdown-container h3,
+.preview-markdown-container h4,
+.preview-markdown-container h5,
+.preview-markdown-container h6 {
+  font-weight: 600;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.preview-markdown-container h1 { font-size: 1.875em; }
+.preview-markdown-container h2 { font-size: 1.5em; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3em; }
+.preview-markdown-container h3 { font-size: 1.25em; }
+
+.preview-markdown-container p {
+  margin-top: 0;
+  margin-bottom: 1.25em;
+}
+
+.preview-markdown-container ul,
+.preview-markdown-container ol {
+  margin-top: 0;
+  margin-bottom: 1.25em;
+  padding-left: 1.5em;
+}
+
+.preview-markdown-container li {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+}
+
+.preview-markdown-container a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.preview-markdown-container a:hover {
+  text-decoration: underline;
+}
+
+.preview-markdown-container code {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-family: var(--font-mono, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace);
+  font-size: 0.9em;
+}
+
+.preview-markdown-container pre {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  margin-top: 0;
+  margin-bottom: 1.25em;
+}
+
+.preview-markdown-container pre code {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  color: inherit;
+  font-size: 0.875em;
+}
+
+.preview-markdown-container blockquote {
+  border-left: 4px solid var(--border-strong);
+  padding-left: 1em;
+  margin-left: 0;
+  margin-right: 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.preview-markdown-container table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0;
+  margin-bottom: 1.25em;
+}
+
+.preview-markdown-container th,
+.preview-markdown-container td {
+  border: 1px solid var(--border-color);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.preview-markdown-container th {
+  background-color: var(--bg-secondary);
+  font-weight: 600;
+}
