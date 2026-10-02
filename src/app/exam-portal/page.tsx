@@ -72,8 +72,6 @@ export default function ExamPortalPage() {
               <div className="file-list-header readonly">
                 <div className="file-row-icon" />
                 <div className="file-row-name header-label">Select Your University</div>
-                <div className="file-row-date header-label"></div>
-                <div className="file-row-size header-label"></div>
                 <div className="file-row-actions header-label" style={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <button onClick={() => setShowAddUni(true)} className="action-btn" style={{ background: 'var(--accent)', color: '#fff', padding: '4px 12px', fontSize: '0.8rem', width: 'max-content' }}>+ Add University</button>
                 </div>
@@ -90,8 +88,6 @@ export default function ExamPortalPage() {
                     <div className="file-row-name">
                       <span className="file-name-text">{u.fullName || u.name}</span>
                     </div>
-                    <div className="file-row-date">—</div>
-                    <div className="file-row-size">—</div>
                     <div className="file-row-actions">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-tertiary)' }}><path d="m9 18 6-6-6-6"/></svg>
                     </div>
@@ -110,8 +106,6 @@ export default function ExamPortalPage() {
                   <button onClick={handlePrev} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', marginRight: '12px', fontSize: '1.2rem', padding: 0 }}>←</button>
                   Select Your Course
                 </div>
-                <div className="file-row-date header-label"></div>
-                <div className="file-row-size header-label"></div>
                 <div className="file-row-actions header-label"></div>
               </div>
               <div className="file-list-items">
@@ -125,8 +119,6 @@ export default function ExamPortalPage() {
                     <div className="file-row-name">
                       <span className="file-name-text">{group}</span>
                     </div>
-                    <div className="file-row-date">—</div>
-                    <div className="file-row-size">—</div>
                     <div className="file-row-actions">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-tertiary)' }}><path d="m9 18 6-6-6-6"/></svg>
                     </div>
@@ -145,8 +137,6 @@ export default function ExamPortalPage() {
                   <button onClick={handlePrev} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', marginRight: '12px', fontSize: '1.2rem', padding: 0 }}>←</button>
                   Select Your Branch
                 </div>
-                <div className="file-row-date header-label"></div>
-                <div className="file-row-size header-label"></div>
                 <div className="file-row-actions header-label"></div>
               </div>
               <div className="file-list-items">
@@ -162,8 +152,6 @@ export default function ExamPortalPage() {
                     <div className="file-row-name">
                       <span className="file-name-text">{branchName}</span>
                     </div>
-                    <div className="file-row-date">—</div>
-                    <div className="file-row-size">—</div>
                     <div className="file-row-actions">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-tertiary)' }}><path d="m9 18 6-6-6-6"/></svg>
                     </div>
@@ -182,8 +170,6 @@ export default function ExamPortalPage() {
                   <button onClick={handlePrev} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', marginRight: '12px', fontSize: '1.2rem', padding: 0 }}>←</button>
                   Select Your Semester
                 </div>
-                <div className="file-row-date header-label"></div>
-                <div className="file-row-size header-label"></div>
                 <div className="file-row-actions header-label"></div>
               </div>
               <div className="file-list-items">
@@ -197,8 +183,6 @@ export default function ExamPortalPage() {
                     <div className="file-row-name">
                       <span className="file-name-text">{s.name}</span>
                     </div>
-                    <div className="file-row-date">—</div>
-                    <div className="file-row-size">—</div>
                     <div className="file-row-actions">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-tertiary)' }}><path d="m9 18 6-6-6-6"/></svg>
                     </div>
@@ -217,8 +201,6 @@ export default function ExamPortalPage() {
                   <button onClick={handlePrev} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', marginRight: '12px', fontSize: '1.2rem', padding: 0 }}>←</button>
                   Select Your Subject
                 </div>
-                <div className="file-row-date header-label"></div>
-                <div className="file-row-size header-label"></div>
                 <div className="file-row-actions header-label"></div>
               </div>
               
@@ -234,8 +216,6 @@ export default function ExamPortalPage() {
                       <div className="file-row-name">
                         <span className="file-name-text">{s.name}</span>
                       </div>
-                      <div className="file-row-date">—</div>
-                      <div className="file-row-size">—</div>
                       <div className="file-row-actions">
                         <button className="action-btn" style={{ background: 'var(--accent)', color: '#fff', borderRadius: '20px', padding: '4px 12px', width: 'auto', height: 'auto' }}>Study Space</button>
                       </div>
