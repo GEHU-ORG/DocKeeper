@@ -42,8 +42,8 @@ export function ExamModal({ isOpen, onClose, path, selectedFiles = [] }: ExamMod
   if (!isOpen) return null;
 
   return (
-    <div className="dialog-overlay">
-      <div className="dialog-content" style={{ maxWidth: '1200px', width: '90vw', maxHeight: '90vh', overflowY: 'auto', padding: '24px' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+      <div className="card" style={{ background: 'var(--bg-primary)', padding: '24px', borderRadius: '12px', width: '1200px', maxWidth: '90vw', maxHeight: '90vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '1.2em' }}>🎓</span> Exam Portal - {subjectName}
