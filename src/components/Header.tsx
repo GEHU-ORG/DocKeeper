@@ -4,12 +4,14 @@ import { ThemeToggle } from './ThemeToggle';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { JoinOrgPrompt } from './JoinOrgPrompt';
 
 export function Header() {
   const sessionContext = useSession();
   const session = sessionContext?.data;
   const status = sessionContext?.status;
+  const pathname = usePathname();
   
   const [isMember, setIsMember] = useState<boolean | null>(null);
   const [showJoinPrompt, setShowJoinPrompt] = useState(false);
@@ -31,7 +33,7 @@ export function Header() {
       <header className="header">
         <div className="header-inner">
           <Link href="/" className="header-title">
-            UniExamPrep
+            {pathname === '/exam-portal' ? 'Exam Portal' : 'UniExamPrep'}
           </Link>
           <div className="header-actions">
             <Link href="/exam-portal" style={{ textDecoration: 'none', marginRight: '8px' }}>
