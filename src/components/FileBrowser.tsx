@@ -67,6 +67,38 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
   const fetchFiles = useCallback(async () => {
     setIsLoading(true);
     try {
+      // Check for Virtual Folders
+      const isNotesFolder = initialPath.endsWith('/✨ My Study Notes');
+      const isPyqFolder = initialPath.endsWith('/✨ My PYQ Answers');
+
+      if (isNotesFolder || isPyqFolder) {
+        const subjectPath = initialPath.replace(/\/(✨ My Study Notes|✨ My PYQ Answers)$/, '');
+        const type = isNotesFolder ? 'notes' : 'pyq';
+        
+        const url = new URL('/api/study/my-ai-content', window.location.origin);
+        url.searchParams.set('subjectPath', subjectPath);
+        url.searchParams.set('type', type);
+        
+        const res = await fetch(url.toString());
+        const data = await res.json();
+        
+        // Map DB items to FileItem format so FileList can render them
+        const virtualItems = (data.items || []).map((item: any) => ({
+          id: item._id,
+          name: isNotesFolder ? item.title : item.pdfName,
+          type: 'file', // acts like a file to be previewed
+          url: `/virtual/${type}/${item._id}`, // custom URL marker for virtual files
+          path: `${initialPath}/${item._id}`,
+          uploadedAt: item.createdAt,
+          size: 0,
+        }));
+        
+        setItems(virtualItems);
+        setIsLoading(false);
+        return;
+      }
+
+      // Normal GitHub fetch
       const url = new URL('/api/files', window.location.origin);
       url.searchParams.set('path', initialPath);
       if (debouncedSearch) {
@@ -74,7 +106,29 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
       }
       const res = await fetch(url.toString());
       const data = await res.json();
-      setItems(data.items || []);
+      
+      let fetchedItems = data.items || [];
+
+      // Inject Virtual Folders if we are at the Subject root (depth 6 -> initialPath has 6 parts)
+      const parts = initialPath.split('/').filter(Boolean);
+      if (parts.length === 6 && !debouncedSearch) {
+        fetchedItems.unshift({
+          id: 'virtual-notes',
+          name: '✨ My Study Notes',
+          type: 'folder',
+          path: `${initialPath}/✨ My Study Notes`,
+          uploadedAt: new Date().toISOString(),
+        });
+        fetchedItems.unshift({
+          id: 'virtual-pyq',
+          name: '✨ My PYQ Answers',
+          type: 'folder',
+          path: `${initialPath}/✨ My PYQ Answers`,
+          uploadedAt: new Date().toISOString(),
+        });
+      }
+
+      setItems(fetchedItems);
     } catch (error) {
       console.error('Failed to fetch files:', error);
     } finally {

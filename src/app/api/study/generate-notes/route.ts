@@ -3,20 +3,13 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { Octokit } from '@octokit/rest';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import dbConnect from '@/lib/mongoose';
+import { Chat } from '@/models/Chat';
 
 const octokit = new Octokit({ auth: process.env.GITHUB_PAT });
 const genai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const ORG = 'UniExamPrep';
 
-/**
- * POST /api/study/generate-notes
- * Body: { repo, subjectPath, subjectName, selectedFiles: [{ path, sha, repo }] }
- * 
- * 1. Fetches selected PDF blobs from GitHub
- * 2. Sends to Gemini to generate structured study notes
- * 3. Saves as .chat JSON to .private/{userId}/{subjectPath}/StudyNotes/{timestamp}.chat
- * 4. Returns the generated content
- */
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -48,68 +41,46 @@ export async function POST(req: NextRequest) {
   const model = genai.getGenerativeModel({ model: 'gemini-1.5-flash' });
   const prompt = `You are a university exam study assistant. Analyze the provided documents for the subject "${subjectName}" and generate comprehensive pre-processed study notes.
 
-Return ONLY valid JSON (no markdown, no code fences) in this exact format:
-{
-  "subject": "${subjectName}",
-  "sections": [
-    { "type": "overview", "content": "Brief subject overview in 2-3 sentences" },
-    { "type": "concept", "title": "Concept Name", "content": "Explanation" },
-    { "type": "qa", "question": "Exam question", "answer": "Detailed answer" },
-    { "type": "pyq", "year": "2024", "question": "Past year question", "answer": "Answer" },
-    { "type": "tip", "content": "Memory tip or important formula" }
-  ]
-}
+Format your response in beautiful Markdown with clear headings. Include:
+1. **Subject Overview:** Brief overview in 2-3 sentences.
+2. **Key Concepts:** 5-8 key concepts with detailed explanations.
+3. **Likely Exam Questions:** 5-8 Q&As based on important topics.
+4. **PYQ Solutions (if applicable):** Any past year questions found in the documents along with your solved answers.
+5. **Study Tips:** 3-5 memory tips or important formulas.
 
-Include: 1 overview, 5-8 key concepts, 5-8 Q&As from likely exam questions, all PYQ questions with answers found in the documents, and 3-5 study tips. Focus on exam-relevant content.`;
+Focus entirely on exam-relevant content.`;
 
-  let generatedContent: any;
+  let generatedText: string;
   try {
     const result = await model.generateContent([prompt, ...pdfParts]);
-    const text = result.response.text().trim();
-    // Strip markdown code fences if present
-    const jsonText = text.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
-    generatedContent = JSON.parse(jsonText);
+    generatedText = result.response.text().trim();
   } catch (e: any) {
     return NextResponse.json({ error: `AI generation failed: ${e.message}` }, { status: 500 });
   }
 
-  // 3. Save to GitHub as .chat file
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-  const fileName = `${timestamp}.chat`;
-  const privatePath = `.private/${userId}/${subjectPath}/StudyNotes/${fileName}`;
-
-  const chatContent = {
-    subject: subjectName,
-    generatedAt: new Date().toISOString(),
-    model: 'gemini-1.5-flash',
-    sourceFiles: selectedFiles.map((f: any) => f.name),
-    ...generatedContent,
-  };
-
-  const fileContent = Buffer.from(JSON.stringify(chatContent, null, 2)).toString('base64');
-
+  // 3. Save to MongoDB
+  await dbConnect();
+  
   try {
-    // Check if file exists (to update vs create)
-    let sha: string | undefined;
-    try {
-      const { data: existing } = await octokit.repos.getContent({ owner: ORG, repo, path: privatePath });
-      if ('sha' in existing) sha = existing.sha;
-    } catch { /* doesn't exist */ }
+    const chat = await Chat.create({
+      userId,
+      subjectPath,
+      title: `Study Notes: ${subjectName}`,
+      messages: [
+        {
+          role: 'assistant',
+          content: generatedText
+        }
+      ]
+    });
 
-    await octokit.repos.createOrUpdateFileContents({
-      owner: ORG, repo, path: privatePath,
-      message: `Study notes: ${subjectName} (${timestamp})`,
-      content: fileContent,
-      ...(sha ? { sha } : {}),
+    return NextResponse.json({
+      success: true,
+      chatId: chat._id,
+      content: generatedText,
     });
   } catch (e: any) {
-    return NextResponse.json({ error: `Failed to save: ${e.message}` }, { status: 500 });
+    return NextResponse.json({ error: `Failed to save to database: ${e.message}` }, { status: 500 });
   }
-
-  return NextResponse.json({
-    success: true,
-    fileName,
-    path: privatePath,
-    content: chatContent,
-  });
 }
+

@@ -7,7 +7,8 @@ export interface IMessage {
 
 export interface IChat extends Document {
   userId: string;
-  subjectId: string;
+  subjectPath: string;
+  title: string;
   messages: IMessage[];
   createdAt: Date;
   updatedAt: Date;
@@ -20,7 +21,8 @@ const MessageSchema = new Schema<IMessage>({
 
 const ChatSchema = new Schema<IChat>({
   userId: { type: String, required: true },
-  subjectId: { type: String, required: true },
+  subjectPath: { type: String, required: true },
+  title: { type: String, default: 'Study Session' },
   messages: [MessageSchema],
 }, { timestamps: true });
 
