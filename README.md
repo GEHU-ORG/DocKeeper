@@ -1,4 +1,4 @@
-# 📦 GEHU DocKeeper
+# GEHU DocKeeper
 
 > A high-performance, centralized platform for GEHU students to securely browse, access, and manage gigabytes of academic resources through a sleek, Finder-inspired user interface.
 

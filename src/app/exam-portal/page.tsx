@@ -1,8 +1,8 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getDepartments, getBranches, getSubjects } from './actions';
+import { ChatBox } from '@/components/ChatBox';
 
 export default function ExamPortalPage() {
   const [step, setStep] = useState(1);
@@ -260,6 +260,7 @@ export default function ExamPortalPage() {
           )}
         </div>
       </div>
+      {step === 4 && <ChatBox />}
     </div>
   );
 }
