@@ -39,9 +39,9 @@ export async function POST(req: NextRequest) {
   let generatedText: string = "";
   try {
     // Step A: Extract all questions as a JSON array
-    const extractPrompt = `Analyze the provided Past Year Question (PYQ) paper PDF. Extract all the major questions.
-Return ONLY a raw valid JSON array of strings, where each string is a question text. Do not include markdown formatting like \`\`\`json.
-Example: ["What is an operating system?", "Explain the OSI model with a diagram."]`;
+    const extractPrompt = `Analyze the provided Past Year Question (PYQ) paper PDF. Extract all the major questions along with their assigned marks if visible (e.g., "(5 marks)", "[2]").
+Return ONLY a raw valid JSON array of strings, where each string contains the question text and its marks. Do not include markdown formatting like \`\`\`json.
+Example: ["What is an operating system? (2 Marks)", "Explain the OSI model with a diagram. (10 Marks)"]`;
 
     const extractResult = await model.generateContent([extractPrompt, { inlineData }]);
     const rawText = extractResult.response.text().trim();
@@ -53,11 +53,11 @@ Example: ["What is an operating system?", "Explain the OSI model with a diagram.
     } catch (parseErr) {
       // Fallback if parsing fails or no questions found
       console.error("Failed to parse extracted questions:", jsonStr);
-      questions = ["Please provide a detailed, 10-mark long-answer solution for every question found in this paper."];
+      questions = ["Please provide a detailed solution for every question found in this paper."];
     }
 
     if (!Array.isArray(questions) || questions.length === 0) {
-      questions = ["Please provide a detailed, 10-mark long-answer solution for every question found in this paper."];
+      questions = ["Please provide a detailed solution for every question found in this paper."];
     }
 
     // Limit to max 15 questions to prevent overwhelming the API
@@ -69,7 +69,8 @@ Example: ["What is an operating system?", "Explain the OSI model with a diagram.
       
 Question: "${q}"
 
-Write a comprehensive, detailed answer as if it were a 10-mark long-answer university question. Include explanations, bullet points, and examples where applicable.
+Write an answer that is appropriate in length and depth for the marks assigned to this question (e.g., brief and concise for 2 marks, detailed with explanations/diagrams for 10 marks). If no marks are visible, provide a comprehensive standard answer.
+Include bullet points and examples where applicable.
 Format your answer in Markdown, without repeating the question as a header (I will add the header).
 Rely on the provided PDF for any necessary context (like figures or specific paper instructions).`;
 
