@@ -13,13 +13,19 @@ export async function POST(req: Request) {
     // migrate-cross-repo uses admin PAT only — no user session needed
     if (action !== 'migrate-cross-repo') {
       const session = await getServerSession(authOptions);
-      if (!(session as any)?.user?.accessToken) {
+      const user = session?.user as any;
+      // Allow GitHub users (have accessToken) AND Google-authenticated users
+      const isGoogleUser = session?.user && !user?.githubUsername;
+      const hasAccess = user?.accessToken || isGoogleUser;
+      if (!hasAccess) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }
 
     const session = action !== 'migrate-cross-repo' ? await getServerSession(authOptions) : null;
-    const octokit = new Octokit({ auth: (session as any)?.user?.accessToken || process.env.GITHUB_PAT });
+    // GitHub users use their token; Google users fall through to admin PAT
+    const userToken = (session as any)?.user?.accessToken;
+    const octokit = new Octokit({ auth: userToken || process.env.GITHUB_PAT });
 
     // Helper to extract repo and inner path from 'UniExamPrep/Repo/Folder/File'
     const getRepoAndPath = (fullPath: string) => {

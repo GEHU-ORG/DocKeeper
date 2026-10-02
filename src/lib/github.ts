@@ -181,7 +181,7 @@ export async function deleteItem(path: string, userToken?: string): Promise<void
   });
 }
 
-export async function uploadFile(path: string, content: string | Buffer, userToken?: string): Promise<void> {
+export async function uploadFile(path: string, content: string | Buffer, userToken?: string, uploaderTag?: string): Promise<void> {
   const parts = path.split('/').filter(Boolean);
   if (parts.length < 2) throw new Error('Cannot upload to root');
   const repo = parts[1];
@@ -207,15 +207,20 @@ export async function uploadFile(path: string, content: string | Buffer, userTok
     ? Buffer.from(content).toString('base64')
     : content.toString('base64');
 
+  const commitMsg = uploaderTag
+    ? `Upload ${innerPath} by ${uploaderTag}`
+    : `Upload ${innerPath} via UniExamPrep`;
+
   await client.repos.createOrUpdateFileContents({
     owner: ORG_NAME,
     repo,
     path: innerPath,
-    message: `Upload ${innerPath} via UniExamPrep`,
+    message: commitMsg,
     content: encodedContent,
     sha,
   });
 }
+
 
 export async function createFolder(path: string, userToken?: string): Promise<void> {
   // GitHub doesn't have true empty folders. Create a .keep file.

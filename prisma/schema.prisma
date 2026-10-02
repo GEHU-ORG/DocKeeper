@@ -123,6 +123,8 @@ model FileOwnership {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  filePath  String   @unique
+  userEmail String
+  filePath  String   @unique  // full path e.g. UniExamPrep/GEU/B.Pharm/.../file.pdf
+  repo      String            // repo name e.g. GEU
   createdAt DateTime @default(now())
 }

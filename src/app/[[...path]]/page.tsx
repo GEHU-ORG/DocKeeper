@@ -23,7 +23,11 @@ export default async function BrowsePage({ params }: BrowsePageProps) {
     if (isMember) {
       isReadOnly = false;
     }
+  } else if (session?.user?.email) {
+    // Google-only user: grant write access, ownership enforced server-side per file
+    isReadOnly = false;
   }
+
 
   // Render the File Browser
   const { path } = await params;

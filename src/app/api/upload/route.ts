@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadFile } from '@/lib/github';
 import { getAuthContext } from '@/lib/auth';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,7 +25,37 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
     const targetPath = path.startsWith('UniExamPrep') ? path : `UniExamPrep/${path}`;
 
-    await uploadFile(targetPath, buffer, auth.accessToken);
+    // Google-only users: use admin PAT (pass undefined so github.ts falls back to octokit)
+    // GitHub users: use their own token
+    const tokenToUse = auth.type === 'github' ? auth.accessToken : undefined;
+
+    // Customise commit message with attribution
+    const uploaderTag = auth.type === 'github'
+      ? `@${auth.value}`
+      : `${auth.value} (via Google)`;
+
+    await uploadFile(targetPath, buffer, tokenToUse, uploaderTag);
+
+    // Track ownership for non-GitHub users so they can delete/modify their own uploads
+    if (auth.type === 'google') {
+      try {
+        const session = await getServerSession(authOptions);
+        if (session?.user?.email) {
+          const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+          if (dbUser) {
+            const parts = targetPath.split('/').filter(Boolean);
+            const repo = parts[1] || 'GEU';
+            await prisma.fileOwnership.upsert({
+              where: { filePath: targetPath },
+              create: { userId: dbUser.id, userEmail: session.user.email, filePath: targetPath, repo },
+              update: { userId: dbUser.id, userEmail: session.user.email, repo },
+            });
+          }
+        }
+      } catch (e) {
+        console.error('Ownership record failed (non-fatal):', e);
+      }
+    }
 
     return NextResponse.json({ success: true, path: targetPath });
   } catch (error: any) {
