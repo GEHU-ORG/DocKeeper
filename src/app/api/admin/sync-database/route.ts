@@ -15,45 +15,53 @@ export async function GET() {
       }
     });
 
-    // 2. Define Courses and Subjects to seed (Flattened)
+    // 2. Define Courses, Departments and Subjects to seed
     const structure = [
       {
-        course: 'BTech-CSE',
+        course: 'B.Tech',
+        department: 'Computer Science Engineering (CSE)',
         semesters: [1, 2, 3, 4, 5, 6, 7, 8],
         subjects: ['Data Structures', 'Operating Systems', 'Computer Networks']
       },
       {
-        course: 'BTech-Mechanical',
+        course: 'B.Tech',
+        department: 'Mechanical Engineering (ME)',
         semesters: [1, 2, 3, 4, 5, 6, 7, 8],
         subjects: ['Thermodynamics', 'Fluid Mechanics']
       },
       {
-        course: 'BTech-ECE',
+        course: 'B.Tech',
+        department: 'Electronics & Communication (ECE)',
         semesters: [1, 2, 3, 4, 5, 6, 7, 8],
         subjects: ['Signals & Systems', 'Digital Electronics']
       },
       {
-        course: 'BCA-General',
+        course: 'BCA',
+        department: 'General',
         semesters: [1, 2, 3, 4, 5, 6],
         subjects: ['C Programming', 'Web Technologies', 'Software Engineering']
       },
       {
-        course: 'MCA-General',
+        course: 'MCA',
+        department: 'General',
         semesters: [1, 2, 3, 4],
         subjects: ['Advanced Java', 'Machine Learning', 'Cloud Computing']
       },
       {
-        course: 'BPharma-General',
+        course: 'B.Pharm',
+        department: 'General',
         semesters: [1, 2, 3, 4, 5, 6, 7, 8],
         subjects: ['Human Anatomy', 'Pharmaceutics', 'Pharmacology']
       },
       {
-        course: 'MBA-Finance',
+        course: 'MBA',
+        department: 'Finance',
         semesters: [1, 2, 3, 4],
         subjects: ['Financial Management', 'Accounting']
       },
       {
-        course: 'MBA-Marketing',
+        course: 'MBA',
+        department: 'Marketing',
         semesters: [1, 2, 3, 4],
         subjects: ['Consumer Behavior', 'Digital Marketing']
       }
@@ -67,13 +75,19 @@ export async function GET() {
         create: { name: data.course, universityId: university.id }
       });
 
+      const department = await prisma.department.upsert({
+        where: { name_courseId: { name: data.department, courseId: course.id } },
+        update: {},
+        create: { name: data.department, courseId: course.id }
+      });
+
       for (const sem of data.semesters) {
         let semester = await prisma.semester.findFirst({
-          where: { name: `Semester ${sem}`, courseId: course.id }
+          where: { name: `Semester ${sem}`, departmentId: department.id }
         });
         if (!semester) {
           semester = await prisma.semester.create({
-            data: { name: `Semester ${sem}`, number: sem, courseId: course.id }
+            data: { name: `Semester ${sem}`, number: sem, departmentId: department.id }
           });
         }
 
@@ -86,7 +100,7 @@ export async function GET() {
       }
     }
 
-    return NextResponse.json({ success: true, message: 'Database successfully seeded with flattened 4-level architecture!' });
+    return NextResponse.json({ success: true, message: 'Database successfully seeded with new Department architecture!' });
   } catch (error: any) {
     console.error('Sync failed:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

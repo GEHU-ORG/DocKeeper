@@ -69,22 +69,32 @@ model University {
 }
 
 model Course {
-  id           String     @id @default(cuid())
-  name         String     // e.g., "BTech-CSE", "BCA-General", "MBA-Finance"
+  id           String       @id @default(cuid())
+  name         String       // e.g., "B.Tech", "BCA", "MBA"
   universityId String
-  university   University @relation(fields: [universityId], references: [id])
-  semesters    Semester[]
+  university   University   @relation(fields: [universityId], references: [id])
+  departments  Department[]
 
   @@unique([name, universityId])
 }
 
-model Semester {
-  id       String    @id @default(cuid())
-  name     String    // e.g., "Semester 1", "sem 3"
-  number   Int       // 1, 2, 3...
+model Department {
+  id       String     @id @default(cuid())
+  name     String     // e.g., "Computer Science Engineering (CSE)", "General", "Finance"
   courseId String
-  course   Course    @relation(fields: [courseId], references: [id])
-  subjects Subject[]
+  course   Course     @relation(fields: [courseId], references: [id])
+  semesters Semester[]
+
+  @@unique([name, courseId])
+}
+
+model Semester {
+  id           String     @id @default(cuid())
+  name         String     // e.g., "Semester 1", "sem 3"
+  number       Int        // 1, 2, 3...
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  subjects     Subject[]
 }
 
 model Subject {

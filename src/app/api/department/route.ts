@@ -12,15 +12,23 @@ export async function POST(req: Request) {
     const uni = await prisma.university.findUnique({ where: { slug } });
     if (!uni) return NextResponse.json({ error: 'University not found' }, { status: 404 });
 
-    const courseFullName = `${courseCategory} - ${departmentName}`;
-    const course = await prisma.course.create({
-      data: { name: courseFullName, universityId: uni.id }
+    let course = await prisma.course.findFirst({
+      where: { name: courseCategory, universityId: uni.id }
+    });
+    if (!course) {
+      course = await prisma.course.create({
+        data: { name: courseCategory, universityId: uni.id }
+      });
+    }
+
+    const dept = await prisma.department.create({
+      data: { name: departmentName, courseId: course.id }
     });
 
     const semData = Array.from({ length: parseInt(numSemesters) }).map((_, i) => ({
-      name: `Semester ${i + 1}`,
+      name: \`Semester \${i + 1}\`,
       number: i + 1,
-      courseId: course.id
+      departmentId: dept.id
     }));
     await prisma.semester.createMany({ data: semData });
 

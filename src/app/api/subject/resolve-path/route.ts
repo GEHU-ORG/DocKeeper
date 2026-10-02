@@ -24,10 +24,13 @@ export async function POST(req: Request) {
         name: subjectName,
         semester: {
           number: semNumber,
-          course: {
-            name: courseFullName,
-            university: {
-              slug: slug
+          department: {
+            name: departmentName,
+            course: {
+              name: courseCategory,
+              university: {
+                slug: slug
+              }
             }
           }
         }

@@ -13,9 +13,9 @@ export async function getCourses(universityId: string) {
   });
 }
 
-export async function getSemesters(courseId: string) {
+export async function getSemesters(departmentId: string) {
   return await prisma.semester.findMany({
-    where: { courseId },
+    where: { departmentId },
     orderBy: { number: 'asc' },
     select: { id: true, name: true, number: true }
   });
@@ -163,31 +163,35 @@ export async function addUniversity(name: string, slug: string, fullName: string
   const repoPaths: string[] = [];
 
   for (const info of courseStructure) {
-    const safeCourse = info.course.replace(/[^a-zA-Z0-9.\- ]/g, '').trim();
+    const safeCourse = info.course.replace(/[^a-zA-Z0-9.\\- ]/g, '').trim();
+
+    let course = await prisma.course.findFirst({ where: { name: info.course, universityId: uni.id }});
+    if (!course) {
+      course = await prisma.course.create({ data: { name: info.course, universityId: uni.id } });
+    }
 
     for (const dept of info.departments) {
-      // Create Prisma Course representation
-      const dbCourseName = dept === 'General' ? info.course : `${info.course} - ${dept}`;
-      const course = await prisma.course.create({
-        data: { name: dbCourseName, universityId: uni.id }
-      });
+      let dbDept = await prisma.department.findFirst({ where: { name: dept, courseId: course.id }});
+      if (!dbDept) {
+        dbDept = await prisma.department.create({ data: { name: dept, courseId: course.id } });
+      }
 
       const semData = Array.from({ length: info.semesters }).map((_, i) => ({
-        name: `Semester ${i + 1}`,
+        name: \`Semester \${i + 1}\`,
         number: i + 1,
-        courseId: course.id
+        departmentId: dbDept.id
       }));
 
       // In sqlite/prisma, createMany doesn't return created IDs, so we find them after
       await prisma.semester.createMany({ data: semData });
       
       const createdSems = await prisma.semester.findMany({
-        where: { courseId: course.id },
+        where: { departmentId: dbDept.id },
         orderBy: { number: 'asc' }
       });
 
       // Generate GitHub Folder Paths: Course / Department / Semester / Subject / Type
-      const safeDept = dept.replace(/[^a-zA-Z0-9.\- ()]/g, '').trim();
+      const safeDept = dept.replace(/[^a-zA-Z0-9.\\- ()]/g, '').trim();
       
       for (let i = 1; i <= info.semesters; i++) {
         const semFolderName = `Semester-${i}`;
