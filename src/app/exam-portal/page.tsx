@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { getUniversities, getCourses, getSemesters, getSubjects } from './actions';
+import { getUniversities, getCourses, getSemesters, getSubjects, createSubject } from './actions';
 import { SubjectStudySpace } from '@/components/SubjectStudySpace';
 import { AddUniversityModal } from '@/components/AddUniversityModal';
 
@@ -201,7 +201,17 @@ export default function ExamPortalPage() {
                   <button onClick={handlePrev} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', marginRight: '12px', fontSize: '1.2rem', padding: 0 }}>←</button>
                   Select Your Subject
                 </div>
-                <div className="file-row-actions header-label"></div>
+                <div className="file-row-actions header-label" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button onClick={async () => {
+                    const name = prompt('Enter Subject Name:');
+                    if (name && name.trim()) {
+                      await createSubject(name.trim(), semesterId);
+                      getSubjects(semesterId).then(setSubjects);
+                    }
+                  }} className="action-btn" style={{ background: 'var(--accent)', color: '#fff', padding: '4px 12px', fontSize: '0.8rem', width: 'max-content' }}>
+                    + Add Subject
+                  </button>
+                </div>
               </div>
               
               {!subjectId ? (

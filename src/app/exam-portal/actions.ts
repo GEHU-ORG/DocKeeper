@@ -27,6 +27,12 @@ export async function getSubjects(semesterId: string) {
   });
 }
 
+export async function createSubject(name: string, semesterId: string) {
+  return await prisma.subject.create({
+    data: { name, semesterId }
+  });
+}
+
 export async function addUniversity(name: string, slug: string, fullName: string) {
   // Create in Prisma
   const uni = await prisma.university.create({
