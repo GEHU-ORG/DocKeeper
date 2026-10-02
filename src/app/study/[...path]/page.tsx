@@ -81,13 +81,18 @@ export default function StudyPage({ params }: { params: { path: string[] } }) {
     } catch { /* ignore */ }
   }, [session, repo, subjectPath]);
 
+  // Always fetch public files on mount (no auth needed to view PYQ/Notes/Syllabus)
   useEffect(() => {
-    if (status === 'unauthenticated') router.push('/');
+    fetchFiles();
+  }, [fetchFiles]);
+
+  // Fetch private study items only once authenticated
+  useEffect(() => {
     if (status === 'authenticated') {
-      fetchFiles();
       fetchStudyItems();
     }
-  }, [status, fetchFiles, fetchStudyItems, router]);
+  }, [status, fetchStudyItems]);
+
 
   const toggleFile = (sha: string) => {
     setSelectedFiles(prev => {
