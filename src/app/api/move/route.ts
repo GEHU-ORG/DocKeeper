@@ -29,7 +29,7 @@ export async function POST(req: Request) {
 
       const { data: reposList } = await octokit.repos.listForOrg({ org: ORG_NAME, per_page: 100 });
       const managedRepos = reposList
-        .filter(r => !['DocKeeper', '.github'].includes(r.name))
+        .filter(r => !['UniExamPrep', '.github'].includes(r.name))
         .map(r => r.name);
 
       await Promise.all(

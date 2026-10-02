@@ -22,7 +22,7 @@ export async function listItems(path: string): Promise<FileItem[]> {
     // List repositories
     const { data } = await octokit.repos.listForOrg({ org: ORG_NAME, per_page: 100 });
     return data
-      .filter(repo => !['DocKeeper', '.github'].includes(repo.name))
+      .filter(repo => !['UniExamPrep', '.github'].includes(repo.name))
       .map(repo => ({
       id: repo.node_id,
       name: repo.name,
@@ -82,7 +82,7 @@ export async function searchItems(path: string, query: string): Promise<FileItem
     // Search repositories by name
     const { data } = await octokit.repos.listForOrg({ org: ORG_NAME, per_page: 100 });
     return data
-      .filter(repo => !['DocKeeper', '.github'].includes(repo.name))
+      .filter(repo => !['UniExamPrep', '.github'].includes(repo.name))
       .filter(repo => repo.name.toLowerCase().includes(q))
       .map(repo => ({
         id: repo.node_id,
@@ -176,7 +176,7 @@ export async function deleteItem(path: string, userToken?: string): Promise<void
     owner: ORG_NAME,
     repo,
     path: innerPath,
-    message: `Delete ${innerPath} via GEHU-DocKeeper`,
+    message: `Delete ${innerPath} via UniExamPrep`,
     sha: data.sha,
   });
 }
@@ -211,7 +211,7 @@ export async function uploadFile(path: string, content: string | Buffer, userTok
     owner: ORG_NAME,
     repo,
     path: innerPath,
-    message: `Upload ${innerPath} via GEHU-DocKeeper`,
+    message: `Upload ${innerPath} via UniExamPrep`,
     content: encodedContent,
     sha,
   });
