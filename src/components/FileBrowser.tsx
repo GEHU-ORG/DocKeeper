@@ -13,6 +13,7 @@ import { MoveDialog } from './MoveDialog';
 import { FilePreview } from './FilePreview';
 import { AIOrganizeDialog, type AIMove } from './AIOrganizeDialog';
 import { JoinOrgPrompt } from './JoinOrgPrompt';
+import { AddUniversityModal } from './AddUniversityModal';
 
 interface FileBrowserProps {
   initialPath: string;
@@ -35,6 +36,7 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
   const [sortConfig, setSortConfig] = useState<SortConfig>({ column: 'name', direction: 'asc' });
 
   // Dialog states
+  const [showAddUni, setShowAddUni] = useState(false);
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<FileItem | null>(null);
   const [moveTarget, setMoveTarget] = useState<FileItem | null>(null);
@@ -467,6 +469,8 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         selectedCount={selectedItems.size}
         onMoveSelected={() => setIsBulkMove(true)}
         onDeleteSelected={() => setIsBulkDelete(true)}
+        showAddUniversity={initialPath === 'UniExamPrep'}
+        onAddUniversity={() => setShowAddUni(true)}
       />
 
       {isOperating && (
@@ -555,6 +559,15 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         onClose={() => setIsAIOrganizeOpen(false)}
         onConfirm={handleAIOrganizeConfirm}
         currentPath={initialPath}
+      />
+      
+      <AddUniversityModal
+        isOpen={showAddUni}
+        onClose={() => setShowAddUni(false)}
+        onSuccess={() => {
+          setShowAddUni(false);
+          fetchFiles(); // Refresh file list to show new repo
+        }}
       />
     </div>
   );

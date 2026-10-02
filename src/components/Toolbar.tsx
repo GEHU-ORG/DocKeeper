@@ -8,6 +8,8 @@ interface ToolbarProps {
   onMoveSelected: () => void;
   onDeleteSelected: () => void;
   isReadOnly?: boolean;
+  showAddUniversity?: boolean;
+  onAddUniversity?: () => void;
 }
 
 export function Toolbar({
@@ -18,12 +20,22 @@ export function Toolbar({
   onMoveSelected,
   onDeleteSelected,
   isReadOnly = false,
+  showAddUniversity = false,
+  onAddUniversity,
 }: ToolbarProps) {
   return (
     <div className="toolbar">
       <div className="toolbar-left">
         {!isReadOnly && (
           <>
+            {showAddUniversity && onAddUniversity && (
+              <button className="toolbar-btn" onClick={onAddUniversity} style={{ background: 'var(--accent)', color: '#fff', borderColor: 'var(--accent)' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                Add University
+              </button>
+            )}
             <button className="toolbar-btn toolbar-btn-primary" onClick={onNewFolder}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
