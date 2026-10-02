@@ -13,6 +13,73 @@ export interface FileItem {
   size?: number;
 }
 
+function TreeFolder({ path, name, onToggleFile, selectedFiles }: any) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [items, setItems] = useState<FileItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  const toggleOpen = async () => {
+    if (!isOpen && !loaded) {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/files?path=${encodeURIComponent(path)}`);
+        const data = await res.json();
+        setItems(data.files || []);
+        setLoaded(true);
+      } catch (e) {
+        console.error(e);
+      }
+      setLoading(false);
+    }
+    setIsOpen(!isOpen);
+  };
+
+  return (
+    <div style={{ paddingLeft: '8px' }}>
+      <div 
+        onClick={toggleOpen} 
+        style={{ 
+          display: 'flex', alignItems: 'center', cursor: 'pointer', padding: '6px 8px',
+          borderRadius: '4px',
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-secondary)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+      >
+        <svg 
+          width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" 
+          style={{ transform: isOpen ? 'rotate(90deg)' : 'rotate(0)', transition: 'transform 0.1s', marginRight: '4px', opacity: 0.7 }}
+        >
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="#FFC107" style={{ marginRight: '8px' }}><path d="M9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.825a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31L.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3z"/></svg>
+        <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>{name}</span>
+      </div>
+      {isOpen && (
+        <div style={{ marginLeft: '14px', borderLeft: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
+          {loading && <div style={{ padding: '4px 24px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Loading...</div>}
+          {!loading && items.length === 0 && <div style={{ padding: '4px 24px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Empty folder</div>}
+          {items.map(item => item.type === 'dir' ? (
+            <TreeFolder key={item.sha} path={item.path} name={item.name} onToggleFile={onToggleFile} selectedFiles={selectedFiles} />
+          ) : (
+            <div 
+              key={item.sha} 
+              style={{ display: 'flex', alignItems: 'center', padding: '6px 8px 6px 20px', cursor: 'pointer', borderRadius: '4px' }} 
+              onClick={() => onToggleFile(item)}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-secondary)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <input type="checkbox" checked={!!selectedFiles.find((f: any) => f.sha === item.sha)} readOnly style={{ marginRight: '8px' }} />
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '8px', opacity: 0.6 }}><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+              <span style={{ fontSize: '0.85rem', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function SubjectStudySpace({ 
   subjectId, 
   subjectName, 
@@ -30,7 +97,6 @@ export function SubjectStudySpace({
   const [aiResponse, setAiResponse] = useState('');
 
   // Mini File Browser states
-  const [viewPath, setViewPath] = useState(subjectPath);
   const [items, setItems] = useState<FileItem[]>([]);
   const [filesLoading, setFilesLoading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<FileItem[]>([]);
@@ -47,16 +113,15 @@ export function SubjectStudySpace({
   }, [subjectId]);
 
   useEffect(() => {
-    if (!viewPath) return;
     setFilesLoading(true);
-    fetch(`/api/files?path=${encodeURIComponent(viewPath)}`)
+    fetch(`/api/files?path=${encodeURIComponent(subjectPath)}`)
       .then(res => res.json())
       .then(data => {
         setItems(data.files || []);
       })
       .catch(console.error)
       .finally(() => setFilesLoading(false));
-  }, [viewPath]);
+  }, [subjectPath]);
 
   const toggleFileSelect = (file: FileItem) => {
     setSelectedFiles(prev => {
@@ -64,13 +129,6 @@ export function SubjectStudySpace({
       if (exists) return prev.filter(f => f.sha !== file.sha);
       return [...prev, file];
     });
-  };
-
-  const handleBackPath = () => {
-    if (viewPath === subjectPath) return;
-    const parts = viewPath.split('/');
-    parts.pop();
-    setViewPath(parts.join('/'));
   };
 
   const generateAI = async (type: '1-pager' | 'detailed') => {
@@ -125,49 +183,32 @@ Break down each unit, explain the core concepts required for the exam, and provi
       
       <div style={{ display: 'grid', gridTemplateColumns: '350px 1fr', gap: '24px' }}>
         
-        {/* Left Column: Mini File Browser */}
+        {/* Left Column: VS Code Style File Browser */}
         <div className="card" style={{ padding: '16px', display: 'flex', flexDirection: 'column', maxHeight: '600px' }}>
-          <h4 style={{ fontWeight: 600, marginBottom: '12px' }}>Select Study Data</h4>
+          <h4 style={{ fontWeight: 600, marginBottom: '16px', fontSize: '1rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Explorer
+          </h4>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', background: 'var(--bg-tertiary)', padding: '8px', borderRadius: '6px' }}>
-            <button 
-              onClick={handleBackPath}
-              disabled={viewPath === subjectPath}
-              style={{ background: 'none', border: 'none', cursor: viewPath === subjectPath ? 'not-allowed' : 'pointer', color: 'var(--text-primary)', opacity: viewPath === subjectPath ? 0.5 : 1 }}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            </button>
-            <span style={{ fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {viewPath.replace(subjectPath, 'Home') || 'Home'}
-            </span>
-          </div>
-
-          <div style={{ flex: 1, overflowY: 'auto', border: '1px solid var(--border-color)', borderRadius: '6px', background: 'var(--bg-tertiary)' }}>
+          <div style={{ flex: 1, overflowY: 'auto' }}>
             {filesLoading ? (
               <div style={{ padding: '16px', textAlign: 'center', fontSize: '0.9rem' }}>Loading...</div>
             ) : items.length === 0 ? (
-              <div style={{ padding: '16px', textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Empty folder</div>
+              <div style={{ padding: '16px', textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Empty subject folder</div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                {items.map(item => (
+              <div style={{ display: 'flex', flexDirection: 'column', paddingRight: '8px' }}>
+                {items.map(item => item.type === 'dir' ? (
+                  <TreeFolder key={item.sha} path={item.path} name={item.name} onToggleFile={toggleFileSelect} selectedFiles={selectedFiles} />
+                ) : (
                   <div 
-                    key={item.sha}
-                    onClick={() => item.type === 'dir' ? setViewPath(item.path) : toggleFileSelect(item)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', 
-                      borderBottom: '1px solid var(--border-color)', cursor: 'pointer',
-                      background: item.type === 'file' && selectedFiles.find(f => f.sha === item.sha) ? 'var(--bg-secondary)' : 'transparent'
-                    }}
+                    key={item.sha} 
+                    style={{ display: 'flex', alignItems: 'center', padding: '6px 8px', cursor: 'pointer', borderRadius: '4px' }} 
+                    onClick={() => toggleFileSelect(item)}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                   >
-                    {item.type === 'dir' ? (
-                      <svg width="20" height="20" viewBox="0 0 16 16" fill="#FFC107"><path d="M9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.825a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31L.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3z"/></svg>
-                    ) : (
-                      <input type="checkbox" checked={!!selectedFiles.find(f => f.sha === item.sha)} readOnly />
-                    )}
-                    <span style={{ fontSize: '0.9rem', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</span>
-                    {item.type === 'dir' && (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
-                    )}
+                    <input type="checkbox" checked={!!selectedFiles.find((f: any) => f.sha === item.sha)} readOnly style={{ marginRight: '8px' }} />
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '8px', opacity: 0.6 }}><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                    <span style={{ fontSize: '0.85rem', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</span>
                   </div>
                 ))}
               </div>
@@ -176,7 +217,7 @@ Break down each unit, explain the core concepts required for the exam, and provi
         </div>
 
         {/* Right Column: AI Generation */}
-        <div className="card" style={{ padding: '24px', display: 'flex', flexDirection: 'column' }}>
+        <div className="card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', maxHeight: '600px' }}>
           <h4 style={{ fontWeight: 600, marginBottom: '16px', fontSize: '1.2rem' }}>AI Study Engine</h4>
           
           <div style={{ marginBottom: '16px' }}>
@@ -188,7 +229,8 @@ Break down each unit, explain the core concepts required for the exam, and provi
               <strong>📎 {selectedFiles.length} files selected:</strong>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
                 {selectedFiles.map(f => (
-                  <span key={f.sha} style={{ fontSize: '0.75rem', padding: '2px 8px', background: 'var(--bg-secondary)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                  <span key={f.sha} style={{ fontSize: '0.75rem', padding: '2px 8px', background: 'var(--bg-secondary)', borderRadius: '12px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/></svg>
                     {f.name}
                   </span>
                 ))}
