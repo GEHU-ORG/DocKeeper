@@ -14,6 +14,8 @@ interface ToolbarProps {
   onAddCourse?: () => void;
   showAddDepartment?: boolean;
   onAddDepartment?: () => void;
+  showAddSemester?: boolean;
+  onAddSemester?: () => void;
   showAddSubject?: boolean;
   onAddSubject?: () => void;
   showExamButton?: boolean;
@@ -34,6 +36,8 @@ export function Toolbar({
   onAddCourse,
   showAddDepartment = false,
   onAddDepartment,
+  showAddSemester = false,
+  onAddSemester,
   showAddSubject = false,
   onAddSubject,
   showExamButton = false,
@@ -68,6 +72,14 @@ export function Toolbar({
                 Add Department
               </button>
             )}
+            {showAddSemester && onAddSemester && (
+              <button className="toolbar-btn" onClick={onAddSemester} style={{ background: 'var(--accent)', color: '#fff', borderColor: 'var(--accent)' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                Add Semester
+              </button>
+            )}
             {showAddSubject && onAddSubject && (
               <button className="toolbar-btn" onClick={onAddSubject} style={{ background: 'var(--accent)', color: '#fff', borderColor: 'var(--accent)' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -76,7 +88,7 @@ export function Toolbar({
                 Add Subject
               </button>
             )}
-            {!showAddSubject && !showAddDepartment && !showAddCourse && !showAddUniversity && (
+            {!showAddSubject && !showAddSemester && !showAddDepartment && !showAddCourse && !showAddUniversity && (
               <button className="toolbar-btn toolbar-btn-primary" onClick={onNewFolder}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />

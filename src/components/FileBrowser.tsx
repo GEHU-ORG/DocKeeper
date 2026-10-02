@@ -547,6 +547,11 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         onAddCourse={handleAddCourse}
         showAddDepartment={initialPath.split('/').length === 3 && initialPath.startsWith('UniExamPrep/')}
         onAddDepartment={handleAddDepartment}
+        showAddSemester={initialPath.split('/').length === 4 && initialPath.startsWith('UniExamPrep/')}
+        onAddSemester={() => {
+          setNewFolderTitle('New Semester');
+          setShowNewFolder(true);
+        }}
         showAddSubject={initialPath.split('/').length === 5 && initialPath.startsWith('UniExamPrep/')}
         onAddSubject={() => {
           setNewFolderTitle('New Subject');
