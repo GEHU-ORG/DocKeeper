@@ -41,6 +41,56 @@ export async function addUniversity(name: string, slug: string, fullName: string
   });
 
   const courseStructure = [
+
+    {
+      course: "BA",
+      departments: ["Journalism and Mass Communication (JMC)"],
+      semesters: 6,
+      subjects: {"1":["Introduction to Communication","Print Journalism","Media Laws"],"2":["Broadcast Journalism","Photography","Media Management"],"3":["Public Relations","Advertising","Digital Media"],"4":["Television Production","Radio Production","New Media"],"5":["Media Ethics","Film Studies","Event Management"],"6":["Media Research","Project Work"]}
+    },
+    {
+      course: "B.Com (Hons)",
+      departments: ["General"],
+      semesters: 6,
+      subjects: {"1":["Financial Accounting","Business Law","Microeconomics"],"2":["Corporate Accounting","Company Law","Macroeconomics"],"3":["Income Tax Law","Human Resource Management","Management Principles"],"4":["Cost Accounting","Business Mathematics","Computer Applications in Business"],"5":["Auditing","Financial Management","Principles of Marketing"],"6":["Corporate Tax Planning","International Business","Project Work"]}
+    },
+    {
+      course: "BHM",
+      departments: ["General"],
+      semesters: 8,
+      subjects: {"1":["Food Production Foundation","Food & Beverage Service I","Front Office Operations"],"2":["Food Production Operations","Food & Beverage Service II","Accommodation Operations"],"3":["Quantity Food Production","Beverage Operations","Front Office Management"],"4":["Advanced Food Production","Advanced F&B Service","Accommodation Management"],"5":["Industrial Training Phase I","Logbook Presentation"],"6":["Industrial Training Phase II","Project Report"],"7":["Advanced Food Production Management","Advanced F&B Management","Hospitality Marketing"],"8":["Facility Planning","Strategic Management","Research Project"]}
+    },
+    {
+      course: "B.Sc",
+      departments: ["Animation"],
+      semesters: 6,
+      subjects: {"1":["Drawing and Sketching","Color Theory","Digital Art"],"2":["2D Animation","Storyboarding","Character Design"],"3":["3D Modeling","Texturing","Lighting"],"4":["3D Animation","Rigging","Visual Effects (VFX)"],"5":["Compositing","Motion Graphics","Sound Design"],"6":["Portfolio Development","Final Project","Internship"]}
+    },
+    {
+      course: "B.Sc",
+      departments: ["Nursing"],
+      semesters: 8,
+      subjects: {"1":["Anatomy","Physiology","Nutrition","Biochemistry"],"2":["Nursing Foundation I","Psychology","Microbiology"],"3":["Nursing Foundation II","Sociology","Pharmacology I"],"4":["Medical Surgical Nursing I","Pathology","Genetics"],"5":["Medical Surgical Nursing II","Child Health Nursing","Mental Health Nursing"],"6":["Midwifery and Obstetrical Nursing","Nursing Research","Statistics"],"7":["Community Health Nursing II","Nursing Management"],"8":["Internship","Clinical Practice"]}
+    },
+    {
+      course: "Diploma",
+      departments: ["Computer Science", "Mechanical", "Civil"],
+      semesters: 6,
+      subjects: {"1":["Applied Mathematics I","Applied Physics","Applied Chemistry"],"2":["Applied Mathematics II","Engineering Drawing","Fundamentals of IT"],"3":["Data Structures","Digital Electronics","C Programming"],"4":["Object Oriented Programming","Operating System","Database Management"],"5":["Software Engineering","Web Development","Computer Networks"],"6":["Major Project","Industrial Training"]}
+    },
+    {
+      course: "MCA",
+      departments: ["General"],
+      semesters: 4,
+      subjects: {"1":["Data Structures","Computer Networks","Database Management Systems","Software Engineering"],"2":["Object Oriented Programming","Operating Systems","Design and Analysis of Algorithms","Artificial Intelligence"],"3":["Machine Learning","Cloud Computing","Web Technologies","Data Science"],"4":["Major Project","Industrial Training"]}
+    },
+    {
+      course: "M.Tech",
+      departments: ["Computer Science Engineering (CSE)", "Mechanical Engineering", "Civil Engineering"],
+      semesters: 4,
+      subjects: {"1":["Advanced Algorithms","Advanced Database Systems","Machine Learning"],"2":["Cloud Computing","Data Science","Cryptography"],"3":["Research Methodology","Dissertation Phase I"],"4":["Dissertation Phase II","Seminar"]}
+    },
+
     {
       course: "B.Tech",
       departments: ["Computer Science Engineering (CSE)"],
