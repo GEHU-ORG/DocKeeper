@@ -7,10 +7,9 @@ interface ExamModalProps {
   isOpen: boolean;
   onClose: () => void;
   path: string;
-  selectedFiles?: any[];
 }
 
-export function ExamModal({ isOpen, onClose, path, selectedFiles = [] }: ExamModalProps) {
+export function ExamModal({ isOpen, onClose, path }: ExamModalProps) {
   const [subjectId, setSubjectId] = useState<string | null>(null);
   const [subjectName, setSubjectName] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
@@ -57,7 +56,7 @@ export function ExamModal({ isOpen, onClose, path, selectedFiles = [] }: ExamMod
         {error && <p style={{ color: 'var(--danger)' }}>{error}</p>}
         
         {subjectId && !isLoading && !error && (
-          <SubjectStudySpace subjectId={subjectId} subjectName={subjectName} isReadOnly={false} selectedFiles={selectedFiles} />
+          <SubjectStudySpace subjectId={subjectId} subjectName={subjectName} subjectPath={path} />
         )}
       </div>
     </div>

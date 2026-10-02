@@ -649,7 +649,6 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         isOpen={showExamModal}
         onClose={() => setShowExamModal(false)}
         path={initialPath}
-        selectedFiles={processedItems.filter(item => item.type === 'file' && selectedItems.has(item.url!))}
       />
     </div>
   );
