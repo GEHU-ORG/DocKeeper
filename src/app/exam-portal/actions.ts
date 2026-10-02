@@ -163,7 +163,7 @@ export async function addUniversity(name: string, slug: string, fullName: string
   const repoPaths: string[] = [];
 
   for (const info of courseStructure) {
-    const safeCourse = info.course.replace(/[^a-zA-Z0-9.\\- ]/g, '').trim();
+    const safeCourse = info.course.replace(/[^a-zA-Z0-9.\- ]/g, '').trim();
 
     let course = await prisma.course.findFirst({ where: { name: info.course, universityId: uni.id }});
     if (!course) {
@@ -177,7 +177,7 @@ export async function addUniversity(name: string, slug: string, fullName: string
       }
 
       const semData = Array.from({ length: info.semesters }).map((_, i) => ({
-        name: \`Semester \${i + 1}\`,
+        name: `Semester ${i + 1}`,
         number: i + 1,
         departmentId: dbDept.id
       }));
@@ -191,7 +191,7 @@ export async function addUniversity(name: string, slug: string, fullName: string
       });
 
       // Generate GitHub Folder Paths: Course / Department / Semester / Subject / Type
-      const safeDept = dept.replace(/[^a-zA-Z0-9.\\- ()]/g, '').trim();
+      const safeDept = dept.replace(/[^a-zA-Z0-9.\- ()]/g, '').trim();
       
       for (let i = 1; i <= info.semesters; i++) {
         const semFolderName = `Semester-${i}`;

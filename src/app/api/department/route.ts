@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     });
 
     const semData = Array.from({ length: parseInt(numSemesters) }).map((_, i) => ({
-      name: \`Semester \${i + 1}\`,
+      name: `Semester ${i + 1}`,
       number: i + 1,
       departmentId: dept.id
     }));
