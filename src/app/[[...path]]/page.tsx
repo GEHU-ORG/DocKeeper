@@ -15,11 +15,11 @@ export default async function BrowsePage({ params }: BrowsePageProps) {
   
   let isReadOnly = true;
   let username = '';
+  const isSignedIn = !!session?.user;
 
   if (session?.user && (session.user as any).githubUsername) {
     username = (session.user as any).githubUsername;
     const isMember = await checkOrgMembership(username);
-
     if (isMember) {
       isReadOnly = false;
     }
@@ -34,7 +34,8 @@ export default async function BrowsePage({ params }: BrowsePageProps) {
     fullPath = 'UniExamPrep/' + path.map(decodeURIComponent).join('/');
   }
 
-  return <FileBrowser initialPath={fullPath} isReadOnly={isReadOnly} isSignedIn={!!username} username={username} />;
+  return <FileBrowser initialPath={fullPath} isReadOnly={isReadOnly} isSignedIn={isSignedIn} username={username} />;
+
 }
 
 export async function generateMetadata({ params }: BrowsePageProps): Promise<Metadata> {

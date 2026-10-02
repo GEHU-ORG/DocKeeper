@@ -26,7 +26,9 @@ export function Header() {
   }, [session]);
 
   const username = (session?.user as any)?.githubUsername;
-  const isGuest = status === 'unauthenticated' || (session && !username);
+  const isSignedIn = status === 'authenticated' && !!session;
+  const isGuest = !isSignedIn;
+
 
   return (
     <>
@@ -64,15 +66,16 @@ export function Header() {
                       />
                     ) : (
                       <div style={{
-                        width: '36px', height: '36px', borderRadius: '50%', background: 'var(--text-primary)',
-                        color: 'var(--bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        width: '36px', height: '36px', borderRadius: '50%', background: 'var(--accent)',
+                        color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontWeight: 'bold', fontSize: '1rem', border: '2px solid var(--border-color)'
                       }}>
-                        {session.user?.name ? session.user.name.charAt(0).toUpperCase() : 'U'}
+                        {session.user?.name ? session.user.name.charAt(0).toUpperCase() : session.user?.email?.charAt(0).toUpperCase() ?? 'U'}
                       </div>
                     )}
                   </Link>
                 )}
+
               </div>
             )}
           </div>

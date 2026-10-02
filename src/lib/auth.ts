@@ -82,19 +82,32 @@ export const authOptions: AuthOptions = {
 
 export async function getAuthContext() {
   const session = await getServerSession(authOptions);
-  if (session?.user && (session.user as any).githubUsername) {
-    return { 
-      type: 'github', 
-      value: (session.user as any).githubUsername as string,
-      accessToken: (session.user as any).accessToken as string,
-    };
+  if (session?.user) {
+    const githubUsername = (session.user as any).githubUsername as string | undefined;
+    if (githubUsername) {
+      return { 
+        type: 'github' as const,
+        value: githubUsername,
+        accessToken: (session.user as any).accessToken as string,
+      };
+    }
+    // Google-only user: authenticated but no GitHub linked yet
+    // Can browse and use study features, but can't upload/commit
+    if (session.user.email) {
+      return {
+        type: 'google' as const,
+        value: session.user.email,
+        accessToken: null as unknown as string,
+      };
+    }
   }
   
   const cookieStore = await cookies();
   const secretCode = cookieStore.get('secret_code')?.value;
   if (secretCode) {
-    return { type: 'secret', value: secretCode };
+    return { type: 'secret' as const, value: secretCode, accessToken: null as unknown as string };
   }
   
   return null;
 }
+
