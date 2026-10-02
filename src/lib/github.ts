@@ -222,6 +222,16 @@ export async function createFolder(path: string, userToken?: string): Promise<vo
   await uploadFile(`${path}/.keep`, '', userToken);
 }
 
+export async function createRepository(repoName: string, description: string = ''): Promise<void> {
+  await octokit.repos.createInOrg({
+    org: ORG_NAME,
+    name: repoName,
+    description,
+    private: false,
+    auto_init: true,
+  });
+}
+
 export function getFileExtension(filename: string): string {
   const lastDot = filename.lastIndexOf('.');
   return lastDot !== -1 ? filename.slice(lastDot + 1).toLowerCase() : '';

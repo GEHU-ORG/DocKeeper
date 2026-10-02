@@ -27,6 +27,33 @@ export async function getSubjects(semesterId: string) {
   });
 }
 
+export async function addUniversity(name: string, slug: string, fullName: string) {
+  // Create in Prisma
+  const uni = await prisma.university.create({
+    data: { name, slug, fullName, githubOrg: 'UniExamPrep' }
+  });
+
+  // Since we're in a server action, we can dynamically import github lib to avoid client boundary issues
+  const { createRepository, createFolder } = await import('@/lib/github');
+  
+  try {
+    // Create Repo on GitHub
+    await createRepository(slug, `Study materials for ${fullName}`);
+    // Delay slightly to ensure repo is ready for commits
+    await new Promise(res => setTimeout(res, 2000));
+    
+    // Create base folders
+    await createFolder(`UniExamPrep/${slug}/Notes`);
+    await createFolder(`UniExamPrep/${slug}/PYQ`);
+    await createFolder(`UniExamPrep/${slug}/Syllabus`);
+  } catch (err) {
+    console.error('Failed to setup GitHub repo for university:', err);
+    // Ignore error if it already exists or failed, we still created the DB record
+  }
+
+  return uni;
+}
+
 export async function getSubjectDetails(subjectId: string) {
   return await prisma.subject.findUnique({
     where: { id: subjectId },
