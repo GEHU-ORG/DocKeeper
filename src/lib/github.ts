@@ -222,6 +222,70 @@ export async function createFolder(path: string, userToken?: string): Promise<vo
   await uploadFile(`${path}/.keep`, '', userToken);
 }
 
+export async function createFolderTree(repo: string, paths: string[], userToken?: string): Promise<void> {
+  const client = userToken ? new Octokit({ auth: userToken }) : octokit;
+
+  try {
+    // Get the latest commit SHA of the default branch
+    const { data: refData } = await client.git.getRef({
+      owner: ORG_NAME,
+      repo,
+      ref: 'heads/main'
+    }).catch(() => client.git.getRef({
+      owner: ORG_NAME,
+      repo,
+      ref: 'heads/master'
+    }));
+
+    const latestCommitSha = refData.object.sha;
+    
+    // Get the tree SHA of the latest commit
+    const { data: commitData } = await client.git.getCommit({
+      owner: ORG_NAME,
+      repo,
+      commit_sha: latestCommitSha
+    });
+    
+    const baseTreeSha = commitData.tree.sha;
+
+    // Create new tree object with our folders (.keep files)
+    const treeNodes = paths.map(path => ({
+      path: `${path}/.keep`,
+      mode: '100644' as const,
+      type: 'blob' as const,
+      content: ''
+    }));
+
+    const { data: newTree } = await client.git.createTree({
+      owner: ORG_NAME,
+      repo,
+      base_tree: baseTreeSha,
+      tree: treeNodes
+    });
+
+    // Create a new commit
+    const { data: newCommit } = await client.git.createCommit({
+      owner: ORG_NAME,
+      repo,
+      message: 'Initialize standard university folder structure',
+      tree: newTree.sha,
+      parents: [latestCommitSha]
+    });
+
+    // Update the reference to point to the new commit
+    await client.git.updateRef({
+      owner: ORG_NAME,
+      repo,
+      ref: refData.ref.replace('refs/', ''),
+      sha: newCommit.sha
+    });
+
+  } catch (error) {
+    console.error('Failed to create folder tree in bulk:', error);
+    throw error;
+  }
+}
+
 export async function createRepository(repoName: string, description: string = ''): Promise<void> {
   await octokit.repos.createInOrg({
     org: ORG_NAME,

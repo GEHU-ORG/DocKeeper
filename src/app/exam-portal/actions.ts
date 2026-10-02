@@ -33,19 +33,67 @@ export async function addUniversity(name: string, slug: string, fullName: string
     data: { name, slug, fullName, githubOrg: 'UniExamPrep' }
   });
 
+  // Standard Indian University Courses to pre-populate
+  const defaultCourses = [
+    { name: 'B.Tech - CSE', semesters: 8 },
+    { name: 'B.Tech - ME', semesters: 8 },
+    { name: 'B.Tech - CE', semesters: 8 },
+    { name: 'B.Tech - EE', semesters: 8 },
+    { name: 'B.Tech - ECE', semesters: 8 },
+    { name: 'BCA', semesters: 6 },
+    { name: 'BBA', semesters: 6 },
+    { name: 'B.Sc - IT', semesters: 6 },
+    { name: 'B.Sc - PCM', semesters: 6 },
+    { name: 'MBA - Finance', semesters: 4 },
+    { name: 'MBA - Marketing', semesters: 4 },
+    { name: 'MBA - HR', semesters: 4 },
+    { name: 'MCA', semesters: 4 },
+    { name: 'M.Tech - CSE', semesters: 4 },
+  ];
+
+  for (const courseInfo of defaultCourses) {
+    const course = await prisma.course.create({
+      data: { name: courseInfo.name, universityId: uni.id }
+    });
+    
+    const semData = Array.from({ length: courseInfo.semesters }).map((_, i) => ({
+      name: `Semester ${i + 1}`,
+      number: i + 1,
+      courseId: course.id
+    }));
+
+    await prisma.semester.createMany({ data: semData });
+  }
+
+  // Build the list of repository paths to create
+  const repoPaths: string[] = [];
+  
+  // Base folders at the root (optional, but good for general stuff)
+  repoPaths.push('Notes', 'PYQ', 'Syllabus');
+  
+  // Generate a folder for every Course -> Semester combination
+  for (const courseInfo of defaultCourses) {
+    // Sanitize course name for folder path (e.g., "B.Tech - CSE" -> "BTech-CSE")
+    const courseFolderName = courseInfo.name.replace(/[^a-zA-Z0-9-]/g, '-').replace(/-+/g, '-');
+    for (let i = 1; i <= courseInfo.semesters; i++) {
+      const semFolderName = `Semester-${i}`;
+      repoPaths.push(`${courseFolderName}/${semFolderName}/Notes`);
+      repoPaths.push(`${courseFolderName}/${semFolderName}/PYQ`);
+      repoPaths.push(`${courseFolderName}/${semFolderName}/Syllabus`);
+    }
+  }
+
   // Since we're in a server action, we can dynamically import github lib to avoid client boundary issues
-  const { createRepository, createFolder } = await import('@/lib/github');
+  const { createRepository, createFolderTree } = await import('@/lib/github');
   
   try {
     // Create Repo on GitHub
     await createRepository(slug, `Study materials for ${fullName}`);
-    // Delay slightly to ensure repo is ready for commits
-    await new Promise(res => setTimeout(res, 2000));
+    // Delay slightly to ensure repo is initialized with a commit (auto_init = true)
+    await new Promise(res => setTimeout(res, 3000));
     
-    // Create base folders
-    await createFolder(`UniExamPrep/${slug}/Notes`);
-    await createFolder(`UniExamPrep/${slug}/PYQ`);
-    await createFolder(`UniExamPrep/${slug}/Syllabus`);
+    // Create the entire folder tree in one massive commit
+    await createFolderTree(slug, repoPaths);
   } catch (err) {
     console.error('Failed to setup GitHub repo for university:', err);
     // Ignore error if it already exists or failed, we still created the DB record
