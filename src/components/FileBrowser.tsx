@@ -15,6 +15,8 @@ import { AIOrganizeDialog, type AIMove } from './AIOrganizeDialog';
 import { JoinOrgPrompt } from './JoinOrgPrompt';
 import { AddUniversityModal } from './AddUniversityModal';
 import { ExamModal } from './ExamModal';
+import { useRouter } from 'next/navigation';
+
 
 interface FileBrowserProps {
   initialPath: string;
@@ -39,6 +41,8 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
   // Dialog states
   const [showAddUni, setShowAddUni] = useState(false);
   const [showExamModal, setShowExamModal] = useState(false);
+  const router = useRouter();
+
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<FileItem | null>(null);
   const [moveTarget, setMoveTarget] = useState<FileItem | null>(null);
@@ -545,7 +549,12 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         showAddDepartment={initialPath.split('/').length === 3 && initialPath.startsWith('UniExamPrep/')}
         onAddDepartment={handleAddDepartment}
         showExamButton={initialPath.split('/').length >= 6 && initialPath.startsWith('UniExamPrep/')}
-        onExamClick={() => setShowExamModal(true)}
+        onExamClick={() => {
+          // Navigate to /study/<path without UniExamPrep prefix>
+          const studyPath = initialPath.replace(/^UniExamPrep\//, '');
+          router.push(`/study/${studyPath}`);
+        }}
+
       />
 
       {isOperating && (
@@ -645,11 +654,8 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         }}
       />
 
-      <ExamModal 
-        isOpen={showExamModal}
-        onClose={() => setShowExamModal(false)}
-        path={initialPath}
-      />
+      {/* ExamModal removed — using /study route instead */}
+
     </div>
   );
 }
