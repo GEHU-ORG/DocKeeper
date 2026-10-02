@@ -112,16 +112,18 @@ export function SubjectStudySpace({
     fetchSubject();
   }, [subjectId]);
 
+  const universityRoot = subjectPath.split('/').slice(0, 2).join('/') || subjectPath;
+
   useEffect(() => {
     setFilesLoading(true);
-    fetch(`/api/files?path=${encodeURIComponent(subjectPath)}`)
+    fetch(`/api/files?path=${encodeURIComponent(universityRoot)}`)
       .then(res => res.json())
       .then(data => {
         setItems(data.files || []);
       })
       .catch(console.error)
       .finally(() => setFilesLoading(false));
-  }, [subjectPath]);
+  }, [universityRoot]);
 
   const toggleFileSelect = (file: FileItem) => {
     setSelectedFiles(prev => {
