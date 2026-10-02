@@ -218,7 +218,6 @@ export default function ExamPortalPage() {
           )}
         </div>
       </div>
-      {(step === 4) && <ChatBox />}
     </div>
   );
 }

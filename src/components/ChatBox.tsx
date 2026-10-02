@@ -49,14 +49,9 @@ export function ChatBox() {
 
   return (
     <div style={{
-      position: 'fixed',
-      bottom: '24px',
-      left: '50%',
-      transform: 'translateX(-50%)',
       width: '100%',
-      maxWidth: '800px',
-      padding: '0 24px',
-      zIndex: 100
+      display: 'flex',
+      flexDirection: 'column'
     }}>
       <div style={{
         display: 'flex',

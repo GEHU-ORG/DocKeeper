@@ -47,3 +47,4 @@ CLAUDE.md
 # optimization cache
 .optimized-cache.json
 .env*.local
+scratch/
