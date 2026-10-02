@@ -36,7 +36,7 @@ export function Header() {
           <div className="header-actions">
             <Link href="/exam-portal" style={{ textDecoration: 'none', marginRight: '8px' }}>
               <button style={{ background: 'transparent', color: 'var(--text-primary)', border: '1px solid var(--border-color)', padding: '6px 12px', borderRadius: '20px', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '1.1em' }}>✨</span> AI Portal
+                <span style={{ fontSize: '1.1em' }}>✨</span> Exam Portal
               </button>
             </Link>
             <ThemeToggle />
