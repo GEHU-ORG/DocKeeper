@@ -182,6 +182,46 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
     }
   };
 
+  // Add department
+  const handleAddDepartment = async () => {
+    const departmentName = prompt('Enter Department Name (e.g. Electrical Engineering)');
+    if (!departmentName) return;
+    
+    const numSemestersStr = prompt('Enter number of semesters (e.g. 8)');
+    if (!numSemestersStr) return;
+    
+    const numSemesters = parseInt(numSemestersStr, 10);
+    if (isNaN(numSemesters) || numSemesters <= 0) {
+      alert('Please enter a valid number for semesters.');
+      return;
+    }
+
+    setIsOperating(true);
+    try {
+      // initialPath e.g. UniExamPrep/GEU/B.Tech
+      const parts = initialPath.split('/');
+      const slug = parts[1];
+      const courseCategory = parts[2];
+
+      const res = await fetch('/api/department', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug, courseCategory, departmentName, numSemesters }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || 'Failed to add department');
+      } else {
+        await fetchFiles();
+      }
+    } catch (error) {
+      console.error('Failed to add department:', error);
+      alert('Network error');
+    } finally {
+      setIsOperating(false);
+    }
+  };
+
   // Delete single item
   const handleDeleteItem = async () => {
     if (!deleteTarget) return;
@@ -500,6 +540,8 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         onAddUniversity={() => setShowAddUni(true)}
         showAddCourse={initialPath.split('/').length === 2 && initialPath.startsWith('UniExamPrep/')}
         onAddCourse={handleAddCourse}
+        showAddDepartment={initialPath.split('/').length === 3 && initialPath.startsWith('UniExamPrep/')}
+        onAddDepartment={handleAddDepartment}
       />
 
       {isOperating && (

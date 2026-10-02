@@ -12,6 +12,8 @@ interface ToolbarProps {
   onAddUniversity?: () => void;
   showAddCourse?: boolean;
   onAddCourse?: () => void;
+  showAddDepartment?: boolean;
+  onAddDepartment?: () => void;
 }
 
 export function Toolbar({
@@ -26,6 +28,8 @@ export function Toolbar({
   onAddUniversity,
   showAddCourse = false,
   onAddCourse,
+  showAddDepartment = false,
+  onAddDepartment,
 }: ToolbarProps) {
   return (
     <div className="toolbar">
@@ -46,6 +50,14 @@ export function Toolbar({
                   <path d="M12 5v14M5 12h14" />
                 </svg>
                 Add Course
+              </button>
+            )}
+            {showAddDepartment && onAddDepartment && (
+              <button className="toolbar-btn" onClick={onAddDepartment} style={{ background: 'var(--accent)', color: '#fff', borderColor: 'var(--accent)' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                Add Department
               </button>
             )}
             <button className="toolbar-btn toolbar-btn-primary" onClick={onNewFolder}>
