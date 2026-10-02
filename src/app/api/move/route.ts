@@ -34,6 +34,7 @@ export async function POST(req: Request) {
 
       await Promise.all(
         managedRepos.map(async (repo) => {
+          allFolders.push(`UniExamPrep/${repo}`);
           try {
             const { data: tree } = await octokit.git.getTree({
               owner: ORG_NAME,
@@ -45,7 +46,6 @@ export async function POST(req: Request) {
               .filter((item: any) => item.type === 'tree')
               .map((item: any) => `UniExamPrep/${repo}/${item.path}`);
             
-            allFolders.push(`UniExamPrep/${repo}`);
             allFolders.push(...folderPaths);
           } catch (e) {
             console.error(`Failed to get tree for ${repo}`);
