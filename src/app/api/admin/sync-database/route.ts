@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { listItems } from '@/lib/github';
 
 export async function GET() {
   try {
-    // Upsert University
+    // 1. Upsert University
     const university = await prisma.university.upsert({
       where: { slug: 'gehu' },
       update: {},
@@ -12,47 +11,86 @@ export async function GET() {
         name: 'GEHU', 
         slug: 'gehu',
         fullName: 'Graphic Era Hill University',
-        githubOrg: 'UniExamPrep' // or UniExamPrep soon
+        githubOrg: 'UniExamPrep'
       }
     });
 
-    // 1. Fetch repositories (acting as Departments for now, or just read Syllabus repo)
-    // For now, we will create a mock sync just to pass the build and setup the structure
-    // Since the actual GitHub structure changed, we'll sync the "Syllabus" repo first.
-    
-    // Create default department
-    const department = await prisma.department.upsert({
-      where: { name_universityId: { name: 'BTech', universityId: university.id } },
-      update: {},
-      create: { name: 'BTech', universityId: university.id }
-    });
+    // 2. Define Departments, Branches, and Subjects to seed
+    const structure = [
+      {
+        department: 'B.Tech',
+        branches: [
+          { name: 'CSE', semesters: [1, 2, 3, 4, 5, 6, 7, 8], subjects: ['Data Structures', 'Operating Systems', 'Computer Networks'] },
+          { name: 'Mechanical', semesters: [1, 2, 3, 4, 5, 6, 7, 8], subjects: ['Thermodynamics', 'Fluid Mechanics'] },
+          { name: 'ECE', semesters: [1, 2, 3, 4, 5, 6, 7, 8], subjects: ['Signals & Systems', 'Digital Electronics'] },
+        ]
+      },
+      {
+        department: 'BCA',
+        branches: [
+          { name: 'General', semesters: [1, 2, 3, 4, 5, 6], subjects: ['C Programming', 'Web Technologies', 'Software Engineering'] }
+        ]
+      },
+      {
+        department: 'MCA',
+        branches: [
+          { name: 'General', semesters: [1, 2, 3, 4], subjects: ['Advanced Java', 'Machine Learning', 'Cloud Computing'] }
+        ]
+      },
+      {
+        department: 'B.Pharma',
+        branches: [
+          { name: 'General', semesters: [1, 2, 3, 4, 5, 6, 7, 8], subjects: ['Human Anatomy', 'Pharmaceutics', 'Pharmacology'] }
+        ]
+      },
+      {
+        department: 'MBA',
+        branches: [
+          { name: 'Finance', semesters: [1, 2, 3, 4], subjects: ['Financial Management', 'Accounting'] },
+          { name: 'Marketing', semesters: [1, 2, 3, 4], subjects: ['Consumer Behavior', 'Digital Marketing'] }
+        ]
+      }
+    ];
 
-    // Create default branch
-    let branch = await prisma.branch.findFirst({
-      where: { name: 'CSE', departmentId: department.id }
-    });
-    if (!branch) {
-      branch = await prisma.branch.create({
-        data: { name: 'CSE', departmentId: department.id }
+    // 3. Seed Database
+    for (const dep of structure) {
+      const department = await prisma.department.upsert({
+        where: { name_universityId: { name: dep.department, universityId: university.id } },
+        update: {},
+        create: { name: dep.department, universityId: university.id }
       });
+
+      for (const b of dep.branches) {
+        let branch = await prisma.branch.findFirst({
+          where: { name: b.name, departmentId: department.id }
+        });
+        if (!branch) {
+          branch = await prisma.branch.create({
+            data: { name: b.name, departmentId: department.id }
+          });
+        }
+
+        for (const sem of b.semesters) {
+          let semester = await prisma.semester.findFirst({
+            where: { name: `Semester ${sem}`, branchId: branch.id }
+          });
+          if (!semester) {
+            semester = await prisma.semester.create({
+              data: { name: `Semester ${sem}`, number: sem, branchId: branch!.id }
+            });
+          }
+
+          // Add subjects to each semester
+          for (const sub of b.subjects) {
+            await prisma.subject.create({
+              data: { name: `${sub} (Sem ${sem})`, semesterId: semester.id }
+            }).catch(() => {}); // ignore unique constraint if exists
+          }
+        }
+      }
     }
 
-    // Create default semester
-    let semester = await prisma.semester.findFirst({
-      where: { name: 'Semester 3', branchId: branch.id }
-    });
-    if (!semester) {
-      semester = await prisma.semester.create({
-        data: { name: 'Semester 3', number: 3, branchId: branch.id }
-      });
-    }
-
-    // Create a subject
-    await prisma.subject.create({
-      data: { name: 'Data Structures', semesterId: semester.id }
-    }).catch(() => {}); // ignore unique constraint if exists
-
-    return NextResponse.json({ success: true, message: 'Database successfully synced with new UniExamPrep structure!' });
+    return NextResponse.json({ success: true, message: 'Database successfully seeded with multi-department structure!' });
   } catch (error: any) {
     console.error('Sync failed:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
