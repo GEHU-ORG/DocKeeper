@@ -72,7 +72,18 @@ export default function ExamPortalPage() {
               <div className="file-list-header readonly">
                 <div className="file-row-icon" />
                 <div className="file-row-name header-label">Select Your University</div>
-                <div className="file-row-actions header-label" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <div className="file-row-actions header-label" style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                  <button onClick={async () => {
+                    if (universities.length === 0) return alert('No university to sync.');
+                    const res = await fetch('/api/admin/sync-subjects', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ universityId: universities[0].id })
+                    });
+                    const data = await res.json();
+                    if (data.success) alert(`Synced ${data.count} subjects from GitHub!`);
+                    else alert('Error: ' + data.error);
+                  }} className="action-btn" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', padding: '4px 12px', fontSize: '0.8rem', width: 'max-content' }}>Sync Subjects</button>
                   <button onClick={() => setShowAddUni(true)} className="action-btn" style={{ background: 'var(--accent)', color: '#fff', padding: '4px 12px', fontSize: '0.8rem', width: 'max-content' }}>+ Add University</button>
                 </div>
               </div>
