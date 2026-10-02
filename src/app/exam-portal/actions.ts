@@ -80,9 +80,6 @@ export async function addUniversity(name: string, slug: string, fullName: string
   ];
 
   const repoPaths: string[] = [];
-  
-  // Base folders at the root
-  repoPaths.push('Notes', 'PYQ', 'Syllabus');
 
   for (const info of courseStructure) {
     const safeCourse = info.course.replace(/[^a-zA-Z0-9.\- ]/g, '').trim();
@@ -102,7 +99,7 @@ export async function addUniversity(name: string, slug: string, fullName: string
 
       await prisma.semester.createMany({ data: semData });
 
-      // Generate GitHub Folder Paths: Type / Course / Department / Semester
+      // Generate GitHub Folder Paths: Course / Department / Semester / Type
       const safeDept = dept.replace(/[^a-zA-Z0-9.\- ()]/g, '').trim();
       
       for (let i = 1; i <= info.semesters; i++) {
@@ -110,9 +107,9 @@ export async function addUniversity(name: string, slug: string, fullName: string
         
         for (const type of ['Notes', 'PYQ', 'Syllabus']) {
           if (dept === 'General') {
-            repoPaths.push(`${type}/${safeCourse}/${semFolderName}`);
+            repoPaths.push(`${safeCourse}/${semFolderName}/${type}`);
           } else {
-            repoPaths.push(`${type}/${safeCourse}/${safeDept}/${semFolderName}`);
+            repoPaths.push(`${safeCourse}/${safeDept}/${semFolderName}/${type}`);
           }
         }
       }
