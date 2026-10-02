@@ -45,9 +45,9 @@ export function JoinOrgPrompt({ username }: { username: string }) {
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       minHeight: '100vh', background: 'var(--bg-primary)', padding: '2rem'
     }}>
-      <h1 style={{ fontSize: '3rem', marginBottom: '1rem', fontWeight: 800 }}>Join GEHU-ORG</h1>
+      <h1 style={{ fontSize: '3rem', marginBottom: '1rem', fontWeight: 800 }}>Join UniExamPrep</h1>
       <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)', marginBottom: '3rem', textAlign: 'center', maxWidth: '600px' }}>
-        Hi <strong>@{username}</strong>, you need to be a member of the <strong>GEHU-ORG</strong> organization to collaborate and manage files here.
+        Hi <strong>@{username}</strong>, you need to be a member of the <strong>UniExamPrep</strong> organization to collaborate and manage files here.
       </p>
 
       {success ? (
@@ -57,7 +57,7 @@ export function JoinOrgPrompt({ username }: { username: string }) {
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
             <a 
-              href="https://github.com/orgs/GEHU-ORG/invitation" 
+              href="https://github.com/orgs/UniExamPrep/invitation" 
               target="_blank" 
               rel="noreferrer"
               style={{

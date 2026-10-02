@@ -41,8 +41,11 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
+  universityId  String?
+  university    University? @relation(fields: [universityId], references: [id])
   accounts      Account[]
   sessions      Session[]
+  fileOwnerships FileOwnership[]
 }
 
 model VerificationToken {
@@ -53,27 +56,52 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model University {
+  id          String       @id @default(cuid())
+  name        String       @unique  // e.g., "GEHU", "IIT Delhi", "DU"
+  slug        String       @unique  // e.g., "gehu", "iit-delhi", "du"
+  fullName    String?      // e.g., "Graphic Era Hill University"
+  logo        String?      // URL to logo
+  githubOrg   String?      // GitHub org name for data sync
+  departments Department[]
+  users       User[]
+  createdAt   DateTime     @default(now())
+}
+
 model Department {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  branches  Branch[]
+  id           String     @id @default(cuid())
+  name         String     // e.g., "BTech", "BCA", "MBA"
+  universityId String
+  university   University @relation(fields: [universityId], references: [id])
+  branches     Branch[]
+
+  @@unique([name, universityId])
 }
 
 model Branch {
   id           String     @id @default(cuid())
-  name         String
+  name         String     // e.g., "CSE", "ECE", "ME"
   departmentId String
   department   Department @relation(fields: [departmentId], references: [id])
-  subjects     Subject[]
+  semesters    Semester[]
+}
+
+model Semester {
+  id       String    @id @default(cuid())
+  name     String    // e.g., "Semester 1", "sem 3"
+  number   Int       // 1, 2, 3...
+  branchId String
+  branch   Branch    @relation(fields: [branchId], references: [id])
+  subjects Subject[]
 }
 
 model Subject {
-  id          String   @id @default(cuid())
-  name        String
-  branchId    String
-  branch      Branch   @relation(fields: [branchId], references: [id])
-  syllabus    String?  // Markdown or JSON
-  pyqAnalysis String?  // Stored frequency table
+  id          String     @id @default(cuid())
+  name        String     // e.g., "operating systems", "dbms"
+  semesterId  String
+  semester    Semester   @relation(fields: [semesterId], references: [id])
+  syllabus    String?    @db.Text
+  pyqAnalysis String?    @db.Text
   studyNotes  StudyNote[]
 }
 
@@ -87,4 +115,12 @@ model StudyNote {
   updatedAt   DateTime @updatedAt
   
   @@unique([subjectId, marks])
+}
+
+model FileOwnership {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  filePath  String   @unique
+  createdAt DateTime @default(now())
 }

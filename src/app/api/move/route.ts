@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { Octokit } from '@octokit/rest';
 
-const ORG_NAME = 'GEHU-ORG';
+const ORG_NAME = 'UniExamPrep';
 
 export async function POST(req: Request) {
   try {
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { action, id, sourceUrl, sourcePath, destinationPath, newName } = body;
 
-    // Helper to extract repo and inner path from 'GEHU-ORG/Repo/Folder/File'
+    // Helper to extract repo and inner path from 'UniExamPrep/Repo/Folder/File'
     const getRepoAndPath = (fullPath: string) => {
       const parts = fullPath.split('/').filter(Boolean);
       const repo = parts[1];
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     };
 
     if (action === 'list-folders') {
-      const allFolders = ['GEHU-ORG'];
+      const allFolders = ['UniExamPrep'];
 
       const { data: reposList } = await octokit.repos.listForOrg({ org: ORG_NAME, per_page: 100 });
       const managedRepos = reposList
@@ -43,9 +43,9 @@ export async function POST(req: Request) {
             });
             const folderPaths = tree.tree
               .filter((item: any) => item.type === 'tree')
-              .map((item: any) => `GEHU-ORG/${repo}/${item.path}`);
+              .map((item: any) => `UniExamPrep/${repo}/${item.path}`);
             
-            allFolders.push(`GEHU-ORG/${repo}`);
+            allFolders.push(`UniExamPrep/${repo}`);
             allFolders.push(...folderPaths);
           } catch (e) {
             console.error(`Failed to get tree for ${repo}`);

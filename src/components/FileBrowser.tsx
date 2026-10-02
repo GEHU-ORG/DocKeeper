@@ -143,7 +143,7 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
       await fetch('/api/folder', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, path: initialPath || 'GEHU-ORG' }),
+        body: JSON.stringify({ name, path: initialPath || 'UniExamPrep' }),
       });
       await fetchFiles();
     } catch (error) {

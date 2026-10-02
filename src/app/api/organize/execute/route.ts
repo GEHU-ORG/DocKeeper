@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { Octokit } from '@octokit/rest';
 
-const ORG_NAME = 'GEHU-ORG';
+const ORG_NAME = 'UniExamPrep';
 
 export async function POST(req: Request) {
   try {

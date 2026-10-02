@@ -7,8 +7,8 @@ interface BreadcrumbProps {
 }
 
 export function Breadcrumb({ path }: BreadcrumbProps) {
-  // Strip GEHU-ORG from the start of the path for the breadcrumbs
-  const displayPath = path.replace(/^GEHU-ORG\/?/, '');
+  // Strip UniExamPrep from the start of the path for the breadcrumbs
+  const displayPath = path.replace(/^UniExamPrep\/?/, '');
   const segments = displayPath ? displayPath.split('/').filter(Boolean) : [];
   
   const parentPath = segments.length > 1
@@ -27,7 +27,7 @@ export function Breadcrumb({ path }: BreadcrumbProps) {
       <ol className="breadcrumb-list">
         <li className="breadcrumb-item">
           <Link href="/" className="breadcrumb-link">
-            GEHU-ORG
+            UniExamPrep
           </Link>
         </li>
         {segments.map((segment, idx) => {

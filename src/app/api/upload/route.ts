@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const targetPath = path.startsWith('GEHU-ORG') ? path : `GEHU-ORG/${path}`;
+    const targetPath = path.startsWith('UniExamPrep') ? path : `UniExamPrep/${path}`;
 
     await uploadFile(targetPath, buffer, auth.accessToken);
 
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     console.error('Error uploading file:', error);
     if (error.status === 404) {
       return NextResponse.json(
-        { error: 'Permission denied. You must be a member of GEHU-ORG to upload files.' },
+        { error: 'Permission denied. You must be a member of UniExamPrep to upload files.' },
         { status: 403 }
       );
     }

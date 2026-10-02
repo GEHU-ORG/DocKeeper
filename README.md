@@ -39,7 +39,7 @@ Instead of traditional clunky web portals, DocKeeper connects directly to the Gi
 ```
 ┌─────────────┐     ┌──────────────┐     ┌─────────────────┐
 │   Client     │────▶│   API Layer  │────▶│  GitHub API      │
-│  (Next.js)   │◀────│  (Octokit)   │◀────│  (GEHU-ORG Data) │
+│  (Next.js)   │◀────│  (Octokit)   │◀────│  (UniExamPrep Data) │
 └─────────────┘     └──────────────┘     └─────────────────┘
                            │
                     ┌──────┴──────┐
@@ -73,7 +73,7 @@ This project demonstrates strong capabilities in **full-stack development, API i
 
 ```bash
 # Clone the repository
-git clone https://github.com/GEHU-ORG/DocKeeper.git
+git clone https://github.com/UniExamPrep/DocKeeper.git
 cd DocKeeper
 
 # Install dependencies

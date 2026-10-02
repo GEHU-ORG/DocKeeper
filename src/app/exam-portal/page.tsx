@@ -1,54 +1,89 @@
 'use client';
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { getDepartments, getBranches, getSubjects } from './actions';
+import { getUniversities, getDepartments, getBranches, getSemesters, getSubjects } from './actions';
 import { ChatBox } from '@/components/ChatBox';
 
 export default function ExamPortalPage() {
   const [step, setStep] = useState(1);
 
   // Data State
+  const [universities, setUniversities] = useState<{id: string, name: string, slug: string}[]>([]);
   const [departments, setDepartments] = useState<{id: string, name: string}[]>([]);
   const [branches, setBranches] = useState<{id: string, name: string}[]>([]);
+  const [semesters, setSemesters] = useState<{id: string, name: string, number: number}[]>([]);
   const [subjects, setSubjects] = useState<{id: string, name: string}[]>([]);
 
   // Form State
+  const [universityId, setUniversityId] = useState('');
   const [departmentId, setDepartmentId] = useState('');
   const [branchId, setBranchId] = useState('');
+  const [semesterId, setSemesterId] = useState('');
   const [subjectId, setSubjectId] = useState('');
 
-  // Fetch departments on load
+  // Fetch universities on load
   useEffect(() => {
-    getDepartments().then(setDepartments);
+    getUniversities().then(setUniversities);
   }, []);
 
-  // Fetch branches when department changes
+  // Cascade: University → Departments
+  useEffect(() => {
+    if (universityId) {
+      getDepartments(universityId).then(setDepartments);
+      setDepartmentId(''); setBranchId(''); setSemesterId(''); setSubjectId('');
+    }
+  }, [universityId]);
+
+  // Cascade: Department → Branches
   useEffect(() => {
     if (departmentId) {
       getBranches(departmentId).then(setBranches);
-      setBranchId('');
-      setSubjectId('');
+      setBranchId(''); setSemesterId(''); setSubjectId('');
     }
   }, [departmentId]);
 
-  // Fetch subjects when branch changes
+  // Cascade: Branch → Semesters
   useEffect(() => {
     if (branchId) {
-      getSubjects(branchId).then(setSubjects);
-      setSubjectId('');
+      getSemesters(branchId).then(setSemesters);
+      setSemesterId(''); setSubjectId('');
     }
   }, [branchId]);
+
+  // Cascade: Semester → Subjects
+  useEffect(() => {
+    if (semesterId) {
+      getSubjects(semesterId).then(setSubjects);
+      setSubjectId('');
+    }
+  }, [semesterId]);
+
+  const selectStyle = (disabled: boolean) => ({
+    width: '100%',
+    padding: '12px 16px',
+    background: 'var(--bg-primary)',
+    border: '1px solid var(--border-strong)',
+    borderRadius: 'var(--radius-md)',
+    fontSize: '1rem',
+    color: 'var(--text-primary)',
+    outline: 'none',
+    opacity: disabled ? 0.5 : 1
+  });
+
+  const labelStyle = {
+    display: 'block' as const,
+    fontSize: '0.875rem',
+    fontWeight: 600,
+    marginBottom: '8px',
+    color: 'var(--text-secondary)'
+  };
 
   return (
     <div style={{ padding: '40px 20px', maxWidth: '800px', margin: '0 auto', fontFamily: 'var(--font-sans)' }}>
       
       <div style={{ textAlign: 'center', marginBottom: '40px' }}>
         <h1 style={{ fontSize: '2.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '12px' }}>
-          <span style={{ color: 'var(--accent)' }}>✨</span> Exam Portal
+          <span style={{ color: 'var(--accent)' }}>📚</span> UniExamPrep
         </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', maxWidth: '500px', margin: '0 auto' }}>
-          AI-powered study guides, 1-pagers, and detailed notes generated directly from your syllabus.
-        </p>
       </div>
 
       <div style={{
@@ -61,21 +96,21 @@ export default function ExamPortalPage() {
         
         {/* Wizard Progress */}
         <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-tertiary)' }}>
-          {[1, 2, 3, 4].map((s) => (
+          {['University', 'Subject', 'Syllabus', 'Exam', 'Study'].map((label, i) => (
             <div
-              key={s}
+              key={i}
               style={{
                 flex: 1,
                 textAlign: 'center',
                 padding: '16px 0',
-                fontSize: '0.875rem',
+                fontSize: '0.8rem',
                 fontWeight: 600,
-                color: step >= s ? 'var(--accent)' : 'var(--text-tertiary)',
-                borderBottom: step >= s ? '3px solid var(--accent)' : '3px solid transparent',
+                color: step >= i + 1 ? 'var(--accent)' : 'var(--text-tertiary)',
+                borderBottom: step >= i + 1 ? '3px solid var(--accent)' : '3px solid transparent',
                 transition: 'all var(--transition-fast)'
               }}
             >
-              Step {s}
+              {label}
             </div>
           ))}
         </div>
@@ -83,15 +118,30 @@ export default function ExamPortalPage() {
         <div style={{ padding: '40px' }}>
           {step === 1 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Select Your Subject</h2>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Select Your University & Subject</h2>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '8px', color: 'var(--text-secondary)' }}>Department</label>
+                  <label style={labelStyle}>University</label>
+                  <select 
+                    value={universityId}
+                    onChange={(e) => setUniversityId(e.target.value)}
+                    style={selectStyle(false)}
+                  >
+                    <option value="">Select University</option>
+                    {universities.map(u => (
+                      <option key={u.id} value={u.id}>{u.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={labelStyle}>Department</label>
                   <select 
                     value={departmentId}
                     onChange={(e) => setDepartmentId(e.target.value)}
-                    style={{ width: '100%', padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-md)', fontSize: '1rem', color: 'var(--text-primary)', outline: 'none' }}
+                    disabled={!universityId}
+                    style={selectStyle(!universityId)}
                   >
                     <option value="">Select Department</option>
                     {departments.map(d => (
@@ -101,12 +151,12 @@ export default function ExamPortalPage() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '8px', color: 'var(--text-secondary)' }}>Branch / Specialization</label>
+                  <label style={labelStyle}>Branch / Specialization</label>
                   <select 
                     value={branchId}
                     onChange={(e) => setBranchId(e.target.value)}
                     disabled={!departmentId}
-                    style={{ width: '100%', padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-md)', fontSize: '1rem', color: 'var(--text-primary)', outline: 'none', opacity: !departmentId ? 0.5 : 1 }}
+                    style={selectStyle(!departmentId)}
                   >
                     <option value="">Select Branch</option>
                     {branches.map(b => (
@@ -116,12 +166,27 @@ export default function ExamPortalPage() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '8px', color: 'var(--text-secondary)' }}>Subject</label>
+                  <label style={labelStyle}>Semester</label>
+                  <select 
+                    value={semesterId}
+                    onChange={(e) => setSemesterId(e.target.value)}
+                    disabled={!branchId}
+                    style={selectStyle(!branchId)}
+                  >
+                    <option value="">Select Semester</option>
+                    {semesters.map(s => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={labelStyle}>Subject</label>
                   <select 
                     value={subjectId}
                     onChange={(e) => setSubjectId(e.target.value)}
-                    disabled={!branchId}
-                    style={{ width: '100%', padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-md)', fontSize: '1rem', color: 'var(--text-primary)', outline: 'none', opacity: !branchId ? 0.5 : 1 }}
+                    disabled={!semesterId}
+                    style={selectStyle(!semesterId)}
                   >
                     <option value="">Select Subject</option>
                     {subjects.map(s => (
@@ -159,7 +224,7 @@ export default function ExamPortalPage() {
               <div>
                 <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 8px 0' }}>Confirm Syllabus</h2>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>
-                  We found the following syllabus for <strong>{subjects.find(s => s.id === subjectId)?.name}</strong>. Please confirm it's correct or paste your own.
+                  We found the following syllabus for <strong>{subjects.find(s => s.id === subjectId)?.name}</strong>. Please confirm or paste your own.
                 </p>
               </div>
               
@@ -177,7 +242,7 @@ export default function ExamPortalPage() {
                   resize: 'none',
                   outline: 'none'
                 }}
-                defaultValue={`Unit 1: Introduction to Networks...\nUnit 2: Application Layer...\nUnit 3: Transport Layer...`}
+                defaultValue={`Unit 1: Introduction...\nUnit 2: Core Concepts...\nUnit 3: Advanced Topics...`}
               />
 
               <div style={{ display: 'flex', gap: '12px' }}>
@@ -202,23 +267,22 @@ export default function ExamPortalPage() {
               <div>
                 <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 8px 0' }}>Exam Parameters</h2>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>
-                  Tell us a bit about your exam format so the AI can tailor the depth of the study notes.
+                  Configure your exam format so the AI tailors the study material accordingly.
                 </p>
               </div>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '8px', color: 'var(--text-secondary)' }}>Marks per question (Average)</label>
+                  <label style={labelStyle}>Marks per question (Average)</label>
                   <input
                     type="number"
                     placeholder="e.g. 10"
                     style={{ width: '100%', padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-md)', fontSize: '1rem', color: 'var(--text-primary)', outline: 'none' }}
                   />
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '8px', margin: 0 }}>Determines how detailed each topic explanation will be.</p>
                 </div>
                 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '8px', color: 'var(--text-secondary)' }}>Total questions in exam</label>
+                  <label style={labelStyle}>Total questions in exam</label>
                   <input
                     type="number"
                     placeholder="e.g. 5"
@@ -258,9 +322,18 @@ export default function ExamPortalPage() {
               `}</style>
             </div>
           )}
+
+          {step === 5 && (
+            <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 16px 0' }}>Your Study Portal is Ready</h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>
+                Ask the AI anything about <strong>{subjects.find(s => s.id === subjectId)?.name}</strong> using the chat below.
+              </p>
+            </div>
+          )}
         </div>
       </div>
-      {step === 4 && <ChatBox />}
+      {(step === 4 || step === 5) && <ChatBox />}
     </div>
   );
 }

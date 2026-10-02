@@ -232,7 +232,7 @@ export function FileRow({
   );
 
   if (item.type === 'folder') {
-    const cleanPath = item.path.replace(/^GEHU-ORG\//, '');
+    const cleanPath = item.path.replace(/^UniExamPrep\//, '');
     return (
       <Link href={`/${cleanPath}`} className={`file-row ${isReadOnly ? 'readonly' : ''}`}>
         {content}

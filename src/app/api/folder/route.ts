@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid parameters' }, { status: 400 });
     }
 
-    const targetPath = path === auth.value ? `GEHU-ORG/${name}` : `${path}/${name}`;
+    const targetPath = path === auth.value ? `UniExamPrep/${name}` : `${path}/${name}`;
 
     await createFolder(targetPath, auth.accessToken);
 

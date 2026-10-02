@@ -6,7 +6,7 @@ export function Footer() {
       <div className="footer-inner">
         <div className="footer-left">
           <p className="footer-maintainer">
-            Open-source project for <span className="footer-name">GEHU students</span>
+            Open-source project for <span className="footer-name">university students</span>
           </p>
           <p className="footer-tech">
             Built with Next.js & GitHub API

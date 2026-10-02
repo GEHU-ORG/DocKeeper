@@ -2,7 +2,7 @@ import { Octokit } from '@octokit/rest';
 
 // Assuming GITHUB_PAT is set in .env
 const octokit = new Octokit({ auth: process.env.GITHUB_PAT });
-const ORG_NAME = 'GEHU-ORG';
+const ORG_NAME = 'UniExamPrep';
 
 export interface FileItem {
   id?: string;
@@ -18,7 +18,7 @@ export interface FileItem {
 export async function listItems(path: string): Promise<FileItem[]> {
   const parts = path.split('/').filter(Boolean);
   
-  if (parts.length === 0 || (parts.length === 1 && parts[0] === 'GEHU-ORG')) {
+  if (parts.length === 0 || (parts.length === 1 && parts[0] === 'UniExamPrep')) {
     // List repositories
     const { data } = await octokit.repos.listForOrg({ org: ORG_NAME, per_page: 100 });
     return data
@@ -78,7 +78,7 @@ export async function searchItems(path: string, query: string): Promise<FileItem
   const parts = path.split('/').filter(Boolean);
   const q = query.toLowerCase();
   
-  if (parts.length === 0 || (parts.length === 1 && parts[0] === 'GEHU-ORG')) {
+  if (parts.length === 0 || (parts.length === 1 && parts[0] === 'UniExamPrep')) {
     // Search repositories by name
     const { data } = await octokit.repos.listForOrg({ org: ORG_NAME, per_page: 100 });
     return data

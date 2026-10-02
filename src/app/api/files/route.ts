@@ -12,10 +12,10 @@ export async function GET(request: NextRequest) {
     const path = searchParams.get('path') || '';
     const query = searchParams.get('search') || searchParams.get('query') || '';
 
-    // Default to listing GEHU-ORG if path is empty or matches email
+    // Default to listing UniExamPrep if path is empty or matches email
     let targetPath = path;
     if (!targetPath || (auth && targetPath === auth.value)) {
-       targetPath = 'GEHU-ORG';
+       targetPath = 'UniExamPrep';
     }
 
     if (query) {

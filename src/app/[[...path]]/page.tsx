@@ -28,10 +28,10 @@ export default async function BrowsePage({ params }: BrowsePageProps) {
   // Render the File Browser
   const { path } = await params;
   
-  // Default to GEHU-ORG if no path (root)
-  let fullPath = 'GEHU-ORG';
+  // Default to UniExamPrep if no path (root)
+  let fullPath = 'UniExamPrep';
   if (path && path.length > 0) {
-    fullPath = 'GEHU-ORG/' + path.map(decodeURIComponent).join('/');
+    fullPath = 'UniExamPrep/' + path.map(decodeURIComponent).join('/');
   }
 
   return <FileBrowser initialPath={fullPath} isReadOnly={isReadOnly} isSignedIn={!!username} username={username} />;
@@ -39,7 +39,7 @@ export default async function BrowsePage({ params }: BrowsePageProps) {
 
 export async function generateMetadata({ params }: BrowsePageProps): Promise<Metadata> {
   const { path } = await params;
-  let folderName = 'GEHU-ORG Root';
+  let folderName = 'UniExamPrep Root';
   if (path && path.length > 0) {
     folderName = decodeURIComponent(path[path.length - 1]);
   }

@@ -31,7 +31,7 @@ export function Header() {
       <header className="header">
         <div className="header-inner">
           <Link href="/" className="header-title">
-            GEHU DocKeeper
+            UniExamPrep
           </Link>
           <div className="header-actions">
             <Link href="/exam-portal" style={{ textDecoration: 'none', marginRight: '8px' }}>
