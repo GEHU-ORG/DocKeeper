@@ -35,18 +35,48 @@ export async function addUniversity(name: string, slug: string, fullName: string
 
   // Comprehensive Indian University Courses Structure
   const courseStructure = [
-    { course: "B.Tech", departments: ["Computer Science Engineering (CSE)", "Mechanical Engineering (ME)", "Civil Engineering (CE)", "Electronics & Communication (ECE)", "Electrical Engineering (EE)"], semesters: 8 },
-    { course: "BCA", departments: ["General"], semesters: 6 },
-    { course: "BBA", departments: ["General"], semesters: 6 },
-    { course: "BA", departments: ["English", "Journalism and Mass Communication"], semesters: 6 },
-    { course: "B.Sc", departments: ["Animation", "Nursing", "IT", "PCM"], semesters: 6 },
+    // Engineering & Technology
+    { course: "B.Tech", departments: ["Computer Science Engineering (CSE)", "Mechanical Engineering (ME)", "Civil Engineering (CE)", "Electronics & Communication (ECE)", "Electrical Engineering (EE)", "Information Technology (IT)", "Artificial Intelligence & Machine Learning (AIML)", "Data Science", "Cyber Security", "Aerospace Engineering", "Biotechnology"], semesters: 8 },
+    { course: "M.Tech", departments: ["Computer Science Engineering (CSE)", "VLSI Design", "Thermal Engineering", "Structural Engineering", "Power Systems", "AI & Data Science"], semesters: 4 },
+    { course: "Diploma (Polytechnic)", departments: ["Computer Science", "Mechanical", "Civil", "Electrical", "Electronics"], semesters: 6 },
+    
+    // Computer Applications
+    { course: "BCA", departments: ["General", "Data Science", "Artificial Intelligence", "Cyber Security"], semesters: 6 },
+    { course: "MCA", departments: ["General", "Artificial Intelligence", "Data Science"], semesters: 4 },
+    
+    // Business & Management
+    { course: "BBA", departments: ["General", "Human Resources", "Marketing", "Finance", "International Business", "Hospitality Management"], semesters: 6 },
+    { course: "MBA", departments: ["Finance", "Marketing", "Human Resources (HR)", "General", "International Business", "Operations", "Business Analytics"], semesters: 4 },
+    { course: "B.Com", departments: ["General", "Honors", "Accounting & Finance", "Taxation", "Corporate Affairs"], semesters: 6 },
+    { course: "M.Com", departments: ["General", "Finance & Control", "Accounting"], semesters: 4 },
+    
+    // Arts, Humanities & Social Sciences
+    { course: "BA", departments: ["English", "Journalism and Mass Communication (JMC)", "Economics", "History", "Political Science", "Psychology", "Sociology", "Geography", "Hindi"], semesters: 6 },
+    { course: "MA", departments: ["English", "History", "Economics", "Political Science", "Psychology", "Sociology", "Mass Communication"], semesters: 4 },
+    
+    // Pure Sciences
+    { course: "B.Sc", departments: ["Physics", "Chemistry", "Mathematics", "IT", "Computer Science", "Animation & VFX", "Agriculture", "Biotechnology", "Microbiology", "Nursing", "ZBC (Zoology, Botany, Chemistry)", "PCM (Physics, Chemistry, Maths)"], semesters: 6 },
+    { course: "M.Sc", departments: ["Physics", "Chemistry", "Mathematics", "Botany", "Zoology", "Biotechnology", "IT", "Data Science", "Environmental Science"], semesters: 4 },
+    
+    // Medicine & Pharmacy
     { course: "B.Pharm", departments: ["General"], semesters: 8 },
-    { course: "B.Com (Hons)", departments: ["General"], semesters: 6 },
-    { course: "BHM", departments: ["General"], semesters: 8 },
-    { course: "Diploma", departments: ["Computer Science", "Mechanical", "Civil"], semesters: 6 },
-    { course: "MBA", departments: ["Finance", "Marketing", "HR", "General"], semesters: 4 },
-    { course: "MCA", departments: ["General"], semesters: 4 },
-    { course: "M.Tech", departments: ["Computer Science Engineering (CSE)", "VLSI", "Thermal"], semesters: 4 }
+    { course: "M.Pharm", departments: ["Pharmaceutics", "Pharmacology", "Pharmaceutical Chemistry"], semesters: 4 },
+    { course: "MBBS", departments: ["General"], semesters: 9 }, // Technically 4.5 years + internship
+    { course: "BDS", departments: ["General"], semesters: 8 },
+    { course: "BPT (Physiotherapy)", departments: ["General"], semesters: 8 },
+    
+    // Law
+    { course: "LLB", departments: ["General"], semesters: 6 },
+    { course: "BA LLB (Integrated)", departments: ["General", "Corporate Law", "Criminal Law"], semesters: 10 },
+    { course: "LLM", departments: ["Corporate Law", "Criminal Law", "Human Rights"], semesters: 4 },
+    
+    // Architecture & Design
+    { course: "B.Arch", departments: ["General"], semesters: 10 },
+    { course: "B.Des", departments: ["Fashion Design", "Interior Design", "Graphic Design", "Product Design"], semesters: 8 },
+    
+    // Education & Hospitality
+    { course: "B.Ed", departments: ["General"], semesters: 4 },
+    { course: "BHM (Hotel Management)", departments: ["General", "Culinary Arts", "Travel & Tourism"], semesters: 8 }
   ];
 
   const repoPaths: string[] = [];
