@@ -15,6 +15,7 @@ import { AIOrganizeDialog, type AIMove } from './AIOrganizeDialog';
 import { JoinOrgPrompt } from './JoinOrgPrompt';
 import { AddUniversityModal } from './AddUniversityModal';
 import { GenerateNotesModal } from './GenerateNotesModal';
+import { GeneratePyqModal } from './GeneratePyqModal';
 
 
 interface FileBrowserProps {
@@ -41,6 +42,8 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
   const [showAddUni, setShowAddUni] = useState(false);
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [showGenerateNotes, setShowGenerateNotes] = useState(false);
+  const [showGeneratePyq, setShowGeneratePyq] = useState(false);
+  const [selectedPyqFile, setSelectedPyqFile] = useState<FileItem | null>(null);
   const [newFolderTitle, setNewFolderTitle] = useState('New Folder');
   const [deleteTarget, setDeleteTarget] = useState<FileItem | null>(null);
   const [moveTarget, setMoveTarget] = useState<FileItem | null>(null);
@@ -489,28 +492,8 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
       return;
     }
 
-    setIsOperating(true);
-    try {
-      // initialPath format inside PYQ: UniExamPrep/GEU/B.Tech/CSE/Semester-4/Career Skills/PYQ
-      const subjectPath = initialPath.replace(/\/PYQ$/, '');
-      const repo = initialPath.split('/')[1];
-
-      const res = await fetch('/api/study/generate-pyq-answer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ repo, subjectPath, pdfFile })
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-
-      alert('Successfully generated PYQ answers! You can view them in the ✨ My PYQ Answers folder.');
-      setSelectedItems(new Set());
-    } catch (err: any) {
-      alert(err.message || 'Failed to generate PYQ answer');
-    } finally {
-      setIsOperating(false);
-    }
+    setSelectedPyqFile(pdfFile);
+    setShowGeneratePyq(true);
   };
 
   const handleAIOrganizeClick = async () => {
@@ -756,6 +739,21 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         subjectPath={initialPath}
         onSuccess={(chatId) => {
           alert('Study Session generated successfully! You can view it in the ✨ My Study Notes folder.');
+          fetchFiles(); // refresh to show the new file
+        }}
+      />
+
+      <GeneratePyqModal
+        isOpen={showGeneratePyq}
+        onClose={() => setShowGeneratePyq(false)}
+        subjectPath={initialPath.replace(/\/PYQ$/, '')}
+        repo={initialPath.split('/')[1]}
+        pdfFile={selectedPyqFile}
+        onSuccess={() => {
+          alert('Successfully generated PYQ answers! You can view them in the ✨ My PYQ Answers folder.');
+          setSelectedItems(new Set());
+          setShowGeneratePyq(false);
+          fetchFiles();
         }}
       />
     </div>
