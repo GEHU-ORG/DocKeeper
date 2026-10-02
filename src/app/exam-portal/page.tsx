@@ -68,16 +68,34 @@ export default function ExamPortalPage() {
         </div>
 
         <div style={{ padding: '32px' }}>
-          
-          {/* STEP 1: University */}
+               {/* STEP 1: University */}
           {step === 1 && (
-            <div className="animate-fade-in">
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '24px' }}>Select Your University</h2>
-              <div style={{ display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+            <div className="animate-fade-in file-list">
+              <div className="file-list-header readonly">
+                <div className="file-row-icon" />
+                <div className="file-row-name header-label">Select Your University</div>
+                <div className="file-row-date header-label"></div>
+                <div className="file-row-size header-label"></div>
+                <div className="file-row-actions header-label"></div>
+              </div>
+              <div className="file-list-items">
                 {universities.map(u => (
-                  <button key={u.id} onClick={() => { setUniversityId(u.id); handleNext(); }} style={{ padding: '24px', borderRadius: 'var(--radius-lg)', border: `2px solid ${universityId === u.id ? 'var(--accent)' : 'var(--border-strong)'}`, background: universityId === u.id ? 'rgba(59, 130, 246, 0.05)' : 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '1.1rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', textAlign: 'center' }}>
-                    {u.fullName || u.name}
-                  </button>
+                  <div key={u.id} className="file-row readonly" onClick={() => { setUniversityId(u.id); handleNext(); }} style={{ cursor: 'pointer' }}>
+                    <div className="file-row-icon">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--accent)' }}>
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                      </svg>
+                    </div>
+                    <div className="file-row-name">
+                      <span className="file-name-text">{u.fullName || u.name}</span>
+                    </div>
+                    <div className="file-row-date">—</div>
+                    <div className="file-row-size">—</div>
+                    <div className="file-row-actions">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-tertiary)' }}><path d="m9 18 6-6-6-6"/></svg>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -85,64 +103,115 @@ export default function ExamPortalPage() {
 
           {/* STEP 2: Course */}
           {step === 2 && (
-            <div className="animate-fade-in">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-                <button onClick={handlePrev} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>← Back</button>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Select Your Course</h2>
+            <div className="animate-fade-in file-list">
+              <div className="file-list-header readonly">
+                <div className="file-row-icon" />
+                <div className="file-row-name header-label">
+                  <button onClick={handlePrev} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', marginRight: '12px', fontSize: '1.2rem', padding: 0 }}>←</button>
+                  Select Your Course
+                </div>
+                <div className="file-row-date header-label"></div>
+                <div className="file-row-size header-label"></div>
+                <div className="file-row-actions header-label"></div>
               </div>
-              <div style={{ display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+              <div className="file-list-items">
                 {courses.length > 0 ? courses.map(c => (
-                  <button key={c.id} onClick={() => { setCourseId(c.id); handleNext(); }} style={{ padding: '20px', borderRadius: 'var(--radius-md)', border: `2px solid ${courseId === c.id ? 'var(--accent)' : 'var(--border-color)'}`, background: courseId === c.id ? 'rgba(59, 130, 246, 0.05)' : 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}>
-                    {c.name}
-                  </button>
-                )) : (
-                  <div style={{ color: 'var(--text-tertiary)', gridColumn: '1 / -1', padding: '40px 0', textAlign: 'center' }}>No courses available for this university.</div>
-                )}
+                  <div key={c.id} className="file-row readonly" onClick={() => { setCourseId(c.id); handleNext(); }} style={{ cursor: 'pointer' }}>
+                    <div className="file-row-icon">
+                      <svg width="28" height="28" viewBox="0 0 16 16" className="file-icon file-icon-folder">
+                        <path fill="#FFC107" d="M9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.825a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31L.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3m-8.322.12q.322-.119.684-.12h5.396l-.707-.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981z"/>
+                      </svg>
+                    </div>
+                    <div className="file-row-name">
+                      <span className="file-name-text">{c.name}</span>
+                    </div>
+                    <div className="file-row-date">—</div>
+                    <div className="file-row-size">—</div>
+                    <div className="file-row-actions">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-tertiary)' }}><path d="m9 18 6-6-6-6"/></svg>
+                    </div>
+                  </div>
+                )) : <div style={{ padding: '32px', textAlign: 'center', color: 'var(--text-secondary)' }}>No courses available</div>}
               </div>
             </div>
           )}
 
           {/* STEP 3: Semester */}
           {step === 3 && (
-            <div className="animate-fade-in">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-                <button onClick={handlePrev} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>← Back</button>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Select Your Semester</h2>
+            <div className="animate-fade-in file-list">
+               <div className="file-list-header readonly">
+                <div className="file-row-icon" />
+                <div className="file-row-name header-label">
+                  <button onClick={handlePrev} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', marginRight: '12px', fontSize: '1.2rem', padding: 0 }}>←</button>
+                  Select Your Semester
+                </div>
+                <div className="file-row-date header-label"></div>
+                <div className="file-row-size header-label"></div>
+                <div className="file-row-actions header-label"></div>
               </div>
-              <div style={{ display: 'grid', gap: '12px', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))' }}>
+              <div className="file-list-items">
                 {semesters.length > 0 ? semesters.map(s => (
-                  <button key={s.id} onClick={() => { setSemesterId(s.id); handleNext(); }} style={{ padding: '16px', borderRadius: 'var(--radius-md)', border: `2px solid ${semesterId === s.id ? 'var(--accent)' : 'var(--border-color)'}`, background: semesterId === s.id ? 'rgba(59, 130, 246, 0.05)' : 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', textAlign: 'center' }}>
-                    {s.name}
-                  </button>
-                )) : (
-                  <div style={{ color: 'var(--text-tertiary)', gridColumn: '1 / -1', padding: '40px 0', textAlign: 'center' }}>No semesters available for this course.</div>
-                )}
+                  <div key={s.id} className="file-row readonly" onClick={() => { setSemesterId(s.id); handleNext(); }} style={{ cursor: 'pointer' }}>
+                    <div className="file-row-icon">
+                      <svg width="28" height="28" viewBox="0 0 16 16" className="file-icon file-icon-folder">
+                        <path fill="#FFC107" d="M9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.825a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31L.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3m-8.322.12q.322-.119.684-.12h5.396l-.707-.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981z"/>
+                      </svg>
+                    </div>
+                    <div className="file-row-name">
+                      <span className="file-name-text">{s.name}</span>
+                    </div>
+                    <div className="file-row-date">—</div>
+                    <div className="file-row-size">—</div>
+                    <div className="file-row-actions">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-tertiary)' }}><path d="m9 18 6-6-6-6"/></svg>
+                    </div>
+                  </div>
+                )) : <div style={{ padding: '32px', textAlign: 'center', color: 'var(--text-secondary)' }}>No semesters available</div>}
               </div>
             </div>
           )}
 
-          {/* STEP 4: Subject */}
+          {/* STEP 4: Subjects / ChatBox */}
           {step === 4 && (
-            <div className="animate-fade-in">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-                <button onClick={handlePrev} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>← Back</button>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Select Your Subject</h2>
-              </div>
-              <div style={{ display: 'grid', gap: '16px', gridTemplateColumns: '1fr' }}>
-                {subjects.length > 0 ? subjects.map(s => (
-                  <button key={s.id} onClick={() => { setSubjectId(s.id); }} style={{ padding: '24px', borderRadius: 'var(--radius-lg)', border: `2px solid ${subjectId === s.id ? 'var(--accent)' : 'var(--border-color)'}`, background: subjectId === s.id ? 'rgba(59, 130, 246, 0.05)' : 'var(--bg-primary)', color: 'var(--text-primary)', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '1.1rem', fontWeight: 600 }}>{s.name}</span>
-                    <span style={{ color: 'var(--accent)' }}>View Materials →</span>
-                  </button>
-                )) : (
-                  <div style={{ color: 'var(--text-tertiary)', padding: '40px 0', textAlign: 'center' }}>No subjects available for this semester.</div>
-                )}
+            <div className="animate-fade-in file-list">
+              <div className="file-list-header readonly">
+                <div className="file-row-icon" />
+                <div className="file-row-name header-label">
+                  <button onClick={handlePrev} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', marginRight: '12px', fontSize: '1.2rem', padding: 0 }}>←</button>
+                  Select Your Subject
+                </div>
+                <div className="file-row-date header-label"></div>
+                <div className="file-row-size header-label"></div>
+                <div className="file-row-actions header-label"></div>
               </div>
               
-              {subjectId && (
-                <div style={{ marginTop: '32px', padding: '24px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid #10b981', borderRadius: 'var(--radius-lg)', color: '#047857', textAlign: 'center' }}>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '8px' }}>Success! You are ready to study.</h3>
-                  <p>In the next update, this will redirect to the subject dashboard with full PYQ analysis and study materials.</p>
+              {!subjectId ? (
+                <div className="file-list-items">
+                  {subjects.length > 0 ? subjects.map(s => (
+                    <div key={s.id} className="file-row readonly" onClick={() => setSubjectId(s.id)} style={{ cursor: 'pointer' }}>
+                      <div className="file-row-icon">
+                        <svg width="28" height="28" viewBox="0 0 16 16" className="file-icon file-icon-folder">
+                          <path fill="#FFC107" d="M9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.825a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31L.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3m-8.322.12q.322-.119.684-.12h5.396l-.707-.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981z"/>
+                        </svg>
+                      </div>
+                      <div className="file-row-name">
+                        <span className="file-name-text">{s.name}</span>
+                      </div>
+                      <div className="file-row-date">—</div>
+                      <div className="file-row-size">—</div>
+                      <div className="file-row-actions">
+                        <button className="action-btn" style={{ background: 'var(--accent)', color: '#fff', borderRadius: '20px', padding: '4px 12px', width: 'auto', height: 'auto' }}>Study AI</button>
+                      </div>
+                    </div>
+                  )) : <div style={{ padding: '32px', textAlign: 'center', color: 'var(--text-secondary)' }}>No subjects available</div>}
+                </div>
+              ) : (
+                <div style={{ padding: '24px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Subject Study Space</h3>
+                    <button onClick={() => setSubjectId('')} style={{ padding: '6px 12px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-primary)' }}>Change Subject</button>
+                  </div>
+                  <ChatBox />
                 </div>
               )}
             </div>
