@@ -7,7 +7,7 @@ export default function ExamPortalPage() {
   const [step, setStep] = useState(1);
 
   // Data State
-  const [universities, setUniversities] = useState<{id: string, name: string, slug: string}[]>([]);
+  const [universities, setUniversities] = useState<{id: string, name: string, slug: string, fullName?: string | null}[]>([]);
   const [courses, setCourses] = useState<{id: string, name: string}[]>([]);
   const [semesters, setSemesters] = useState<{id: string, name: string, number: number}[]>([]);
   const [subjects, setSubjects] = useState<{id: string, name: string}[]>([]);

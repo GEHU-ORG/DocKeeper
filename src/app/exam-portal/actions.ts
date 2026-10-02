@@ -2,7 +2,7 @@
 import { prisma } from '@/lib/prisma';
 
 export async function getUniversities() {
-  return await prisma.university.findMany({ select: { id: true, name: true, slug: true } });
+  return await prisma.university.findMany({ select: { id: true, name: true, slug: true, fullName: true } });
 }
 
 export async function getCourses(universityId: string) {
