@@ -46,6 +46,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   fileOwnerships FileOwnership[]
+  geminiApiKey  String?
 }
 
 model VerificationToken {

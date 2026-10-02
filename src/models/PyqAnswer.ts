@@ -6,6 +6,7 @@ export interface IPyqAnswer extends Document {
   pdfUrl: string;      // The URL of the PYQ PDF
   pdfName: string;     // The original filename
   content: string;     // The markdown content containing questions and answers
+  isPublic: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -16,6 +17,7 @@ const PyqAnswerSchema = new Schema<IPyqAnswer>({
   pdfUrl: { type: String, required: true },
   pdfName: { type: String, required: true },
   content: { type: String, required: true },
+  isPublic: { type: Boolean, default: true },
 }, { timestamps: true });
 
 export const PyqAnswer = mongoose.models.PyqAnswer || mongoose.model<IPyqAnswer>('PyqAnswer', PyqAnswerSchema);

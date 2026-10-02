@@ -10,6 +10,7 @@ export interface IChat extends Document {
   subjectPath: string;
   title: string;
   messages: IMessage[];
+  isPublic: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,6 +25,7 @@ const ChatSchema = new Schema<IChat>({
   subjectPath: { type: String, required: true },
   title: { type: String, default: 'Study Session' },
   messages: [MessageSchema],
+  isPublic: { type: Boolean, default: true },
 }, { timestamps: true });
 
 export const Chat = mongoose.models.Chat || mongoose.model<IChat>('Chat', ChatSchema);

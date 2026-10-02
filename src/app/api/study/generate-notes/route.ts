@@ -5,9 +5,9 @@ import { Octokit } from '@octokit/rest';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dbConnect from '@/lib/mongoose';
 import { Chat } from '@/models/Chat';
+import prisma from '@/lib/prisma';
 
 const octokit = new Octokit({ auth: process.env.GITHUB_PAT });
-const genai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const ORG = 'UniExamPrep';
 
 export async function POST(req: NextRequest) {
@@ -19,6 +19,23 @@ export async function POST(req: NextRequest) {
   if (!repo || !subjectPath || !selectedFiles?.length) {
     return NextResponse.json({ error: 'Missing params' }, { status: 400 });
   }
+
+  // Get User's Custom API Key (if any)
+  let apiKey = process.env.GEMINI_API_KEY!;
+  let isPublic = true;
+
+  if (session.user.email) {
+    const dbUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { geminiApiKey: true },
+    });
+    if (dbUser?.geminiApiKey) {
+      apiKey = dbUser.geminiApiKey;
+      isPublic = false; // Private if using their own key
+    }
+  }
+
+  const customGenai = new GoogleGenerativeAI(apiKey);
 
   // 1. Fetch PDF content from GitHub (base64)
   const pdfParts: { inlineData: { data: string; mimeType: string } }[] = [];
@@ -38,7 +55,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 2. Generate with Gemini
-  const model = genai.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  const model = customGenai.getGenerativeModel({ model: 'gemini-2.5-flash' });
   const prompt = `You are a university exam study assistant. Analyze the provided documents for the subject "${subjectName}" and generate comprehensive pre-processed study notes.
 
 Format your response in beautiful Markdown with clear headings. Include:
@@ -71,7 +88,8 @@ Focus entirely on exam-relevant content.`;
           role: 'assistant',
           content: generatedText
         }
-      ]
+      ],
+      isPublic,
     });
 
     return NextResponse.json({

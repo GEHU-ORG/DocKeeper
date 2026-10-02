@@ -12,6 +12,8 @@ export default function ProfilePage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteEmailInput, setDeleteEmailInput] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [apiKey, setApiKey] = useState('');
+  const [isSavingApiKey, setIsSavingApiKey] = useState(false);
 
   const githubUsername = (session?.user as any)?.githubUsername;
   const provider = (session?.user as any)?.provider;
@@ -21,6 +23,11 @@ export default function ProfilePage() {
       fetch('/api/account/linked-accounts')
         .then(r => r.json())
         .then(data => setLinkedAccounts(data))
+        .catch(() => {});
+        
+      fetch('/api/account/api-key')
+        .then(r => r.json())
+        .then(data => setApiKey(data.apiKey || ''))
         .catch(() => {});
     }
   }, [session]);
@@ -73,6 +80,25 @@ export default function ProfilePage() {
       alert('Error deleting account');
       setIsDeleting(false);
     }
+  };
+
+  const handleSaveApiKey = async () => {
+    setIsSavingApiKey(true);
+    try {
+      const res = await fetch('/api/account/api-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey: apiKey.trim() }),
+      });
+      if (res.ok) {
+        alert('API Key saved successfully!');
+      } else {
+        alert('Failed to save API Key');
+      }
+    } catch {
+      alert('Error saving API Key');
+    }
+    setIsSavingApiKey(false);
   };
 
   const inputStyle: React.CSSProperties = {
@@ -201,6 +227,39 @@ export default function ProfilePage() {
                 {isLinking === 'google' ? '...' : '+ Connect'}
               </button>
             )}
+          </div>
+        </div>
+
+        <div style={{ height: '1px', background: 'var(--border-color)' }} />
+
+        {/* AI Settings */}
+        <div>
+          <div style={{ ...labelStyle, marginBottom: '16px' }}>AI Settings</div>
+          <div style={{ padding: '16px', borderRadius: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+            <div style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '8px' }}>Custom Gemini API Key</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '16px' }}>
+              Add your own Google Gemini API key to make your generated study notes and PYQ answers private.
+              If left blank, the global shared key is used and your generated notes will be public for everyone to see.
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                type="password"
+                placeholder="AIzaSy..."
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                style={{ ...inputStyle, cursor: 'text' }}
+              />
+              <button
+                onClick={handleSaveApiKey}
+                disabled={isSavingApiKey}
+                style={{
+                  padding: '0 20px', borderRadius: '8px', background: 'var(--accent)', color: '#fff',
+                  border: 'none', fontWeight: 600, cursor: 'pointer', flexShrink: 0,
+                }}
+              >
+                {isSavingApiKey ? 'Saving...' : 'Save'}
+              </button>
+            </div>
           </div>
         </div>
 

@@ -25,19 +25,25 @@ export async function GET(req: NextRequest) {
   try {
     if (id) {
       if (type === 'notes') {
-        const chat = await Chat.findOne({ _id: id, userId }).lean();
+        const chat = await Chat.findOne({ _id: id, $or: [{ isPublic: { $ne: false } }, { userId }] }).lean();
         return NextResponse.json(chat);
       } else if (type === 'pyq') {
-        const answer = await PyqAnswer.findOne({ _id: id, userId }).lean();
+        const answer = await PyqAnswer.findOne({ _id: id, $or: [{ isPublic: { $ne: false } }, { userId }] }).lean();
         return NextResponse.json(answer);
       }
     }
 
     if (type === 'notes') {
-      const chats = await Chat.find({ userId, subjectPath }).sort({ createdAt: -1 }).select('title createdAt updatedAt').lean();
+      const chats = await Chat.find({
+        subjectPath,
+        $or: [{ isPublic: { $ne: false } }, { userId }]
+      }).sort({ createdAt: -1 }).select('title createdAt updatedAt userId isPublic').lean();
       return NextResponse.json({ items: chats });
     } else if (type === 'pyq') {
-      const answers = await PyqAnswer.find({ userId, subjectPath }).sort({ createdAt: -1 }).select('pdfName createdAt updatedAt').lean();
+      const answers = await PyqAnswer.find({
+        subjectPath,
+        $or: [{ isPublic: { $ne: false } }, { userId }]
+      }).sort({ createdAt: -1 }).select('pdfName createdAt updatedAt userId isPublic').lean();
       return NextResponse.json({ items: answers });
     } else {
       return NextResponse.json({ error: 'Invalid type' }, { status: 400 });

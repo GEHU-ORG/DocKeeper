@@ -7,9 +7,9 @@ import { Octokit } from '@octokit/rest';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dbConnect from '@/lib/mongoose';
 import { PyqAnswer } from '@/models/PyqAnswer';
+import prisma from '@/lib/prisma';
 
 const octokit = new Octokit({ auth: process.env.GITHUB_PAT });
-const genai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const ORG = 'UniExamPrep';
 
 export async function POST(req: NextRequest) {
@@ -21,6 +21,23 @@ export async function POST(req: NextRequest) {
   if (!repo || !subjectPath || !pdfFile) {
     return NextResponse.json({ error: 'Missing params' }, { status: 400 });
   }
+
+  // Get User's Custom API Key (if any)
+  let apiKey = process.env.GEMINI_API_KEY!;
+  let isPublic = true;
+
+  if (session.user.email) {
+    const dbUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { geminiApiKey: true },
+    });
+    if (dbUser?.geminiApiKey) {
+      apiKey = dbUser.geminiApiKey;
+      isPublic = false; // Private if using their own key
+    }
+  }
+
+  const customGenai = new GoogleGenerativeAI(apiKey);
 
   // 1. Fetch PDF content from GitHub (base64)
   let inlineData: { data: string; mimeType: string };
@@ -34,7 +51,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 2. Generate with Gemini - Parallel Processing for Speed
-  const model = genai.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  const model = customGenai.getGenerativeModel({ model: 'gemini-2.5-flash' });
   
   let generatedText: string = "";
   try {
@@ -99,6 +116,7 @@ Rely on the provided PDF for any necessary context (like figures or specific pap
       pdfUrl: pdfFile.url || pdfFile.path,
       pdfName: pdfFile.name,
       content: generatedText,
+      isPublic,
     });
 
     return NextResponse.json({
