@@ -14,6 +14,7 @@ import { FilePreview } from './FilePreview';
 import { AIOrganizeDialog, type AIMove } from './AIOrganizeDialog';
 import { JoinOrgPrompt } from './JoinOrgPrompt';
 import { AddUniversityModal } from './AddUniversityModal';
+import { GenerateNotesModal } from './GenerateNotesModal';
 
 
 interface FileBrowserProps {
@@ -39,6 +40,7 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
   // Dialog states
   const [showAddUni, setShowAddUni] = useState(false);
   const [showNewFolder, setShowNewFolder] = useState(false);
+  const [showGenerateNotes, setShowGenerateNotes] = useState(false);
   const [newFolderTitle, setNewFolderTitle] = useState('New Folder');
   const [deleteTarget, setDeleteTarget] = useState<FileItem | null>(null);
   const [moveTarget, setMoveTarget] = useState<FileItem | null>(null);
@@ -478,6 +480,39 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
     }
   };
 
+  const handleGeneratePyqAnswer = async () => {
+    const selectedUrl = Array.from(selectedItems)[0];
+    const pdfFile = processedItems.find(i => (i.type === 'file' ? i.url : i.path) === selectedUrl);
+    
+    if (!pdfFile || !pdfFile.name.endsWith('.pdf')) {
+      alert('Please select a single PDF file to generate an answer for.');
+      return;
+    }
+
+    setIsOperating(true);
+    try {
+      // initialPath format inside PYQ: UniExamPrep/GEU/B.Tech/CSE/Semester-4/Career Skills/PYQ
+      const subjectPath = initialPath.replace(/\/PYQ$/, '');
+      const repo = initialPath.split('/')[1];
+
+      const res = await fetch('/api/study/generate-pyq-answer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ repo, subjectPath, pdfFile })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      alert('Successfully generated PYQ answers! You can view them in the ✨ My PYQ Answers folder.');
+      setSelectedItems(new Set());
+    } catch (err: any) {
+      alert(err.message || 'Failed to generate PYQ answer');
+    } finally {
+      setIsOperating(false);
+    }
+  };
+
   const handleAIOrganizeClick = async () => {
     setIsAIOrganizeOpen(true);
     setIsAILoading(true);
@@ -611,13 +646,10 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
           setNewFolderTitle('New Subject');
           setShowNewFolder(true);
         }}
-        showExamButton={initialPath.split('/').length >= 6 && initialPath.startsWith('UniExamPrep/')}
-        onExamClick={() => {
-          // Navigate to /study/<path without UniExamPrep prefix>
-          const studyPath = initialPath.replace(/^UniExamPrep\//, '');
-          router.push(`/study/${studyPath}`);
-        }}
-
+        showExamButton={initialPath.split('/').length === 6 && initialPath.startsWith('UniExamPrep/')}
+        onExamClick={() => setShowGenerateNotes(true)}
+        showGenerateAnswer={initialPath.endsWith('/PYQ')}
+        onGenerateAnswerClick={handleGeneratePyqAnswer}
       />
 
       {isOperating && (
@@ -718,8 +750,14 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         }}
       />
 
-      {/* ExamModal removed — using /study route instead */}
-
+      <GenerateNotesModal
+        isOpen={showGenerateNotes}
+        onClose={() => setShowGenerateNotes(false)}
+        subjectPath={initialPath}
+        onSuccess={(chatId) => {
+          alert('Study Session generated successfully! You can view it in the ✨ My Study Notes folder.');
+        }}
+      />
     </div>
   );
 }

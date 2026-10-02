@@ -16,28 +16,65 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const category = getFileCategory(fileName);
+  const isVirtual = fileUrl?.startsWith('/virtual/');
+  const category = isVirtual ? 'markdown' : getFileCategory(fileName);
 
   useEffect(() => {
-    if (isOpen && fileUrl && (category === 'text' || category === 'code')) {
+    if (isOpen && fileUrl && (category === 'text' || category === 'code' || isVirtual)) {
       setIsLoading(true);
       setError(null);
       setTextContent(null);
-      fetch(fileUrl)
-        .then(res => {
-          if (!res.ok) throw new Error('Failed to load content');
-          return res.text();
-        })
-        .then(text => setTextContent(text))
-        .catch(err => setError(err.message))
-        .finally(() => setIsLoading(false));
+
+      if (isVirtual) {
+        // e.g. /virtual/notes/123
+        const [, , type, id] = fileUrl.split('/');
+        // Extract the subjectPath from the current URL if possible, or we don't need it if we have ID
+        // Wait, the API needs subjectPath, but we passed id. The API has id so it works!
+        // Let's call the API
+        // But our API requires subjectPath in the backend. Wait, let me check the API:
+        // url.searchParams.get('subjectPath') is checked! Let's pass a dummy subjectPath since we have id.
+        const url = `/api/study/my-ai-content?type=${type}&id=${id}&subjectPath=dummy`;
+        fetch(url)
+          .then(res => {
+            if (!res.ok) throw new Error('Failed to load AI content');
+            return res.json();
+          })
+          .then(data => {
+            if (type === 'notes') {
+              setTextContent(data.messages?.[0]?.content || 'No content found');
+            } else {
+              setTextContent(data.content || 'No content found');
+            }
+          })
+          .catch(err => setError(err.message))
+          .finally(() => setIsLoading(false));
+      } else {
+        fetch(fileUrl)
+          .then(res => {
+            if (!res.ok) throw new Error('Failed to load content');
+            return res.text();
+          })
+          .then(text => setTextContent(text))
+          .catch(err => setError(err.message))
+          .finally(() => setIsLoading(false));
+      }
     }
-  }, [isOpen, fileUrl, category]);
+  }, [isOpen, fileUrl, category, isVirtual]);
 
   if (!isOpen) return null;
 
   const renderPreview = () => {
     switch (category) {
+      case 'markdown':
+        return (
+          <div className="preview-text-container markdown-body" style={{ width: '100%', height: '65vh', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', overflow: 'auto', padding: '2rem', border: '1px solid var(--border-color)', color: 'var(--text-primary)', lineHeight: '1.6' }}>
+            {isLoading && <div className="loading-spinner" style={{ margin: '2rem auto' }} />}
+            {error && <div style={{ color: 'var(--error)' }}>{error}</div>}
+            {!isLoading && !error && textContent !== null && (
+              <div dangerouslySetInnerHTML={{ __html: textContent.replace(/\n/g, '<br/>') }} /> // Simple markdown for now, better to use marked or react-markdown
+            )}
+          </div>
+        );
       case 'image':
         return (
           <div className="preview-image-container">

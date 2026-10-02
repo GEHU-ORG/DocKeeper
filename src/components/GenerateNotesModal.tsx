@@ -1,0 +1,165 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { type FileItem } from '@/lib/github';
+
+interface GenerateNotesModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  subjectPath: string; // e.g. UniExamPrep/GEU/B.Tech/CSE/Semester-4/Career Skills
+  onSuccess: (chatId: string) => void;
+}
+
+export function GenerateNotesModal({ isOpen, onClose, subjectPath, onSuccess }: GenerateNotesModalProps) {
+  const [pdfs, setPdfs] = useState<FileItem[]>([]);
+  const [selectedUrls, setSelectedUrls] = useState<Set<string>>(new Set());
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState('');
+
+  // Fetch PDFs from the subject's subfolders (PYQ, Notes, Syllabus)
+  useEffect(() => {
+    if (!isOpen || !subjectPath) return;
+
+    const fetchSubjectPdfs = async () => {
+      setIsLoading(true);
+      setError('');
+      try {
+        const folders = ['PYQ', 'Notes', 'Syllabus'];
+        const allPdfs: FileItem[] = [];
+
+        for (const folder of folders) {
+          const res = await fetch(`/api/files?path=${encodeURIComponent(subjectPath + '/' + folder)}`);
+          if (res.ok) {
+            const data = await res.json();
+            const folderFiles = (data.items || []).filter((item: FileItem) => item.name.endsWith('.pdf'));
+            allPdfs.push(...folderFiles);
+          }
+        }
+        setPdfs(allPdfs);
+      } catch (err: any) {
+        setError('Failed to fetch PDFs');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSubjectPdfs();
+    setSelectedUrls(new Set());
+  }, [isOpen, subjectPath]);
+
+  if (!isOpen) return null;
+
+  const handleToggle = (url: string) => {
+    setSelectedUrls(prev => {
+      const next = new Set(prev);
+      if (next.has(url)) next.delete(url);
+      else {
+        if (next.size >= 5) {
+          alert('You can select a maximum of 5 files.');
+          return prev;
+        }
+        next.add(url);
+      }
+      return next;
+    });
+  };
+
+  const handleGenerate = async () => {
+    if (selectedUrls.size === 0) {
+      setError('Please select at least one file');
+      return;
+    }
+
+    setIsGenerating(true);
+    setError('');
+
+    const selectedFiles = pdfs.filter(p => p.url && selectedUrls.has(p.url));
+    const parts = subjectPath.split('/');
+    const subjectName = parts[parts.length - 1];
+    const repo = parts[1];
+
+    try {
+      const res = await fetch('/api/study/generate-notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          repo,
+          subjectPath,
+          subjectName,
+          selectedFiles,
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to generate notes');
+      
+      onSuccess(data.chatId);
+      onClose();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  return (
+    <div className="dialog-overlay" onClick={!isGenerating ? onClose : undefined}>
+      <div className="dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px', width: '90%' }}>
+        <h3 className="dialog-title">✨ Generate Study Notes</h3>
+        
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '16px' }}>
+          Select up to 5 PDFs from this subject to use as context. The AI will generate comprehensive exam-focused notes for you.
+        </p>
+
+        {isLoading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+            <div className="loading-spinner" />
+          </div>
+        ) : pdfs.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+            No PDFs found in PYQ, Notes, or Syllabus folders.
+          </div>
+        ) : (
+          <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '16px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', padding: '12px' }}>
+            {pdfs.map(pdf => (
+              <label key={pdf.url} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', cursor: 'pointer', borderRadius: 'var(--radius-md)', transition: 'background 0.2s' }}>
+                <input 
+                  type="checkbox" 
+                  checked={selectedUrls.has(pdf.url!)} 
+                  onChange={() => handleToggle(pdf.url!)}
+                  disabled={isGenerating}
+                />
+                <span style={{ fontSize: '0.9rem', wordBreak: 'break-all' }}>{pdf.name}</span>
+              </label>
+            ))}
+          </div>
+        )}
+
+        {error && <p className="dialog-error">{error}</p>}
+
+        <div className="dialog-actions">
+          <button type="button" className="dialog-btn dialog-btn-cancel" onClick={onClose} disabled={isGenerating}>
+            Cancel
+          </button>
+          <button 
+            type="button" 
+            className="dialog-btn dialog-btn-confirm" 
+            onClick={handleGenerate} 
+            disabled={isGenerating || pdfs.length === 0 || selectedUrls.size === 0}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--accent)', borderColor: 'var(--accent)' }}
+          >
+            {isGenerating ? (
+              <>
+                <div className="loading-spinner loading-spinner-sm" />
+                Generating... (May take 30s)
+              </>
+            ) : (
+              <>✨ Generate Notes</>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
