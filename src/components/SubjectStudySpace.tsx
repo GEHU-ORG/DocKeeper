@@ -8,16 +8,6 @@ export function SubjectStudySpace({ subjectId, subjectName, isReadOnly, selected
   const [subject, setSubject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-    const baseContext = `
-Subject: ${subject?.name || 'Unknown Subject'}
-    `;
-    if (!modelConfig?.apiKey) {
-      alert('Please select a model and add your API key first.');
-      return;
-    }
-
-    setAiLoading(true);
-    setAiResponse('');
 
   const [modelConfig, setModelConfig] = useState<{ id: string, apiKey: string } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
