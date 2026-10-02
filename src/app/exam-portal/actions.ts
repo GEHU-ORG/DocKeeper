@@ -1,37 +1,28 @@
 'use server';
-
 import { prisma } from '@/lib/prisma';
 
 export async function getUniversities() {
-  return await prisma.university.findMany({
-    orderBy: { name: 'asc' },
-  });
+  return await prisma.university.findMany({ select: { id: true, name: true, slug: true } });
 }
 
-export async function getDepartments(universityId: string) {
-  return await prisma.department.findMany({
+export async function getCourses(universityId: string) {
+  return await prisma.course.findMany({
     where: { universityId },
-    orderBy: { name: 'asc' },
+    select: { id: true, name: true }
   });
 }
 
-export async function getBranches(departmentId: string) {
-  return await prisma.branch.findMany({
-    where: { departmentId },
-    orderBy: { name: 'asc' },
-  });
-}
-
-export async function getSemesters(branchId: string) {
+export async function getSemesters(courseId: string) {
   return await prisma.semester.findMany({
-    where: { branchId },
+    where: { courseId },
     orderBy: { number: 'asc' },
+    select: { id: true, name: true, number: true }
   });
 }
 
 export async function getSubjects(semesterId: string) {
   return await prisma.subject.findMany({
     where: { semesterId },
-    orderBy: { name: 'asc' },
+    select: { id: true, name: true }
   });
 }

@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { getUniversities, getDepartments, getBranches, getSemesters, getSubjects } from './actions';
+import { getUniversities, getCourses, getSemesters, getSubjects } from './actions';
 import { ChatBox } from '@/components/ChatBox';
 
 export default function ExamPortalPage() {
@@ -8,15 +8,13 @@ export default function ExamPortalPage() {
 
   // Data State
   const [universities, setUniversities] = useState<{id: string, name: string, slug: string}[]>([]);
-  const [departments, setDepartments] = useState<{id: string, name: string}[]>([]);
-  const [branches, setBranches] = useState<{id: string, name: string}[]>([]);
+  const [courses, setCourses] = useState<{id: string, name: string}[]>([]);
   const [semesters, setSemesters] = useState<{id: string, name: string, number: number}[]>([]);
   const [subjects, setSubjects] = useState<{id: string, name: string}[]>([]);
 
   // Form State
   const [universityId, setUniversityId] = useState('');
-  const [departmentId, setDepartmentId] = useState('');
-  const [branchId, setBranchId] = useState('');
+  const [courseId, setCourseId] = useState('');
   const [semesterId, setSemesterId] = useState('');
   const [subjectId, setSubjectId] = useState('');
 
@@ -25,29 +23,21 @@ export default function ExamPortalPage() {
     getUniversities().then(setUniversities);
   }, []);
 
-  // Cascade: University → Departments
+  // Cascade: University → Courses
   useEffect(() => {
     if (universityId) {
-      getDepartments(universityId).then(setDepartments);
-      setDepartmentId(''); setBranchId(''); setSemesterId(''); setSubjectId('');
+      getCourses(universityId).then(setCourses);
+      setCourseId(''); setSemesterId(''); setSubjectId('');
     }
   }, [universityId]);
 
-  // Cascade: Department → Branches
+  // Cascade: Course → Semesters
   useEffect(() => {
-    if (departmentId) {
-      getBranches(departmentId).then(setBranches);
-      setBranchId(''); setSemesterId(''); setSubjectId('');
-    }
-  }, [departmentId]);
-
-  // Cascade: Branch → Semesters
-  useEffect(() => {
-    if (branchId) {
-      getSemesters(branchId).then(setSemesters);
+    if (courseId) {
+      getSemesters(courseId).then(setSemesters);
       setSemesterId(''); setSubjectId('');
     }
-  }, [branchId]);
+  }, [courseId]);
 
   // Cascade: Semester → Subjects
   useEffect(() => {
@@ -57,283 +47,118 @@ export default function ExamPortalPage() {
     }
   }, [semesterId]);
 
-  const selectStyle = (disabled: boolean) => ({
-    width: '100%',
-    padding: '12px 16px',
-    background: 'var(--bg-primary)',
-    border: '1px solid var(--border-strong)',
-    borderRadius: 'var(--radius-md)',
-    fontSize: '1rem',
-    color: 'var(--text-primary)',
-    outline: 'none',
-    opacity: disabled ? 0.5 : 1
-  });
-
-  const labelStyle = {
-    display: 'block' as const,
-    fontSize: '0.875rem',
-    fontWeight: 600,
-    marginBottom: '8px',
-    color: 'var(--text-secondary)'
-  };
+  const handleNext = () => setStep((s) => Math.min(s + 1, 4));
+  const handlePrev = () => setStep((s) => Math.max(s - 1, 1));
 
   return (
-    <div style={{ padding: '40px 20px', maxWidth: '800px', margin: '0 auto', fontFamily: 'var(--font-sans)' }}>
+    <div style={{ padding: '40px 20px', maxWidth: '800px', margin: '0 auto', fontFamily: 'var(--font-sans)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       
       <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <h1 style={{ fontSize: '2.5rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '12px' }}>
-          <span style={{ color: 'var(--accent)' }}>📚</span> UniExamPrep
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '16px' }}>
+          Welcome to the Exam Portal
         </h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
+          Select your university and course to instantly access AI-generated study notes, syllabus, and PYQ analysis tailored to your current semester.
+        </p>
       </div>
 
-      <div style={{
-        background: 'var(--bg-secondary)',
-        border: '1px solid var(--border-color)',
-        borderRadius: 'var(--radius-xl)',
-        boxShadow: 'var(--shadow-md)',
-        overflow: 'hidden'
-      }}>
+      <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)', flex: 1, position: 'relative' }}>
         
-        {/* Wizard Progress */}
+        {/* Progress Bar */}
         <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-tertiary)' }}>
-          {['University', 'Subject', 'Syllabus', 'Exam', 'Study'].map((label, i) => (
-            <div
-              key={i}
-              style={{
-                flex: 1,
-                textAlign: 'center',
-                padding: '16px 0',
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                color: step >= i + 1 ? 'var(--accent)' : 'var(--text-tertiary)',
-                borderBottom: step >= i + 1 ? '3px solid var(--accent)' : '3px solid transparent',
-                transition: 'all var(--transition-fast)'
-              }}
-            >
+          {['University', 'Course', 'Semester', 'Subject'].map((label, idx) => (
+            <div key={label} style={{ flex: 1, padding: '16px 12px', textAlign: 'center', fontSize: '0.875rem', fontWeight: 600, borderRight: idx < 3 ? '1px solid var(--border-color)' : 'none', color: step >= idx + 1 ? 'var(--accent)' : 'var(--text-tertiary)', position: 'relative', cursor: step >= idx + 1 ? 'pointer' : 'default' }} onClick={() => { if (step >= idx + 1) setStep(idx + 1); }}>
               {label}
+              {step === idx + 1 && (
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '3px', background: 'var(--accent)' }} />
+              )}
             </div>
           ))}
         </div>
 
-        <div style={{ padding: '40px' }}>
+        <div style={{ padding: '32px' }}>
+          
+          {/* STEP 1: University */}
           {step === 1 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Select Your University & Subject</h2>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div>
-                  <label style={labelStyle}>University</label>
-                  <select 
-                    value={universityId}
-                    onChange={(e) => setUniversityId(e.target.value)}
-                    style={selectStyle(false)}
-                  >
-                    <option value="">Select University</option>
-                    {universities.map(u => (
-                      <option key={u.id} value={u.id}>{u.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label style={labelStyle}>Department</label>
-                  <select 
-                    value={departmentId}
-                    onChange={(e) => setDepartmentId(e.target.value)}
-                    disabled={!universityId}
-                    style={selectStyle(!universityId)}
-                  >
-                    <option value="">Select Department</option>
-                    {departments.map(d => (
-                      <option key={d.id} value={d.id}>{d.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label style={labelStyle}>Branch / Specialization</label>
-                  <select 
-                    value={branchId}
-                    onChange={(e) => setBranchId(e.target.value)}
-                    disabled={!departmentId}
-                    style={selectStyle(!departmentId)}
-                  >
-                    <option value="">Select Branch</option>
-                    {branches.map(b => (
-                      <option key={b.id} value={b.id}>{b.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label style={labelStyle}>Semester</label>
-                  <select 
-                    value={semesterId}
-                    onChange={(e) => setSemesterId(e.target.value)}
-                    disabled={!branchId}
-                    style={selectStyle(!branchId)}
-                  >
-                    <option value="">Select Semester</option>
-                    {semesters.map(s => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label style={labelStyle}>Subject</label>
-                  <select 
-                    value={subjectId}
-                    onChange={(e) => setSubjectId(e.target.value)}
-                    disabled={!semesterId}
-                    style={selectStyle(!semesterId)}
-                  >
-                    <option value="">Select Subject</option>
-                    {subjects.map(s => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
-                    ))}
-                  </select>
-                </div>
+            <div className="animate-fade-in">
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '24px' }}>Select Your University</h2>
+              <div style={{ display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+                {universities.map(u => (
+                  <button key={u.id} onClick={() => { setUniversityId(u.id); handleNext(); }} style={{ padding: '24px', borderRadius: 'var(--radius-lg)', border: `2px solid ${universityId === u.id ? 'var(--accent)' : 'var(--border-strong)'}`, background: universityId === u.id ? 'rgba(59, 130, 246, 0.05)' : 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '1.1rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', textAlign: 'center' }}>
+                    {u.fullName || u.name}
+                  </button>
+                ))}
               </div>
-
-              <button
-                onClick={() => setStep(2)}
-                disabled={!subjectId}
-                style={{
-                  width: '100%',
-                  padding: '14px',
-                  background: 'var(--accent)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: '1rem',
-                  fontWeight: 600,
-                  cursor: subjectId ? 'pointer' : 'not-allowed',
-                  opacity: subjectId ? 1 : 0.5,
-                  marginTop: '16px',
-                  transition: 'opacity 0.2s'
-                }}
-              >
-                Next: Verify Syllabus
-              </button>
             </div>
           )}
 
+          {/* STEP 2: Course */}
           {step === 2 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <div>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 8px 0' }}>Confirm Syllabus</h2>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>
-                  We found the following syllabus for <strong>{subjects.find(s => s.id === subjectId)?.name}</strong>. Please confirm or paste your own.
-                </p>
+            <div className="animate-fade-in">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+                <button onClick={handlePrev} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>← Back</button>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Select Your Course</h2>
               </div>
-              
-              <textarea
-                style={{
-                  width: '100%',
-                  height: '250px',
-                  padding: '16px',
-                  background: 'var(--bg-primary)',
-                  border: '1px solid var(--border-strong)',
-                  borderRadius: 'var(--radius-md)',
-                  fontFamily: 'monospace',
-                  fontSize: '0.875rem',
-                  color: 'var(--text-primary)',
-                  resize: 'none',
-                  outline: 'none'
-                }}
-                defaultValue={`Unit 1: Introduction...\nUnit 2: Core Concepts...\nUnit 3: Advanced Topics...`}
-              />
-
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button
-                  onClick={() => setStep(1)}
-                  style={{ flex: 1, padding: '14px', background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-md)', fontSize: '1rem', fontWeight: 600, cursor: 'pointer' }}
-                >
-                  Back
-                </button>
-                <button
-                  onClick={() => setStep(3)}
-                  style={{ flex: 2, padding: '14px', background: 'var(--accent)', color: 'white', border: 'none', borderRadius: 'var(--radius-md)', fontSize: '1rem', fontWeight: 600, cursor: 'pointer' }}
-                >
-                  Confirm Syllabus
-                </button>
+              <div style={{ display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+                {courses.length > 0 ? courses.map(c => (
+                  <button key={c.id} onClick={() => { setCourseId(c.id); handleNext(); }} style={{ padding: '20px', borderRadius: 'var(--radius-md)', border: `2px solid ${courseId === c.id ? 'var(--accent)' : 'var(--border-color)'}`, background: courseId === c.id ? 'rgba(59, 130, 246, 0.05)' : 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}>
+                    {c.name}
+                  </button>
+                )) : (
+                  <div style={{ color: 'var(--text-tertiary)', gridColumn: '1 / -1', padding: '40px 0', textAlign: 'center' }}>No courses available for this university.</div>
+                )}
               </div>
             </div>
           )}
 
+          {/* STEP 3: Semester */}
           {step === 3 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <div>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 8px 0' }}>Exam Parameters</h2>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>
-                  Configure your exam format so the AI tailors the study material accordingly.
-                </p>
+            <div className="animate-fade-in">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+                <button onClick={handlePrev} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>← Back</button>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Select Your Semester</h2>
               </div>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div>
-                  <label style={labelStyle}>Marks per question (Average)</label>
-                  <input
-                    type="number"
-                    placeholder="e.g. 10"
-                    style={{ width: '100%', padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-md)', fontSize: '1rem', color: 'var(--text-primary)', outline: 'none' }}
-                  />
-                </div>
-                
-                <div>
-                  <label style={labelStyle}>Total questions in exam</label>
-                  <input
-                    type="number"
-                    placeholder="e.g. 5"
-                    style={{ width: '100%', padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-md)', fontSize: '1rem', color: 'var(--text-primary)', outline: 'none' }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-                <button
-                  onClick={() => setStep(2)}
-                  style={{ flex: 1, padding: '14px', background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-md)', fontSize: '1rem', fontWeight: 600, cursor: 'pointer' }}
-                >
-                  Back
-                </button>
-                <button
-                  onClick={() => setStep(4)}
-                  style={{ flex: 2, padding: '14px', background: 'var(--accent)', color: 'white', border: 'none', borderRadius: 'var(--radius-md)', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                >
-                  <span>✨</span> Generate Study Portal
-                </button>
+              <div style={{ display: 'grid', gap: '12px', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))' }}>
+                {semesters.length > 0 ? semesters.map(s => (
+                  <button key={s.id} onClick={() => { setSemesterId(s.id); handleNext(); }} style={{ padding: '16px', borderRadius: 'var(--radius-md)', border: `2px solid ${semesterId === s.id ? 'var(--accent)' : 'var(--border-color)'}`, background: semesterId === s.id ? 'rgba(59, 130, 246, 0.05)' : 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', textAlign: 'center' }}>
+                    {s.name}
+                  </button>
+                )) : (
+                  <div style={{ color: 'var(--text-tertiary)', gridColumn: '1 / -1', padding: '40px 0', textAlign: 'center' }}>No semesters available for this course.</div>
+                )}
               </div>
             </div>
           )}
 
+          {/* STEP 4: Subject */}
           {step === 4 && (
-            <div style={{ textAlign: 'center', padding: '60px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ width: '64px', height: '64px', border: '4px solid var(--accent-light)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '24px' }}></div>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 8px 0' }}>Analyzing PYQs & Syllabus...</h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', margin: 0 }}>Please wait while the AI generates your custom study portal.</p>
+            <div className="animate-fade-in">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+                <button onClick={handlePrev} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>← Back</button>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Select Your Subject</h2>
+              </div>
+              <div style={{ display: 'grid', gap: '16px', gridTemplateColumns: '1fr' }}>
+                {subjects.length > 0 ? subjects.map(s => (
+                  <button key={s.id} onClick={() => { setSubjectId(s.id); }} style={{ padding: '24px', borderRadius: 'var(--radius-lg)', border: `2px solid ${subjectId === s.id ? 'var(--accent)' : 'var(--border-color)'}`, background: subjectId === s.id ? 'rgba(59, 130, 246, 0.05)' : 'var(--bg-primary)', color: 'var(--text-primary)', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: '1.1rem', fontWeight: 600 }}>{s.name}</span>
+                    <span style={{ color: 'var(--accent)' }}>View Materials →</span>
+                  </button>
+                )) : (
+                  <div style={{ color: 'var(--text-tertiary)', padding: '40px 0', textAlign: 'center' }}>No subjects available for this semester.</div>
+                )}
+              </div>
               
-              <style>{`
-                @keyframes spin {
-                  0% { transform: rotate(0deg); }
-                  100% { transform: rotate(360deg); }
-                }
-              `}</style>
-            </div>
-          )}
-
-          {step === 5 && (
-            <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 16px 0' }}>Your Study Portal is Ready</h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>
-                Ask the AI anything about <strong>{subjects.find(s => s.id === subjectId)?.name}</strong> using the chat below.
-              </p>
+              {subjectId && (
+                <div style={{ marginTop: '32px', padding: '24px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid #10b981', borderRadius: 'var(--radius-lg)', color: '#047857', textAlign: 'center' }}>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '8px' }}>Success! You are ready to study.</h3>
+                  <p>In the next update, this will redirect to the subject dashboard with full PYQ analysis and study materials.</p>
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
-      {(step === 4 || step === 5) && <ChatBox />}
+      {(step === 4) && <ChatBox />}
     </div>
   );
 }

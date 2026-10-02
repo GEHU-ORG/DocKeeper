@@ -63,35 +63,27 @@ model University {
   fullName    String?      // e.g., "Graphic Era Hill University"
   logo        String?      // URL to logo
   githubOrg   String?      // GitHub org name for data sync
-  departments Department[]
+  courses     Course[]
   users       User[]
   createdAt   DateTime     @default(now())
 }
 
-model Department {
+model Course {
   id           String     @id @default(cuid())
-  name         String     // e.g., "BTech", "BCA", "MBA"
+  name         String     // e.g., "BTech-CSE", "BCA-General", "MBA-Finance"
   universityId String
   university   University @relation(fields: [universityId], references: [id])
-  branches     Branch[]
+  semesters    Semester[]
 
   @@unique([name, universityId])
-}
-
-model Branch {
-  id           String     @id @default(cuid())
-  name         String     // e.g., "CSE", "ECE", "ME"
-  departmentId String
-  department   Department @relation(fields: [departmentId], references: [id])
-  semesters    Semester[]
 }
 
 model Semester {
   id       String    @id @default(cuid())
   name     String    // e.g., "Semester 1", "sem 3"
   number   Int       // 1, 2, 3...
-  branchId String
-  branch   Branch    @relation(fields: [branchId], references: [id])
+  courseId String
+  course   Course    @relation(fields: [courseId], references: [id])
   subjects Subject[]
 }
 
