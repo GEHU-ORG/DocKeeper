@@ -33,53 +33,59 @@ export async function addUniversity(name: string, slug: string, fullName: string
     data: { name, slug, fullName, githubOrg: 'UniExamPrep' }
   });
 
-  // Standard Indian University Courses to pre-populate
-  const defaultCourses = [
-    { name: 'B.Tech - CSE', semesters: 8 },
-    { name: 'B.Tech - ME', semesters: 8 },
-    { name: 'B.Tech - CE', semesters: 8 },
-    { name: 'B.Tech - EE', semesters: 8 },
-    { name: 'B.Tech - ECE', semesters: 8 },
-    { name: 'BCA', semesters: 6 },
-    { name: 'BBA', semesters: 6 },
-    { name: 'B.Sc - IT', semesters: 6 },
-    { name: 'B.Sc - PCM', semesters: 6 },
-    { name: 'MBA - Finance', semesters: 4 },
-    { name: 'MBA - Marketing', semesters: 4 },
-    { name: 'MBA - HR', semesters: 4 },
-    { name: 'MCA', semesters: 4 },
-    { name: 'M.Tech - CSE', semesters: 4 },
+  // Comprehensive Indian University Courses Structure
+  const courseStructure = [
+    { course: "B.Tech", departments: ["Computer Science Engineering (CSE)", "Mechanical Engineering (ME)", "Civil Engineering (CE)", "Electronics & Communication (ECE)", "Electrical Engineering (EE)"], semesters: 8 },
+    { course: "BCA", departments: ["General"], semesters: 6 },
+    { course: "BBA", departments: ["General"], semesters: 6 },
+    { course: "BA", departments: ["English", "Journalism and Mass Communication"], semesters: 6 },
+    { course: "B.Sc", departments: ["Animation", "Nursing", "IT", "PCM"], semesters: 6 },
+    { course: "B.Pharm", departments: ["General"], semesters: 8 },
+    { course: "B.Com (Hons)", departments: ["General"], semesters: 6 },
+    { course: "BHM", departments: ["General"], semesters: 8 },
+    { course: "Diploma", departments: ["Computer Science", "Mechanical", "Civil"], semesters: 6 },
+    { course: "MBA", departments: ["Finance", "Marketing", "HR", "General"], semesters: 4 },
+    { course: "MCA", departments: ["General"], semesters: 4 },
+    { course: "M.Tech", departments: ["Computer Science Engineering (CSE)", "VLSI", "Thermal"], semesters: 4 }
   ];
 
-  for (const courseInfo of defaultCourses) {
-    const course = await prisma.course.create({
-      data: { name: courseInfo.name, universityId: uni.id }
-    });
-    
-    const semData = Array.from({ length: courseInfo.semesters }).map((_, i) => ({
-      name: `Semester ${i + 1}`,
-      number: i + 1,
-      courseId: course.id
-    }));
-
-    await prisma.semester.createMany({ data: semData });
-  }
-
-  // Build the list of repository paths to create
   const repoPaths: string[] = [];
   
-  // Base folders at the root (optional, but good for general stuff)
+  // Base folders at the root
   repoPaths.push('Notes', 'PYQ', 'Syllabus');
-  
-  // Generate a folder for every Course -> Semester combination
-  for (const courseInfo of defaultCourses) {
-    // Sanitize course name for folder path (e.g., "B.Tech - CSE" -> "BTech-CSE")
-    const courseFolderName = courseInfo.name.replace(/[^a-zA-Z0-9-]/g, '-').replace(/-+/g, '-');
-    for (let i = 1; i <= courseInfo.semesters; i++) {
-      const semFolderName = `Semester-${i}`;
-      repoPaths.push(`${courseFolderName}/${semFolderName}/Notes`);
-      repoPaths.push(`${courseFolderName}/${semFolderName}/PYQ`);
-      repoPaths.push(`${courseFolderName}/${semFolderName}/Syllabus`);
+
+  for (const info of courseStructure) {
+    const safeCourse = info.course.replace(/[^a-zA-Z0-9.\- ]/g, '').trim();
+
+    for (const dept of info.departments) {
+      // Create Prisma Course representation
+      const dbCourseName = dept === 'General' ? info.course : `${info.course} - ${dept}`;
+      const course = await prisma.course.create({
+        data: { name: dbCourseName, universityId: uni.id }
+      });
+      
+      const semData = Array.from({ length: info.semesters }).map((_, i) => ({
+        name: `Semester ${i + 1}`,
+        number: i + 1,
+        courseId: course.id
+      }));
+
+      await prisma.semester.createMany({ data: semData });
+
+      // Generate GitHub Folder Paths: Type / Course / Department / Semester
+      const safeDept = dept.replace(/[^a-zA-Z0-9.\- ()]/g, '').trim();
+      
+      for (let i = 1; i <= info.semesters; i++) {
+        const semFolderName = `Semester-${i}`;
+        
+        for (const type of ['Notes', 'PYQ', 'Syllabus']) {
+          if (dept === 'General') {
+            repoPaths.push(`${type}/${safeCourse}/${semFolderName}`);
+          } else {
+            repoPaths.push(`${type}/${safeCourse}/${safeDept}/${semFolderName}`);
+          }
+        }
+      }
     }
   }
 
