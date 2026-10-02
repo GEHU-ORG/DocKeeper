@@ -212,11 +212,7 @@ export async function addUniversity(name: string, slug: string, fullName: string
           const safeSub = sub.replace(/[^a-zA-Z0-9.\- ()]/g, '').trim();
 
           for (const type of ['Notes', 'PYQ', 'Syllabus']) {
-            if (dept === 'General') {
-              repoPaths.push(`${safeCourse}/${semFolderName}/${safeSub}/${type}`);
-            } else {
-              repoPaths.push(`${safeCourse}/${safeDept}/${semFolderName}/${safeSub}/${type}`);
-            }
+            repoPaths.push(`${safeCourse}/${safeDept}/${semFolderName}/${safeSub}/${type}`);
           }
         }
       }
