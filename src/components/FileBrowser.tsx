@@ -155,6 +155,33 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
     }
   };
 
+  // Add course
+  const handleAddCourse = async () => {
+    const courseName = prompt('Enter Course Name (e.g. B.Sc Agriculture)');
+    if (!courseName) return;
+    
+    setIsOperating(true);
+    try {
+      const slug = initialPath.split('/')[1]; // e.g., UniExamPrep/GEU -> GEU
+      const res = await fetch('/api/course', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug, courseName }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || 'Failed to add course');
+      } else {
+        await fetchFiles();
+      }
+    } catch (error) {
+      console.error('Failed to add course:', error);
+      alert('Network error');
+    } finally {
+      setIsOperating(false);
+    }
+  };
+
   // Delete single item
   const handleDeleteItem = async () => {
     if (!deleteTarget) return;
@@ -471,6 +498,8 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         onDeleteSelected={() => setIsBulkDelete(true)}
         showAddUniversity={initialPath === 'UniExamPrep'}
         onAddUniversity={() => setShowAddUni(true)}
+        showAddCourse={initialPath.split('/').length === 2 && initialPath.startsWith('UniExamPrep/')}
+        onAddCourse={handleAddCourse}
       />
 
       {isOperating && (
