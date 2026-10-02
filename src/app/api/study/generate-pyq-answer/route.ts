@@ -7,7 +7,7 @@ import { Octokit } from '@octokit/rest';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dbConnect from '@/lib/mongoose';
 import { PyqAnswer } from '@/models/PyqAnswer';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 
 const octokit = new Octokit({ auth: process.env.GITHUB_PAT });
 const ORG = 'UniExamPrep';
@@ -25,15 +25,17 @@ export async function POST(req: NextRequest) {
   // Get User's Custom API Key (if any)
   let apiKey = process.env.GEMINI_API_KEY!;
   let isPublic = true;
+  let customModel = 'gemini-2.5-flash';
 
   if (session.user.email) {
     const dbUser = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { geminiApiKey: true },
+      select: { geminiApiKey: true, geminiModel: true },
     });
     if (dbUser?.geminiApiKey) {
       apiKey = dbUser.geminiApiKey;
       isPublic = false; // Private if using their own key
+      if (dbUser.geminiModel) customModel = dbUser.geminiModel;
     }
   }
 
@@ -51,7 +53,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 2. Generate with Gemini - Parallel Processing for Speed
-  const model = customGenai.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  const model = customGenai.getGenerativeModel({ model: customModel });
   
   let generatedText: string = "";
   try {

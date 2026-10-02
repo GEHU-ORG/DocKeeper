@@ -13,6 +13,7 @@ export default function ProfilePage() {
   const [deleteEmailInput, setDeleteEmailInput] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [apiKey, setApiKey] = useState('');
+  const [modelName, setModelName] = useState('gemini-2.5-flash');
   const [isSavingApiKey, setIsSavingApiKey] = useState(false);
 
   const githubUsername = (session?.user as any)?.githubUsername;
@@ -27,7 +28,10 @@ export default function ProfilePage() {
         
       fetch('/api/account/api-key')
         .then(r => r.json())
-        .then(data => setApiKey(data.apiKey || ''))
+        .then(data => {
+          setApiKey(data.apiKey || '');
+          setModelName(data.modelName || 'gemini-2.5-flash');
+        })
         .catch(() => {});
     }
   }, [session]);
@@ -88,12 +92,18 @@ export default function ProfilePage() {
       const res = await fetch('/api/account/api-key', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apiKey: apiKey.trim() }),
+        body: JSON.stringify({ apiKey: apiKey.trim(), modelName }),
       });
+      const data = await res.json();
       if (res.ok) {
-        alert('API Key saved successfully!');
+        if (data.modelName && data.modelName !== modelName) {
+           setModelName(data.modelName);
+           alert(`API Key saved! Note: The requested model failed, but we verified it works with ${data.modelName} instead and auto-corrected it.`);
+        } else {
+           alert('API Key saved successfully!');
+        }
       } else {
-        alert('Failed to save API Key');
+        alert(data.error || 'Failed to save API Key');
       }
     } catch {
       alert('Error saving API Key');
@@ -249,6 +259,15 @@ export default function ProfilePage() {
                 onChange={(e) => setApiKey(e.target.value)}
                 style={{ ...inputStyle, cursor: 'text' }}
               />
+              <select
+                value={modelName}
+                onChange={(e) => setModelName(e.target.value)}
+                style={{ ...inputStyle, cursor: 'pointer', width: '200px' }}
+              >
+                <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+                <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+                <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+              </select>
               <button
                 onClick={handleSaveApiKey}
                 disabled={isSavingApiKey}
