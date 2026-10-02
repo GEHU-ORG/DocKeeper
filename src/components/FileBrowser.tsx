@@ -118,6 +118,22 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
       // Inject Virtual Folders if we are at the Subject root (depth 6 -> initialPath has 6 parts)
       const parts = initialPath.split('/').filter(Boolean);
       if (parts.length === 6 && !debouncedSearch) {
+        // Automatically inject standard folders if they don't exist
+        const standardFolders = ['Notes', 'PYQ', 'Syllabus'];
+        
+        standardFolders.forEach((folderName) => {
+          if (!fetchedItems.find((item: any) => item.name === folderName && item.type === 'folder')) {
+            fetchedItems.push({
+              id: `virtual-auto-${folderName}`,
+              name: folderName,
+              type: 'folder',
+              path: `${initialPath}/${folderName}`,
+              uploadedAt: new Date().toISOString(),
+            });
+          }
+        });
+
+        // Always put Study Notes at the very top
         fetchedItems.unshift({
           id: 'virtual-notes',
           name: '✨ My Study Notes',
