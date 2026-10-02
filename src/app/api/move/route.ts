@@ -10,21 +10,17 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { action, id, sourceUrl, sourcePath, destinationPath, newName } = body;
 
-    // migrate-cross-repo uses admin PAT only — no user session needed
-    if (action !== 'migrate-cross-repo') {
-      const session = await getServerSession(authOptions);
-      const user = session?.user as any;
-      // Allow GitHub users (have accessToken) AND Google-authenticated users
-      const isGoogleUser = session?.user && !user?.githubUsername;
-      const hasAccess = user?.accessToken || isGoogleUser;
-      if (!hasAccess) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
+    const session = await getServerSession(authOptions);
+    const user = session?.user as any;
+    // Allow GitHub users (have accessToken) AND Google-authenticated users
+    const isGoogleUser = session?.user && !user?.githubUsername;
+    const hasAccess = user?.accessToken || isGoogleUser;
+    if (!hasAccess) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const session = action !== 'migrate-cross-repo' ? await getServerSession(authOptions) : null;
     // GitHub users use their token; Google users fall through to admin PAT
-    const userToken = (session as any)?.user?.accessToken;
+    const userToken = user?.accessToken;
     const octokit = new Octokit({ auth: userToken || process.env.GITHUB_PAT });
 
     // Helper to extract repo and inner path from 'UniExamPrep/Repo/Folder/File'
@@ -36,33 +32,23 @@ export async function POST(req: Request) {
     };
 
     if (action === 'list-folders') {
-      const allFolders = ['UniExamPrep'];
+      const allFolders = ['UniExamPrep', 'UniExamPrep/GEU'];
 
-      const { data: reposList } = await octokit.repos.listForOrg({ org: ORG_NAME, per_page: 100 });
-      const managedRepos = reposList
-        .filter(r => !['UniExamPrep', '.github'].includes(r.name))
-        .map(r => r.name);
-
-      await Promise.all(
-        managedRepos.map(async (repo) => {
-          allFolders.push(`UniExamPrep/${repo}`);
-          try {
-            const { data: tree } = await octokit.git.getTree({
-              owner: ORG_NAME,
-              repo,
-              tree_sha: 'main',
-              recursive: '1',
-            });
-            const folderPaths = tree.tree
-              .filter((item: any) => item.type === 'tree')
-              .map((item: any) => `UniExamPrep/${repo}/${item.path}`);
-            
-            allFolders.push(...folderPaths);
-          } catch (e) {
-            console.error(`Failed to get tree for ${repo}`);
-          }
-        })
-      );
+      try {
+        const { data: tree } = await octokit.git.getTree({
+          owner: ORG_NAME,
+          repo: 'GEU',
+          tree_sha: 'main',
+          recursive: '1',
+        });
+        const folderPaths = tree.tree
+          .filter((item: any) => item.type === 'tree')
+          .map((item: any) => `UniExamPrep/GEU/${item.path}`);
+        
+        allFolders.push(...folderPaths);
+      } catch (e) {
+        console.error('Failed to get tree for GEU:', e);
+      }
 
       return NextResponse.json({ folders: allFolders });
     }
@@ -159,90 +145,7 @@ export async function POST(req: Request) {
       });
 
       return NextResponse.json({ success: true });
-    }
-
-    // Admin-only: migrate files from a source repo/path into a destination repo/path
-    if (action === 'migrate-cross-repo') {
-      const adminPat = process.env.GITHUB_PAT;
-      if (!adminPat) return NextResponse.json({ error: 'No admin PAT configured' }, { status: 500 });
-
-      const adminOctokit = new Octokit({ auth: adminPat });
-      const { sourceRepo, sourceFolderPath, destRepo, destFolderPath } = body;
-
-      // 1. Get source tree
-      const { data: srcRef } = await adminOctokit.git.getRef({ owner: ORG_NAME, repo: sourceRepo, ref: 'heads/main' });
-      const { data: srcTree } = await adminOctokit.git.getTree({ owner: ORG_NAME, repo: sourceRepo, tree_sha: srcRef.object.sha, recursive: '1' });
-
-      const prefix = sourceFolderPath ? sourceFolderPath + '/' : '';
-      const blobs = srcTree.tree.filter((t: any) => t.type === 'blob' && (!prefix || t.path?.startsWith(prefix)));
-
-      if (blobs.length === 0) return NextResponse.json({ error: 'No files found in source path', path: sourceFolderPath }, { status: 404 });
-
-      // 2. Get dest tree base + existing files in dest folder (for dedup)
-      const { data: dstRef } = await adminOctokit.git.getRef({ owner: ORG_NAME, repo: destRepo, ref: 'heads/main' });
-      const { data: dstCommit } = await adminOctokit.git.getCommit({ owner: ORG_NAME, repo: destRepo, commit_sha: dstRef.object.sha });
-      const { data: dstTree } = await adminOctokit.git.getTree({ owner: ORG_NAME, repo: destRepo, tree_sha: dstCommit.tree.sha, recursive: '1' });
-
-      // Build set of filenames already in the dest folder
-      const existingDestFiles = new Set(
-        dstTree.tree
-          .filter((t: any) => t.type === 'blob' && t.path?.startsWith(destFolderPath + '/'))
-          .map((t: any) => t.path!.split('/').pop()!)
-      );
-
-      // 3. Fetch each blob from source and create new blob in dest (required for cross-repo copy)
-      const treeNodes: any[] = [];
-      for (const b of blobs) {
-        const relativePath = prefix ? b.path!.substring(prefix.length) : b.path!;
-        const filename = relativePath.split('/').pop()!;
-        if (!filename || filename === '.keep' || filename === '.gitkeep' || filename === '.gitignore') continue;
-
-        // Skip if already exists in dest folder
-        if (existingDestFiles.has(filename)) continue;
-
-        // Fetch blob content from source repo
-        const { data: blobData } = await adminOctokit.git.getBlob({ owner: ORG_NAME, repo: sourceRepo, file_sha: b.sha! });
-
-        // Create new blob in dest repo
-        const { data: newBlob } = await adminOctokit.git.createBlob({
-          owner: ORG_NAME,
-          repo: destRepo,
-          content: blobData.content,
-          encoding: 'base64',
-        });
-
-        treeNodes.push({
-          path: `${destFolderPath}/${filename}`,
-          mode: '100644' as const,
-          type: 'blob' as const,
-          sha: newBlob.sha,
-        });
-      }
-
-      if (treeNodes.length === 0) return NextResponse.json({ success: true, filesMoved: 0 });
-
-      // 4. Create new tree in dest repo
-      const { data: newTree } = await adminOctokit.git.createTree({
-        owner: ORG_NAME,
-        repo: destRepo,
-        base_tree: dstCommit.tree.sha,
-        tree: treeNodes,
-      });
-
-      // 5. Commit and update ref
-      const { data: newCommit } = await adminOctokit.git.createCommit({
-        owner: ORG_NAME,
-        repo: destRepo,
-        message: `Migrate ${treeNodes.length} files from ${sourceRepo}/${sourceFolderPath} to ${destFolderPath}`,
-        tree: newTree.sha,
-        parents: [dstRef.object.sha],
-      });
-
-      await adminOctokit.git.updateRef({ owner: ORG_NAME, repo: destRepo, ref: 'heads/main', sha: newCommit.sha });
-
-      return NextResponse.json({ success: true, filesMoved: treeNodes.length });
-    }
-
+    } // (Temporary migration logic removed)
 
     if (action === 'rename' && sourcePath && newName) {
       const { repo, innerPath, filename } = getRepoAndPath(sourcePath);
