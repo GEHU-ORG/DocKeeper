@@ -41,7 +41,7 @@ export function Header() {
             {status !== 'loading' && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginLeft: '1rem' }}>
                 {isGuest && (
-                  <Link href="/api/auth/signin" style={{ textDecoration: 'none' }}>
+                  <Link href="/signin" style={{ textDecoration: 'none' }}>
                     <button style={{ background: 'var(--accent)', color: '#fff', border: 'none', padding: '6px 16px', borderRadius: '20px', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}>
                       Sign In
                     </button>

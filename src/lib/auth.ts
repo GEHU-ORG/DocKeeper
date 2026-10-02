@@ -21,6 +21,9 @@ export const authOptions: AuthOptions = {
   ],
   secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-dev",
   session: { strategy: "jwt" },
+  pages: {
+    signIn: '/signin',
+  },
   callbacks: {
     async jwt({ token, account, profile }) {
       // Persist the OAuth access_token to the token right after signin
