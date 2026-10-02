@@ -14,6 +14,7 @@ export default function ExamPortalPage() {
 
   // Form State
   const [universityId, setUniversityId] = useState('');
+  const [selectedCourseGroup, setSelectedCourseGroup] = useState(''); // e.g. "BTech"
   const [courseId, setCourseId] = useState('');
   const [semesterId, setSemesterId] = useState('');
   const [subjectId, setSubjectId] = useState('');
@@ -27,7 +28,7 @@ export default function ExamPortalPage() {
   useEffect(() => {
     if (universityId) {
       getCourses(universityId).then(setCourses);
-      setCourseId(''); setSemesterId(''); setSubjectId('');
+      setSelectedCourseGroup(''); setCourseId(''); setSemesterId(''); setSubjectId('');
     }
   }, [universityId]);
 
@@ -47,28 +48,21 @@ export default function ExamPortalPage() {
     }
   }, [semesterId]);
 
-  const handleNext = () => setStep((s) => Math.min(s + 1, 4));
+  const handleNext = () => setStep((s) => Math.min(s + 1, 5));
   const handlePrev = () => setStep((s) => Math.max(s - 1, 1));
+
+  const courseGroups = Array.from(new Set(courses.map(c => c.name.split('-')[0])));
+  const branches = courses.filter(c => c.name.startsWith(selectedCourseGroup + '-'));
 
   return (
     <div style={{ padding: '40px 20px', maxWidth: '800px', margin: '0 auto', fontFamily: 'var(--font-sans)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       
       <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)', flex: 1, position: 'relative' }}>
         
-        {/* Progress Bar */}
-        <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-tertiary)' }}>
-          {['University', 'Course', 'Semester', 'Subject'].map((label, idx) => (
-            <div key={label} style={{ flex: 1, padding: '16px 12px', textAlign: 'center', fontSize: '0.875rem', fontWeight: 600, borderRight: idx < 3 ? '1px solid var(--border-color)' : 'none', color: step >= idx + 1 ? 'var(--accent)' : 'var(--text-tertiary)', position: 'relative', cursor: step >= idx + 1 ? 'pointer' : 'default' }} onClick={() => { if (step >= idx + 1) setStep(idx + 1); }}>
-              {label}
-              {step === idx + 1 && (
-                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '3px', background: 'var(--accent)' }} />
-              )}
-            </div>
-          ))}
-        </div>
+        {/* The navbar (Progress Bar) has been removed as per user request */}
 
         <div style={{ padding: '32px' }}>
-               {/* STEP 1: University */}
+          {/* STEP 1: University */}
           {step === 1 && (
             <div className="animate-fade-in file-list">
               <div className="file-list-header readonly">
@@ -101,7 +95,7 @@ export default function ExamPortalPage() {
             </div>
           )}
 
-          {/* STEP 2: Course */}
+          {/* STEP 2: Course Group (e.g. BTech, BCA) */}
           {step === 2 && (
             <div className="animate-fade-in file-list">
               <div className="file-list-header readonly">
@@ -115,15 +109,15 @@ export default function ExamPortalPage() {
                 <div className="file-row-actions header-label"></div>
               </div>
               <div className="file-list-items">
-                {courses.length > 0 ? courses.map(c => (
-                  <div key={c.id} className="file-row readonly" onClick={() => { setCourseId(c.id); handleNext(); }} style={{ cursor: 'pointer' }}>
+                {courseGroups.length > 0 ? courseGroups.map(group => (
+                  <div key={group} className="file-row readonly" onClick={() => { setSelectedCourseGroup(group); handleNext(); }} style={{ cursor: 'pointer' }}>
                     <div className="file-row-icon">
                       <svg width="28" height="28" viewBox="0 0 16 16" className="file-icon file-icon-folder">
                         <path fill="#FFC107" d="M9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.825a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31L.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3m-8.322.12q.322-.119.684-.12h5.396l-.707-.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981z"/>
                       </svg>
                     </div>
                     <div className="file-row-name">
-                      <span className="file-name-text">{c.name}</span>
+                      <span className="file-name-text">{group}</span>
                     </div>
                     <div className="file-row-date">—</div>
                     <div className="file-row-size">—</div>
@@ -136,8 +130,45 @@ export default function ExamPortalPage() {
             </div>
           )}
 
-          {/* STEP 3: Semester */}
+          {/* STEP 3: Branch (e.g. CSE, Mechanical) */}
           {step === 3 && (
+            <div className="animate-fade-in file-list">
+              <div className="file-list-header readonly">
+                <div className="file-row-icon" />
+                <div className="file-row-name header-label">
+                  <button onClick={handlePrev} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', marginRight: '12px', fontSize: '1.2rem', padding: 0 }}>←</button>
+                  Select Your Branch
+                </div>
+                <div className="file-row-date header-label"></div>
+                <div className="file-row-size header-label"></div>
+                <div className="file-row-actions header-label"></div>
+              </div>
+              <div className="file-list-items">
+                {branches.length > 0 ? branches.map(c => {
+                  const branchName = c.name.split('-').slice(1).join('-') || c.name;
+                  return (
+                  <div key={c.id} className="file-row readonly" onClick={() => { setCourseId(c.id); handleNext(); }} style={{ cursor: 'pointer' }}>
+                    <div className="file-row-icon">
+                      <svg width="28" height="28" viewBox="0 0 16 16" className="file-icon file-icon-folder">
+                        <path fill="#FFC107" d="M9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.825a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31L.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3m-8.322.12q.322-.119.684-.12h5.396l-.707-.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981z"/>
+                      </svg>
+                    </div>
+                    <div className="file-row-name">
+                      <span className="file-name-text">{branchName}</span>
+                    </div>
+                    <div className="file-row-date">—</div>
+                    <div className="file-row-size">—</div>
+                    <div className="file-row-actions">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-tertiary)' }}><path d="m9 18 6-6-6-6"/></svg>
+                    </div>
+                  </div>
+                )}) : <div style={{ padding: '32px', textAlign: 'center', color: 'var(--text-secondary)' }}>No branches available</div>}
+              </div>
+            </div>
+          )}
+
+          {/* STEP 4: Semester */}
+          {step === 4 && (
             <div className="animate-fade-in file-list">
                <div className="file-list-header readonly">
                 <div className="file-row-icon" />
@@ -171,8 +202,8 @@ export default function ExamPortalPage() {
             </div>
           )}
 
-          {/* STEP 4: Subjects / ChatBox */}
-          {step === 4 && (
+          {/* STEP 5: Subjects / ChatBox */}
+          {step === 5 && (
             <div className="animate-fade-in file-list">
               <div className="file-list-header readonly">
                 <div className="file-row-icon" />
