@@ -172,9 +172,17 @@ export async function POST(req: Request) {
 
       if (blobs.length === 0) return NextResponse.json({ error: 'No files found in source path', path: sourceFolderPath }, { status: 404 });
 
-      // 2. Get dest tree base
+      // 2. Get dest tree base + existing files in dest folder (for dedup)
       const { data: dstRef } = await adminOctokit.git.getRef({ owner: ORG_NAME, repo: destRepo, ref: 'heads/main' });
       const { data: dstCommit } = await adminOctokit.git.getCommit({ owner: ORG_NAME, repo: destRepo, commit_sha: dstRef.object.sha });
+      const { data: dstTree } = await adminOctokit.git.getTree({ owner: ORG_NAME, repo: destRepo, tree_sha: dstCommit.tree.sha, recursive: '1' });
+
+      // Build set of filenames already in the dest folder
+      const existingDestFiles = new Set(
+        dstTree.tree
+          .filter((t: any) => t.type === 'blob' && t.path?.startsWith(destFolderPath + '/'))
+          .map((t: any) => t.path!.split('/').pop()!)
+      );
 
       // 3. Fetch each blob from source and create new blob in dest (required for cross-repo copy)
       const treeNodes: any[] = [];
@@ -182,6 +190,9 @@ export async function POST(req: Request) {
         const relativePath = prefix ? b.path!.substring(prefix.length) : b.path!;
         const filename = relativePath.split('/').pop()!;
         if (!filename || filename === '.keep' || filename === '.gitkeep' || filename === '.gitignore') continue;
+
+        // Skip if already exists in dest folder
+        if (existingDestFiles.has(filename)) continue;
 
         // Fetch blob content from source repo
         const { data: blobData } = await adminOctokit.git.getBlob({ owner: ORG_NAME, repo: sourceRepo, file_sha: b.sha! });
