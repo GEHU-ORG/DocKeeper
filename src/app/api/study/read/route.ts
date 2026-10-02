@@ -6,22 +6,17 @@ import { Octokit } from '@octokit/rest';
 const octokit = new Octokit({ auth: process.env.GITHUB_PAT });
 const ORG = 'UniExamPrep';
 
-/**
- * GET /api/study/read?repo=GEU&path=.private/.../.chat
- * Returns the content of a .chat file (auth-gated to creator only)
- */
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const userId = ((session.user as any).githubUsername ?? session.user.email ?? 'anonymous') as string;
 
   const { searchParams } = new URL(req.url);
   const repo = searchParams.get('repo');
   const filePath = searchParams.get('path');
-
   if (!repo || !filePath) return NextResponse.json({ error: 'Missing params' }, { status: 400 });
 
   // Security: ensure the path belongs to this user
-  const userId = session.user.id;
   if (!filePath.startsWith(`.private/${userId}/`)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }

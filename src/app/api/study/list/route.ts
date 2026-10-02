@@ -6,21 +6,16 @@ import { Octokit } from '@octokit/rest';
 const octokit = new Octokit({ auth: process.env.GITHUB_PAT });
 const ORG = 'UniExamPrep';
 
-/**
- * GET /api/study/list?repo=GEU&subjectPath=B.Pharm/General/Semester-1/Pharmaceutics I
- * Lists private OnePagers + StudyNotes for the current user for a subject.
- */
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const userId = ((session.user as any).githubUsername ?? session.user.email ?? 'anonymous') as string;
 
   const { searchParams } = new URL(req.url);
   const repo = searchParams.get('repo');
   const subjectPath = searchParams.get('subjectPath');
-
   if (!repo || !subjectPath) return NextResponse.json({ error: 'Missing repo or subjectPath' }, { status: 400 });
 
-  const userId = session.user.id;
   const basePath = `.private/${userId}/${subjectPath}`;
 
   try {

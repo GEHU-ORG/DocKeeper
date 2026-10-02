@@ -14,8 +14,6 @@ import { FilePreview } from './FilePreview';
 import { AIOrganizeDialog, type AIMove } from './AIOrganizeDialog';
 import { JoinOrgPrompt } from './JoinOrgPrompt';
 import { AddUniversityModal } from './AddUniversityModal';
-import { ExamModal } from './ExamModal';
-import { useRouter } from 'next/navigation';
 
 
 interface FileBrowserProps {
@@ -40,9 +38,6 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
 
   // Dialog states
   const [showAddUni, setShowAddUni] = useState(false);
-  const [showExamModal, setShowExamModal] = useState(false);
-  const router = useRouter();
-
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<FileItem | null>(null);
   const [moveTarget, setMoveTarget] = useState<FileItem | null>(null);

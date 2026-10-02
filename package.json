@@ -18,6 +18,7 @@
     "@aws-sdk/lib-storage": "^3.1098.0",
     "@aws-sdk/s3-request-presigner": "^3.1098.0",
     "@google/genai": "^2.14.0",
+    "@google/generative-ai": "^0.24.1",
     "@neondatabase/serverless": "^1.1.0",
     "@next-auth/prisma-adapter": "^1.0.7",
     "@octokit/rest": "^22.0.1",

@@ -19,14 +19,13 @@ const ORG = 'UniExamPrep';
  */
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const userId = ((session.user as any).githubUsername ?? session.user.email ?? 'anonymous') as string;
 
   const { repo, subjectPath, subjectName, selectedFiles } = await req.json();
   if (!repo || !subjectPath || !selectedFiles?.length) {
     return NextResponse.json({ error: 'Missing params' }, { status: 400 });
   }
-
-  const userId = session.user.id;
 
   // 1. Fetch PDF content from GitHub (base64)
   const pdfParts: { inlineData: { data: string; mimeType: string } }[] = [];

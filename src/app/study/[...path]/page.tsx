@@ -72,7 +72,8 @@ export default function StudyPage({ params }: { params: { path: string[] } }) {
   }, [uni, subjectPath]);
 
   const fetchStudyItems = useCallback(async () => {
-    if (!session?.user?.id) return;
+    if (!session?.user) return;
+
     try {
       const res = await fetch(`/api/study/list?repo=${repo}&subjectPath=${encodeURIComponent(subjectPath)}`);
       const data = await res.json();
