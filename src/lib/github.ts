@@ -22,7 +22,7 @@ export async function listItems(path: string): Promise<FileItem[]> {
     // List repositories
     const { data } = await octokit.repos.listForOrg({ org: ORG_NAME, per_page: 100 });
     return data
-      .filter(repo => !['UniExamPrep', '.github'].includes(repo.name))
+      .filter(repo => !['UniExamPrep', '.github', 'Notes', 'PYQ', 'Syllabus', 'NOTES-GEHU', 'PYQ-GEHU'].includes(repo.name))
       .map(repo => ({
       id: repo.node_id,
       name: repo.name,
@@ -82,7 +82,7 @@ export async function searchItems(path: string, query: string): Promise<FileItem
     // Search repositories by name
     const { data } = await octokit.repos.listForOrg({ org: ORG_NAME, per_page: 100 });
     return data
-      .filter(repo => !['UniExamPrep', '.github'].includes(repo.name))
+      .filter(repo => !['UniExamPrep', '.github', 'Notes', 'PYQ', 'Syllabus', 'NOTES-GEHU', 'PYQ-GEHU'].includes(repo.name))
       .filter(repo => repo.name.toLowerCase().includes(q))
       .map(repo => ({
         id: repo.node_id,
