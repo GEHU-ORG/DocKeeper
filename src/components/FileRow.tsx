@@ -154,10 +154,10 @@ export function FileRow({
         )}
       </div>
       <div className="file-row-date">
-        {item.uploadedAt ? new Date(item.uploadedAt).toLocaleDateString() : '—'}
+        {item.type === 'file' && item.uploadedAt ? new Date(item.uploadedAt).toLocaleDateString() : ''}
       </div>
       <div className="file-row-size">
-        {item.type === 'file' && item.size !== undefined ? formatFileSize(item.size) : '—'}
+        {item.type === 'file' && item.size !== undefined ? formatFileSize(item.size) : ''}
       </div>
       <div className="file-row-actions" onClick={(e) => e.stopPropagation()}>
         {item.type === 'file' && (
