@@ -82,13 +82,42 @@ export default function ExamPortalPage() {
   );
 }
 
+import { getDepartments, getBranches, getSubjects } from './actions';
+
 function ExamWizard() {
   const [step, setStep] = useState(1);
 
+  // Data State
+  const [departments, setDepartments] = useState<{id: string, name: string}[]>([]);
+  const [branches, setBranches] = useState<{id: string, name: string}[]>([]);
+  const [subjects, setSubjects] = useState<{id: string, name: string}[]>([]);
+
   // Form State
-  const [department, setDepartment] = useState('');
-  const [branch, setBranch] = useState('');
-  const [subject, setSubject] = useState('');
+  const [departmentId, setDepartmentId] = useState('');
+  const [branchId, setBranchId] = useState('');
+  const [subjectId, setSubjectId] = useState('');
+
+  // Fetch departments on load
+  useEffect(() => {
+    getDepartments().then(setDepartments);
+  }, []);
+
+  // Fetch branches when department changes
+  useEffect(() => {
+    if (departmentId) {
+      getBranches(departmentId).then(setBranches);
+      setBranchId('');
+      setSubjectId('');
+    }
+  }, [departmentId]);
+
+  // Fetch subjects when branch changes
+  useEffect(() => {
+    if (branchId) {
+      getSubjects(branchId).then(setSubjects);
+      setSubjectId('');
+    }
+  }, [branchId]);
 
   return (
     <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl shadow-sm overflow-hidden">
@@ -115,49 +144,51 @@ function ExamWizard() {
               <div>
                 <label className="block text-sm font-medium mb-1">Department</label>
                 <select 
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
+                  value={departmentId}
+                  onChange={(e) => setDepartmentId(e.target.value)}
                   className="w-full px-4 py-2 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-lg"
                 >
                   <option value="">Select Department</option>
-                  <option value="B.Tech">B.Tech</option>
-                  <option value="BCA">BCA</option>
-                  <option value="B.Pharma">B.Pharma</option>
+                  {departments.map(d => (
+                    <option key={d.id} value={d.id}>{d.name}</option>
+                  ))}
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium mb-1">Branch / Specialization</label>
                 <select 
-                  value={branch}
-                  onChange={(e) => setBranch(e.target.value)}
-                  disabled={!department}
+                  value={branchId}
+                  onChange={(e) => setBranchId(e.target.value)}
+                  disabled={!departmentId}
                   className="w-full px-4 py-2 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-lg disabled:opacity-50"
                 >
                   <option value="">Select Branch</option>
-                  <option value="CSE">CSE</option>
-                  <option value="CSE (AI & ML)">CSE (AI & ML)</option>
+                  {branches.map(b => (
+                    <option key={b.id} value={b.id}>{b.name}</option>
+                  ))}
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium mb-1">Subject</label>
                 <select 
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  disabled={!branch}
+                  value={subjectId}
+                  onChange={(e) => setSubjectId(e.target.value)}
+                  disabled={!branchId}
                   className="w-full px-4 py-2 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-lg disabled:opacity-50"
                 >
                   <option value="">Select Subject</option>
-                  <option value="Computer Networks">Computer Networks</option>
-                  <option value="Operating Systems">Operating Systems</option>
+                  {subjects.map(s => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
                 </select>
               </div>
             </div>
 
             <button
               onClick={() => setStep(2)}
-              disabled={!subject}
+              disabled={!subjectId}
               className="w-full py-2.5 bg-[var(--accent)] text-white rounded-lg font-medium hover:opacity-90 disabled:opacity-50 transition-opacity mt-4"
             >
               Next: Syllabus & Content
@@ -169,7 +200,7 @@ function ExamWizard() {
           <div className="space-y-6">
             <h2 className="text-xl font-bold">Confirm Syllabus</h2>
             <p className="text-[var(--text-secondary)] text-sm">
-              We found the following syllabus for <strong>{subject}</strong>. Please confirm it's correct.
+              We found the following syllabus for <strong>{subjects.find(s => s.id === subjectId)?.name}</strong>. Please confirm it's correct.
             </p>
             
             <textarea
