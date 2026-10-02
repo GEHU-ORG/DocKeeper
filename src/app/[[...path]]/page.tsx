@@ -5,6 +5,7 @@ import { checkOrgMembership } from '@/lib/github';
 import { JoinOrgPrompt } from '@/components/JoinOrgPrompt';
 import { FileBrowser } from '@/components/FileBrowser';
 import { Metadata } from 'next';
+import { AdBanner } from '@/components/AdBanner';
 
 interface BrowsePageProps {
   params: Promise<{ path?: string[] }>;
@@ -34,7 +35,12 @@ export default async function BrowsePage({ params }: BrowsePageProps) {
     fullPath = 'UniExamPrep/' + path.map(decodeURIComponent).join('/');
   }
 
-  return <FileBrowser initialPath={fullPath} isReadOnly={isReadOnly} isSignedIn={!!username} username={username} />;
+  return (
+    <>
+      <AdBanner dataAdSlot="1234567890" />
+      <FileBrowser initialPath={fullPath} isReadOnly={isReadOnly} isSignedIn={!!username} username={username} />
+    </>
+  );
 }
 
 export async function generateMetadata({ params }: BrowsePageProps): Promise<Metadata> {

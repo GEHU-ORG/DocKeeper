@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { getUniversities, getDepartments, getBranches, getSemesters, getSubjects } from './actions';
 import { ChatBox } from '@/components/ChatBox';
+import { AdBanner } from '@/components/AdBanner';
 
 export default function ExamPortalPage() {
   const [step, setStep] = useState(1);
@@ -333,6 +334,7 @@ export default function ExamPortalPage() {
           )}
         </div>
       </div>
+      <AdBanner dataAdSlot="0987654321" />
       {(step === 4 || step === 5) && <ChatBox />}
     </div>
   );

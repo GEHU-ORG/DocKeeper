@@ -6,12 +6,45 @@ import { ModelSelector } from './ModelSelector';
 export function ChatBox() {
   const [modelConfig, setModelConfig] = useState<{ id: string, apiKey: string } | null>(null);
   const [prompt, setPrompt] = useState('');
+  const [response, setResponse] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!prompt.trim() || !modelConfig?.apiKey) return;
-    // Here we will handle the actual generation call (to a server action or API)
-    console.log(`Sending to ${modelConfig.id} with key ${modelConfig.apiKey.substring(0, 5)}...`);
+    
+    setIsLoading(true);
+    setResponse('');
+    
+    const userPrompt = prompt;
     setPrompt('');
+
+    try {
+      if (modelConfig.id.startsWith('gemini')) {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelConfig.id}:generateContent?key=${modelConfig.apiKey}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: userPrompt }] }]
+          })
+        });
+
+        const data = await res.json();
+        
+        if (data.error) {
+          setResponse(`Error: ${data.error.message}`);
+        } else {
+          setResponse(data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated.');
+        }
+      } else {
+        setResponse(`Integration for ${modelConfig.id} is coming soon! Try Gemini models for now.`);
+      }
+    } catch (error: any) {
+      setResponse(`Request failed: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -36,10 +69,43 @@ export function ChatBox() {
         padding: '12px'
       }}>
         
+        {/* Chat Response Area */}
+        {(response || isLoading) && (
+          <div style={{
+            padding: '16px',
+            background: 'var(--bg-primary)',
+            borderRadius: 'var(--radius-lg)',
+            marginBottom: '8px',
+            fontSize: '0.9rem',
+            color: 'var(--text-primary)',
+            maxHeight: '400px',
+            overflowY: 'auto',
+            whiteSpace: 'pre-wrap'
+          }}>
+            {isLoading ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)' }}>
+                <div style={{ width: '16px', height: '16px', border: '2px solid var(--accent)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                AI is thinking...
+                <style>{`
+                  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                `}</style>
+              </div>
+            ) : (
+              response
+            )}
+          </div>
+        )}
+
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
             placeholder="Ask AI anything about the syllabus..."
             style={{
               flex: 1,
@@ -57,10 +123,10 @@ export function ChatBox() {
           />
           <button
             onClick={handleSend}
-            disabled={!prompt.trim() || !modelConfig?.apiKey}
+            disabled={!prompt.trim() || !modelConfig?.apiKey || isLoading}
             style={{
-              background: prompt.trim() && modelConfig?.apiKey ? 'var(--accent)' : 'var(--bg-tertiary)',
-              color: prompt.trim() && modelConfig?.apiKey ? 'white' : 'var(--text-tertiary)',
+              background: prompt.trim() && modelConfig?.apiKey && !isLoading ? 'var(--accent)' : 'var(--bg-tertiary)',
+              color: prompt.trim() && modelConfig?.apiKey && !isLoading ? 'white' : 'var(--text-tertiary)',
               border: 'none',
               borderRadius: '50%',
               width: '40px',
@@ -68,7 +134,7 @@ export function ChatBox() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              cursor: prompt.trim() && modelConfig?.apiKey ? 'pointer' : 'not-allowed',
+              cursor: prompt.trim() && modelConfig?.apiKey && !isLoading ? 'pointer' : 'not-allowed',
               transition: 'all 0.2s',
               flexShrink: 0,
               marginTop: '8px'

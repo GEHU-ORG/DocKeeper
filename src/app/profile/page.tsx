@@ -79,15 +79,23 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* GitHub Username Section */}
+        {/* GitHub Contribution Section */}
         <div style={{ marginBottom: '24px' }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>GitHub Username</label>
           <input 
             type="text" 
-            value={(session as any)?.user?.githubUsername || 'Unknown'} 
+            value={(session as any)?.user?.githubUsername || 'Not linked'} 
             disabled
             style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', cursor: 'not-allowed' }}
           />
+          {(session as any)?.user?.githubUsername && (
+            <div style={{ marginTop: '12px', padding: '12px', background: 'var(--bg-tertiary)', borderRadius: '8px', border: '1px solid var(--border-strong)', fontSize: '0.875rem' }}>
+              <strong style={{ color: 'var(--accent)' }}>✨ Contribution Credits Active</strong>
+              <p style={{ margin: '4px 0 0 0', color: 'var(--text-secondary)' }}>
+                Your GitHub account is linked. Any notes or syllabi you upload will be permanently credited to <b>@{(session as any).user.githubUsername}</b> via Git commits.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Name Section */}
