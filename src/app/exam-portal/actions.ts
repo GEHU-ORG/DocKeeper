@@ -1,3 +1,4 @@
+
 'use server';
 import { prisma } from '@/lib/prisma';
 
@@ -39,51 +40,75 @@ export async function addUniversity(name: string, slug: string, fullName: string
     data: { name, slug, fullName, githubOrg: 'UniExamPrep' }
   });
 
-  // Comprehensive Indian University Courses Structure
   const courseStructure = [
-    // Engineering & Technology
-    { course: "B.Tech", departments: ["Computer Science Engineering (CSE)", "Mechanical Engineering (ME)", "Civil Engineering (CE)", "Electronics & Communication (ECE)", "Electrical Engineering (EE)", "Information Technology (IT)", "Artificial Intelligence & Machine Learning (AIML)", "Data Science", "Cyber Security", "Aerospace Engineering", "Biotechnology"], semesters: 8 },
-    { course: "M.Tech", departments: ["Computer Science Engineering (CSE)", "VLSI Design", "Thermal Engineering", "Structural Engineering", "Power Systems", "AI & Data Science"], semesters: 4 },
-    { course: "Diploma (Polytechnic)", departments: ["Computer Science", "Mechanical", "Civil", "Electrical", "Electronics"], semesters: 6 },
-    
-    // Computer Applications
-    { course: "BCA", departments: ["General", "Data Science", "Artificial Intelligence", "Cyber Security"], semesters: 6 },
-    { course: "MCA", departments: ["General", "Artificial Intelligence", "Data Science"], semesters: 4 },
-    
-    // Business & Management
-    { course: "BBA", departments: ["General", "Human Resources", "Marketing", "Finance", "International Business", "Hospitality Management"], semesters: 6 },
-    { course: "MBA", departments: ["Finance", "Marketing", "Human Resources (HR)", "General", "International Business", "Operations", "Business Analytics"], semesters: 4 },
-    { course: "B.Com", departments: ["General", "Honors", "Accounting & Finance", "Taxation", "Corporate Affairs"], semesters: 6 },
-    { course: "M.Com", departments: ["General", "Finance & Control", "Accounting"], semesters: 4 },
-    
-    // Arts, Humanities & Social Sciences
-    { course: "BA", departments: ["English", "Journalism and Mass Communication (JMC)", "Economics", "History", "Political Science", "Psychology", "Sociology", "Geography", "Hindi"], semesters: 6 },
-    { course: "MA", departments: ["English", "History", "Economics", "Political Science", "Psychology", "Sociology", "Mass Communication"], semesters: 4 },
-    
-    // Pure Sciences
-    { course: "B.Sc", departments: ["Physics", "Chemistry", "Mathematics", "IT", "Computer Science", "Animation & VFX", "Agriculture", "Biotechnology", "Microbiology", "Nursing", "ZBC (Zoology, Botany, Chemistry)", "PCM (Physics, Chemistry, Maths)"], semesters: 6 },
-    { course: "M.Sc", departments: ["Physics", "Chemistry", "Mathematics", "Botany", "Zoology", "Biotechnology", "IT", "Data Science", "Environmental Science"], semesters: 4 },
-    
-    // Medicine & Pharmacy
-    { course: "B.Pharm", departments: ["General"], semesters: 8 },
-    { course: "M.Pharm", departments: ["Pharmaceutics", "Pharmacology", "Pharmaceutical Chemistry"], semesters: 4 },
-    { course: "MBBS", departments: ["General"], semesters: 9 }, // Technically 4.5 years + internship
-    { course: "BDS", departments: ["General"], semesters: 8 },
-    { course: "BPT (Physiotherapy)", departments: ["General"], semesters: 8 },
-    
-    // Law
-    { course: "LLB", departments: ["General"], semesters: 6 },
-    { course: "BA LLB (Integrated)", departments: ["General", "Corporate Law", "Criminal Law"], semesters: 10 },
-    { course: "LLM", departments: ["Corporate Law", "Criminal Law", "Human Rights"], semesters: 4 },
-    
-    // Architecture & Design
-    { course: "B.Arch", departments: ["General"], semesters: 10 },
-    { course: "B.Des", departments: ["Fashion Design", "Interior Design", "Graphic Design", "Product Design"], semesters: 8 },
-    
-    // Education & Hospitality
-    { course: "B.Ed", departments: ["General"], semesters: 4 },
-    { course: "BHM (Hotel Management)", departments: ["General", "Culinary Arts", "Travel & Tourism"], semesters: 8 }
+    {
+      course: "B.Tech",
+      departments: ["Computer Science Engineering (CSE)"],
+      semesters: 8,
+      subjects: {"1":["Mathematics I","Physics","Basic Electrical Engineering","Engineering Graphics","English Communication"],"2":["Mathematics II","Chemistry","Programming for Problem Solving","Basic Electronics","Environmental Science"],"3":["Data Structures","Object Oriented Programming","Digital Logic Design","Discrete Mathematics","Computer Organization"],"4":["Operating Systems","Design and Analysis of Algorithms","Database Management Systems","Formal Languages and Automata Theory","Computer Networks"],"5":["Software Engineering","Compiler Design","Microprocessors","Web Technologies","Computer Graphics"],"6":["Machine Learning","Artificial Intelligence","Cryptography and Network Security","Cloud Computing","Internet of Things"],"7":["Big Data Analytics","Blockchain Technology","Deep Learning","Software Testing","Project Phase I"],"8":["Cyber Security","Mobile Computing","Project Phase II","Seminar"]}
+    },
+    {
+      course: "B.Tech",
+      departments: ["Mechanical Engineering (ME)"],
+      semesters: 8,
+      subjects: {"1":["Mathematics I","Physics","Basic Electrical Engineering","Engineering Graphics"],"2":["Mathematics II","Chemistry","Programming","Engineering Mechanics"],"3":["Thermodynamics","Fluid Mechanics","Material Science","Strength of Materials"],"4":["Kinematics of Machinery","Applied Thermodynamics","Manufacturing Processes","Machine Drawing"],"5":["Dynamics of Machinery","Heat Transfer","Design of Machine Elements I"],"6":["Design of Machine Elements II","CAD CAM","Operations Research"],"7":["Automobile Engineering","Refrigeration and Air Conditioning","Project Phase I"],"8":["Power Plant Engineering","Mechatronics","Project Phase II"]}
+    },
+    {
+      course: "BCA",
+      departments: ["General"],
+      semesters: 6,
+      subjects: {"1":["Mathematics I","Computer Fundamentals","C Programming","Communication Skills"],"2":["Mathematics II","Data Structures using C","Computer Organization","Web Designing"],"3":["Object Oriented Programming using C++","Database Management Systems","Software Engineering"],"4":["Java Programming","Operating Systems","Computer Networks","PHP Programming"],"5":["Python Programming","Artificial Intelligence","Computer Graphics","E-Commerce"],"6":["Mobile Application Development","Cyber Security","Major Project"]}
+    },
+    {
+      course: "BBA",
+      departments: ["General"],
+      semesters: 6,
+      subjects: {"1":["Principles of Management","Business Economics","Business Accounting","Business Communication"],"2":["Organizational Behavior","Business Statistics","Financial Management","Marketing Management"],"3":["Human Resource Management","Business Environment","Management Accounting","Business Law"],"4":["Research Methodology","Operations Management","International Business","Taxation"],"5":["Strategic Management","Entrepreneurship","E-Commerce","Elective I"],"6":["Business Policy","Elective II","Elective III","Major Project"]}
+    },
+    {
+      course: "MBA",
+      departments: ["General"],
+      semesters: 4,
+      subjects: {"1":["Management Principles","Managerial Economics","Accounting for Managers","Quantitative Techniques"],"2":["Financial Management","Marketing Management","Human Resource Management","Operations Management"],"3":["Strategic Management","Business Ethics","Elective I","Elective II"],"4":["Project Management","Elective III","Elective IV","Major Project"]}
+    },
+    {
+      course: "BA",
+      departments: ["English"],
+      semesters: 6,
+      subjects: {"1":["History of English Literature I","British Poetry","Communication Skills"],"2":["History of English Literature II","British Drama","Environmental Studies"],"3":["American Literature","British Prose","Literary Criticism"],"4":["Indian Writing in English","British Fiction","Women's Writing"],"5":["Modern European Drama","Postcolonial Literature","Literary Theory"],"6":["Contemporary Literature","World Literature","Project Work"]}
+    },
+    {
+      course: "B.Pharm",
+      departments: ["General"],
+      semesters: 8,
+      subjects: {"1":["Human Anatomy and Physiology I","Pharmaceutical Analysis","Pharmaceutics I","Pharmaceutical Inorganic Chemistry"],"2":["Human Anatomy and Physiology II","Pharmaceutical Organic Chemistry I","Biochemistry","Pathophysiology"],"3":["Pharmaceutical Organic Chemistry II","Physical Pharmaceutics I","Pharmaceutical Microbiology","Pharmaceutical Engineering"],"4":["Pharmaceutical Organic Chemistry III","Medicinal Chemistry I","Physical Pharmaceutics II","Pharmacology I"],"5":["Medicinal Chemistry II","Industrial Pharmacy I","Pharmacology II","Pharmacognosy II"],"6":["Medicinal Chemistry III","Pharmacology III","Herbal Drug Technology","Biopharmaceutics"],"7":["Instrumental Methods of Analysis","Industrial Pharmacy II","Pharmacy Practice","Novel Drug Delivery System"],"8":["Biostatistics and Research Methodology","Social and Preventive Pharmacy","Project Work"]}
+    },
+    {
+      course: "B.Tech",
+      departments: ["Civil Engineering (CE)"],
+      semesters: 8,
+      subjects: {}
+    },
+    {
+      course: "B.Tech",
+      departments: ["Electronics & Communication (ECE)"],
+      semesters: 8,
+      subjects: {}
+    },
+    {
+      course: "B.Tech",
+      departments: ["Electrical Engineering (EE)"],
+      semesters: 8,
+      subjects: {}
+    },
+    {
+      course: "B.Tech",
+      departments: ["Information Technology (IT)"],
+      semesters: 8,
+      subjects: {}
+    },
   ];
+
 
   const repoPaths: string[] = [];
 
@@ -96,26 +121,48 @@ export async function addUniversity(name: string, slug: string, fullName: string
       const course = await prisma.course.create({
         data: { name: dbCourseName, universityId: uni.id }
       });
-      
+
       const semData = Array.from({ length: info.semesters }).map((_, i) => ({
         name: `Semester ${i + 1}`,
         number: i + 1,
         courseId: course.id
       }));
 
+      // In sqlite/prisma, createMany doesn't return created IDs, so we find them after
       await prisma.semester.createMany({ data: semData });
+      
+      const createdSems = await prisma.semester.findMany({
+        where: { courseId: course.id },
+        orderBy: { number: 'asc' }
+      });
 
-      // Generate GitHub Folder Paths: Course / Department / Semester / Type
+      // Generate GitHub Folder Paths: Course / Department / Semester / Subject / Type
       const safeDept = dept.replace(/[^a-zA-Z0-9.\- ()]/g, '').trim();
       
       for (let i = 1; i <= info.semesters; i++) {
         const semFolderName = `Semester-${i}`;
+        const semRecord = createdSems.find(s => s.number === i);
         
-        for (const type of ['Notes', 'PYQ', 'Syllabus']) {
-          if (dept === 'General') {
-            repoPaths.push(`${safeCourse}/${semFolderName}/${type}`);
-          } else {
-            repoPaths.push(`${safeCourse}/${safeDept}/${semFolderName}/${type}`);
+        // Find subjects for this semester (from structure or generic)
+        const subjectsObj = (info as any).subjects;
+        let subjectsList = subjectsObj && subjectsObj[i] ? subjectsObj[i] : ["Core Subject 1", "Core Subject 2"];
+        
+        for (const sub of subjectsList) {
+          // Create subject in Prisma
+          if (semRecord) {
+            await prisma.subject.create({
+              data: { name: sub, semesterId: semRecord.id }
+            }).catch(() => {});
+          }
+
+          const safeSub = sub.replace(/[^a-zA-Z0-9.\- ()]/g, '').trim();
+
+          for (const type of ['Notes', 'PYQ', 'Syllabus']) {
+            if (dept === 'General') {
+              repoPaths.push(`${safeCourse}/${semFolderName}/${safeSub}/${type}`);
+            } else {
+              repoPaths.push(`${safeCourse}/${safeDept}/${semFolderName}/${safeSub}/${type}`);
+            }
           }
         }
       }
