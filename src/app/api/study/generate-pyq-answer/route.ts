@@ -1,3 +1,5 @@
+export const maxDuration = 60;
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -31,24 +33,57 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Could not read PDF: ${e.message}` }, { status: 400 });
   }
 
-  // 2. Generate with Gemini
+  // 2. Generate with Gemini - Parallel Processing for Speed
   const model = genai.getGenerativeModel({ model: 'gemini-2.5-flash' });
-  const prompt = `You are a university exam solver. Analyze the provided Past Year Question (PYQ) paper PDF.
   
-Extract all the questions present in the paper, and then write a comprehensive, detailed answer for each question as if it were a 10-mark long-answer university question.
-
-Format your response in beautiful Markdown.
-For each question:
-### Q: [The extracted question text]
-**Answer:**
-[Your detailed 10-mark answer with explanations, bullet points, and examples where applicable]
----
-`;
-
-  let generatedText: string;
+  let generatedText: string = "";
   try {
-    const result = await model.generateContent([prompt, { inlineData }]);
-    generatedText = result.response.text().trim();
+    // Step A: Extract all questions as a JSON array
+    const extractPrompt = `Analyze the provided Past Year Question (PYQ) paper PDF. Extract all the major questions.
+Return ONLY a raw valid JSON array of strings, where each string is a question text. Do not include markdown formatting like \`\`\`json.
+Example: ["What is an operating system?", "Explain the OSI model with a diagram."]`;
+
+    const extractResult = await model.generateContent([extractPrompt, { inlineData }]);
+    const rawText = extractResult.response.text().trim();
+    const jsonStr = rawText.replace(/^```json\s*/i, '').replace(/\s*```$/i, '');
+    
+    let questions: string[] = [];
+    try {
+      questions = JSON.parse(jsonStr);
+    } catch (parseErr) {
+      // Fallback if parsing fails or no questions found
+      console.error("Failed to parse extracted questions:", jsonStr);
+      questions = ["Please provide a detailed, 10-mark long-answer solution for every question found in this paper."];
+    }
+
+    if (!Array.isArray(questions) || questions.length === 0) {
+      questions = ["Please provide a detailed, 10-mark long-answer solution for every question found in this paper."];
+    }
+
+    // Limit to max 15 questions to prevent overwhelming the API
+    const safeQuestions = questions.slice(0, 15);
+
+    // Step B: Process each question in parallel
+    const promises = safeQuestions.map(async (q, index) => {
+      const qPrompt = `You are a university exam solver. A student has asked you to solve the following question from the provided exam paper PDF:
+      
+Question: "${q}"
+
+Write a comprehensive, detailed answer as if it were a 10-mark long-answer university question. Include explanations, bullet points, and examples where applicable.
+Format your answer in Markdown, without repeating the question as a header (I will add the header).
+Rely on the provided PDF for any necessary context (like figures or specific paper instructions).`;
+
+      try {
+        const res = await model.generateContent([qPrompt, { inlineData }]);
+        return `### Q${index + 1}: ${q}\n\n**Answer:**\n\n${res.response.text().trim()}\n\n---\n`;
+      } catch (err) {
+        return `### Q${index + 1}: ${q}\n\n**Answer:**\n\nFailed to generate answer for this question.\n\n---\n`;
+      }
+    });
+
+    const answers = await Promise.all(promises);
+    generatedText = `# PYQ Solutions for ${pdfFile.name}\n\n${answers.join('\n')}`;
+
   } catch (e: any) {
     return NextResponse.json({ error: `AI generation failed: ${e.message}` }, { status: 500 });
   }
