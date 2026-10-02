@@ -15,82 +15,78 @@ export async function GET() {
       }
     });
 
-    // 2. Define Departments, Branches, and Subjects to seed
+    // 2. Define Courses and Subjects to seed (Flattened)
     const structure = [
       {
-        department: 'B.Tech',
-        branches: [
-          { name: 'CSE', semesters: [1, 2, 3, 4, 5, 6, 7, 8], subjects: ['Data Structures', 'Operating Systems', 'Computer Networks'] },
-          { name: 'Mechanical', semesters: [1, 2, 3, 4, 5, 6, 7, 8], subjects: ['Thermodynamics', 'Fluid Mechanics'] },
-          { name: 'ECE', semesters: [1, 2, 3, 4, 5, 6, 7, 8], subjects: ['Signals & Systems', 'Digital Electronics'] },
-        ]
+        course: 'BTech-CSE',
+        semesters: [1, 2, 3, 4, 5, 6, 7, 8],
+        subjects: ['Data Structures', 'Operating Systems', 'Computer Networks']
       },
       {
-        department: 'BCA',
-        branches: [
-          { name: 'General', semesters: [1, 2, 3, 4, 5, 6], subjects: ['C Programming', 'Web Technologies', 'Software Engineering'] }
-        ]
+        course: 'BTech-Mechanical',
+        semesters: [1, 2, 3, 4, 5, 6, 7, 8],
+        subjects: ['Thermodynamics', 'Fluid Mechanics']
       },
       {
-        department: 'MCA',
-        branches: [
-          { name: 'General', semesters: [1, 2, 3, 4], subjects: ['Advanced Java', 'Machine Learning', 'Cloud Computing'] }
-        ]
+        course: 'BTech-ECE',
+        semesters: [1, 2, 3, 4, 5, 6, 7, 8],
+        subjects: ['Signals & Systems', 'Digital Electronics']
       },
       {
-        department: 'B.Pharma',
-        branches: [
-          { name: 'General', semesters: [1, 2, 3, 4, 5, 6, 7, 8], subjects: ['Human Anatomy', 'Pharmaceutics', 'Pharmacology'] }
-        ]
+        course: 'BCA-General',
+        semesters: [1, 2, 3, 4, 5, 6],
+        subjects: ['C Programming', 'Web Technologies', 'Software Engineering']
       },
       {
-        department: 'MBA',
-        branches: [
-          { name: 'Finance', semesters: [1, 2, 3, 4], subjects: ['Financial Management', 'Accounting'] },
-          { name: 'Marketing', semesters: [1, 2, 3, 4], subjects: ['Consumer Behavior', 'Digital Marketing'] }
-        ]
+        course: 'MCA-General',
+        semesters: [1, 2, 3, 4],
+        subjects: ['Advanced Java', 'Machine Learning', 'Cloud Computing']
+      },
+      {
+        course: 'BPharma-General',
+        semesters: [1, 2, 3, 4, 5, 6, 7, 8],
+        subjects: ['Human Anatomy', 'Pharmaceutics', 'Pharmacology']
+      },
+      {
+        course: 'MBA-Finance',
+        semesters: [1, 2, 3, 4],
+        subjects: ['Financial Management', 'Accounting']
+      },
+      {
+        course: 'MBA-Marketing',
+        semesters: [1, 2, 3, 4],
+        subjects: ['Consumer Behavior', 'Digital Marketing']
       }
     ];
 
     // 3. Seed Database
-    for (const dep of structure) {
-      const department = await prisma.department.upsert({
-        where: { name_universityId: { name: dep.department, universityId: university.id } },
+    for (const data of structure) {
+      const course = await prisma.course.upsert({
+        where: { name_universityId: { name: data.course, universityId: university.id } },
         update: {},
-        create: { name: dep.department, universityId: university.id }
+        create: { name: data.course, universityId: university.id }
       });
 
-      for (const b of dep.branches) {
-        let branch = await prisma.branch.findFirst({
-          where: { name: b.name, departmentId: department.id }
+      for (const sem of data.semesters) {
+        let semester = await prisma.semester.findFirst({
+          where: { name: `Semester ${sem}`, courseId: course.id }
         });
-        if (!branch) {
-          branch = await prisma.branch.create({
-            data: { name: b.name, departmentId: department.id }
+        if (!semester) {
+          semester = await prisma.semester.create({
+            data: { name: `Semester ${sem}`, number: sem, courseId: course.id }
           });
         }
 
-        for (const sem of b.semesters) {
-          let semester = await prisma.semester.findFirst({
-            where: { name: `Semester ${sem}`, branchId: branch.id }
-          });
-          if (!semester) {
-            semester = await prisma.semester.create({
-              data: { name: `Semester ${sem}`, number: sem, branchId: branch!.id }
-            });
-          }
-
-          // Add subjects to each semester
-          for (const sub of b.subjects) {
-            await prisma.subject.create({
-              data: { name: `${sub} (Sem ${sem})`, semesterId: semester.id }
-            }).catch(() => {}); // ignore unique constraint if exists
-          }
+        // Add subjects to each semester
+        for (const sub of data.subjects) {
+          await prisma.subject.create({
+            data: { name: `${sub} (Sem ${sem})`, semesterId: semester.id }
+          }).catch(() => {}); // ignore unique constraint if exists
         }
       }
     }
 
-    return NextResponse.json({ success: true, message: 'Database successfully seeded with multi-department structure!' });
+    return NextResponse.json({ success: true, message: 'Database successfully seeded with flattened 4-level architecture!' });
   } catch (error: any) {
     console.error('Sync failed:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
