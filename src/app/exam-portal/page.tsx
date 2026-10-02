@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { getUniversities, getCourses, getSemesters, getSubjects } from './actions';
-import { ChatBox } from '@/components/ChatBox';
+import { SubjectStudySpace } from '@/components/SubjectStudySpace';
 
 export default function ExamPortalPage() {
   const [step, setStep] = useState(1);
@@ -231,19 +231,13 @@ export default function ExamPortalPage() {
                       <div className="file-row-date">—</div>
                       <div className="file-row-size">—</div>
                       <div className="file-row-actions">
-                        <button className="action-btn" style={{ background: 'var(--accent)', color: '#fff', borderRadius: '20px', padding: '4px 12px', width: 'auto', height: 'auto' }}>Study AI</button>
+                        <button className="action-btn" style={{ background: 'var(--accent)', color: '#fff', borderRadius: '20px', padding: '4px 12px', width: 'auto', height: 'auto' }}>Study Space</button>
                       </div>
                     </div>
                   )) : <div style={{ padding: '32px', textAlign: 'center', color: 'var(--text-secondary)' }}>No subjects available</div>}
                 </div>
               ) : (
-                <div style={{ padding: '24px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Subject Study Space</h3>
-                    <button onClick={() => setSubjectId('')} style={{ padding: '6px 12px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-primary)' }}>Change Subject</button>
-                  </div>
-                  <ChatBox />
-                </div>
+                <SubjectStudySpace subjectId={subjectId} onBack={() => setSubjectId('')} />
               )}
             </div>
           )}
