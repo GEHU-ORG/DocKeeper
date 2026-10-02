@@ -39,6 +39,7 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
   // Dialog states
   const [showAddUni, setShowAddUni] = useState(false);
   const [showNewFolder, setShowNewFolder] = useState(false);
+  const [newFolderTitle, setNewFolderTitle] = useState('New Folder');
   const [deleteTarget, setDeleteTarget] = useState<FileItem | null>(null);
   const [moveTarget, setMoveTarget] = useState<FileItem | null>(null);
   const [previewTarget, setPreviewTarget] = useState<FileItem | null>(null);
@@ -531,7 +532,10 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
 
       <Toolbar
         isReadOnly={isReadOnly}
-        onNewFolder={() => setShowNewFolder(true)}
+        onNewFolder={() => {
+          setNewFolderTitle('New Folder');
+          setShowNewFolder(true);
+        }}
         onUpload={() => uploadInputRef.current?.click()}
         onAIOrganize={handleAIOrganizeClick}
         selectedCount={selectedItems.size}
@@ -543,6 +547,11 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         onAddCourse={handleAddCourse}
         showAddDepartment={initialPath.split('/').length === 3 && initialPath.startsWith('UniExamPrep/')}
         onAddDepartment={handleAddDepartment}
+        showAddSubject={initialPath.split('/').length === 5 && initialPath.startsWith('UniExamPrep/')}
+        onAddSubject={() => {
+          setNewFolderTitle('New Subject');
+          setShowNewFolder(true);
+        }}
         showExamButton={initialPath.split('/').length >= 6 && initialPath.startsWith('UniExamPrep/')}
         onExamClick={() => {
           // Navigate to /study/<path without UniExamPrep prefix>
@@ -585,6 +594,7 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
       {/* Dialogs */}
       <NewFolderDialog
         isOpen={showNewFolder}
+        title={newFolderTitle}
         onClose={() => setShowNewFolder(false)}
         onConfirm={handleCreateFolder}
       />

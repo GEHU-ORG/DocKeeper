@@ -4,11 +4,12 @@ import { useState } from 'react';
 
 interface NewFolderDialogProps {
   isOpen: boolean;
+  title?: string;
   onClose: () => void;
   onConfirm: (name: string) => void;
 }
 
-export function NewFolderDialog({ isOpen, onClose, onConfirm }: NewFolderDialogProps) {
+export function NewFolderDialog({ isOpen, title = 'New Folder', onClose, onConfirm }: NewFolderDialogProps) {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
 
@@ -18,11 +19,11 @@ export function NewFolderDialog({ isOpen, onClose, onConfirm }: NewFolderDialogP
     e.preventDefault();
     const trimmed = name.trim();
     if (!trimmed) {
-      setError('Folder name cannot be empty');
+      setError(`${title} name cannot be empty`);
       return;
     }
     if (trimmed.includes('/')) {
-      setError('Folder name cannot contain /');
+      setError(`${title} name cannot contain /`);
       return;
     }
     onConfirm(trimmed);
@@ -40,7 +41,7 @@ export function NewFolderDialog({ isOpen, onClose, onConfirm }: NewFolderDialogP
   return (
     <div className="dialog-overlay" onClick={handleClose}>
       <div className="dialog" onClick={(e) => e.stopPropagation()}>
-        <h3 className="dialog-title">New Folder</h3>
+        <h3 className="dialog-title">{title}</h3>
         <form onSubmit={handleSubmit}>
           <input
             type="text"
@@ -49,7 +50,7 @@ export function NewFolderDialog({ isOpen, onClose, onConfirm }: NewFolderDialogP
               setName(e.target.value);
               setError('');
             }}
-            placeholder="Folder name"
+            placeholder={`${title} name`}
             className="dialog-input"
             autoFocus
           />
