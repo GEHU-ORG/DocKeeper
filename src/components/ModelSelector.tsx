@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 
 const MODELS = [
-  { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', provider: 'google', url: 'https://aistudio.google.com/app/apikey' },
-  { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', provider: 'google', url: 'https://aistudio.google.com/app/apikey' },
+  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', provider: 'google', url: 'https://aistudio.google.com/app/apikey' },
+  { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', provider: 'google', url: 'https://aistudio.google.com/app/apikey' },
   { id: 'claude-3-haiku', name: 'Claude 3 Haiku', provider: 'anthropic', url: 'https://console.anthropic.com/settings/keys' },
   { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'openai', url: 'https://platform.openai.com/api-keys' },
 ];

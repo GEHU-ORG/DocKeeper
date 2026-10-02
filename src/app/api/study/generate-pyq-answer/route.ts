@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 2. Generate with Gemini
-  const model = genai.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  const model = genai.getGenerativeModel({ model: 'gemini-2.5-flash' });
   const prompt = `You are a university exam solver. Analyze the provided Past Year Question (PYQ) paper PDF.
   
 Extract all the questions present in the paper, and then write a comprehensive, detailed answer for each question as if it were a 10-mark long-answer university question.
