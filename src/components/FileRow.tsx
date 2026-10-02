@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { type FileItem } from '@/lib/github';
 import { getFileCategory, formatFileSize } from '@/lib/github';
@@ -14,6 +14,10 @@ interface FileRowProps {
   onRename: (newName: string) => void;
   onPreview: () => void;
   isReadOnly?: boolean;
+  pyqAnswerId?: string;
+  isPyqContext?: boolean;
+  onGeneratePyqAnswer?: () => void;
+  onShowPyqAnswer?: (answerId: string) => void;
 }
 
 function FileIcon({ item }: { item: FileItem }) {
@@ -59,9 +63,44 @@ export function FileRow({
   onRename,
   onPreview,
   isReadOnly = false,
+  pyqAnswerId,
+  isPyqContext = false,
+  onGeneratePyqAnswer,
+  onShowPyqAnswer,
 }: FileRowProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameName, setRenameName] = useState(item.name);
+  
+  // Mobile swipe states
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const startX = useRef(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    startX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const currentX = e.touches[0].clientX;
+    const diff = currentX - startX.current;
+    if (diff > 100) setSwipeOffset(100);
+    else if (diff < -100) setSwipeOffset(-100);
+    else setSwipeOffset(diff);
+  };
+
+  const handleTouchEnd = () => {
+    if (swipeOffset > 60) {
+      // Swipe Right -> Open PDF (Preview)
+      if (item.type === 'file') onPreview();
+    } else if (swipeOffset < -60 && isPyqContext && item.type === 'file' && item.name.endsWith('.pdf')) {
+      // Swipe Left -> Open Answer or Generate
+      if (pyqAnswerId && onShowPyqAnswer) {
+        onShowPyqAnswer(pyqAnswerId);
+      } else if (onGeneratePyqAnswer) {
+        onGeneratePyqAnswer();
+      }
+    }
+    setSwipeOffset(0);
+  };
 
   const handleRenameSubmit = () => {
     if (renameName.trim() && renameName !== item.name) {
@@ -221,6 +260,27 @@ export function FileRow({
             </button>
           </>
         )}
+        
+        {/* PYQ Inline Actions for PC */}
+        {isPyqContext && item.type === 'file' && item.name.endsWith('.pdf') && (
+          <div style={{ marginLeft: '12px', paddingLeft: '12px', borderLeft: '1px solid var(--border-color)', display: 'flex', gap: '8px' }}>
+            {pyqAnswerId ? (
+              <button
+                onClick={(e) => { e.stopPropagation(); onShowPyqAnswer?.(pyqAnswerId); }}
+                style={{ background: 'var(--accent)', color: '#fff', border: 'none', padding: '4px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+              >
+                ✨ View Answer
+              </button>
+            ) : (
+              <button
+                onClick={(e) => { e.stopPropagation(); onGeneratePyqAnswer?.(); }}
+                style={{ background: '#10b981', color: '#fff', border: 'none', padding: '4px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+              >
+                ✨ Generate Answer
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </>
   );
@@ -235,7 +295,25 @@ export function FileRow({
   }
 
   return (
-    <div className={`file-row ${isReadOnly ? 'readonly' : ''}`}>
+    <div 
+      className={`file-row ${isReadOnly ? 'readonly' : ''}`}
+      style={{ 
+        transform: `translateX(${swipeOffset}px)`, 
+        transition: swipeOffset === 0 ? 'transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)' : 'none',
+        position: 'relative'
+      }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Mobile Swipe Indicators behind the row */}
+      <div style={{ position: 'absolute', left: '-80px', top: 0, bottom: 0, display: 'flex', alignItems: 'center', color: 'var(--accent)', opacity: swipeOffset > 20 ? 1 : 0, transition: 'opacity 0.2s' }}>
+        👁 Preview
+      </div>
+      <div style={{ position: 'absolute', right: '-80px', top: 0, bottom: 0, display: 'flex', alignItems: 'center', color: '#10b981', opacity: swipeOffset < -20 ? 1 : 0, transition: 'opacity 0.2s' }}>
+        ✨ AI Answer
+      </div>
+      
       {content}
     </div>
   );

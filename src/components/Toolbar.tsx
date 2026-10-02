@@ -20,8 +20,6 @@ interface ToolbarProps {
   onAddSubject?: () => void;
   showExamButton?: boolean;
   onExamClick?: () => void;
-  showGenerateAnswer?: boolean;
-  onGenerateAnswerClick?: () => void;
 }
 
 export function Toolbar({
@@ -43,9 +41,7 @@ export function Toolbar({
   showAddSubject = false,
   onAddSubject,
   showExamButton = false,
-  onExamClick,
-  showGenerateAnswer = false,
-  onGenerateAnswerClick,
+  onExamClick
 }: ToolbarProps) {
   return (
     <div className="toolbar">
@@ -116,11 +112,6 @@ export function Toolbar({
             {showExamButton && onExamClick && (
               <button className="toolbar-btn" onClick={onExamClick} style={{ background: '#f59e0b', color: '#fff', borderColor: '#f59e0b' }}>
                 <span style={{ marginRight: '4px' }}>🎓</span> Study Session
-              </button>
-            )}
-            {showGenerateAnswer && onGenerateAnswerClick && (
-              <button className="toolbar-btn" onClick={onGenerateAnswerClick} style={{ background: '#10b981', color: '#fff', borderColor: '#10b981' }}>
-                <span style={{ marginRight: '4px' }}>✨</span> Generate Answer
               </button>
             )}
           </>

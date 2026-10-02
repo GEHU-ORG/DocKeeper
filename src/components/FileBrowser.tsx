@@ -44,6 +44,7 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
   const [showGenerateNotes, setShowGenerateNotes] = useState(false);
   const [showGeneratePyq, setShowGeneratePyq] = useState(false);
   const [selectedPyqFile, setSelectedPyqFile] = useState<FileItem | null>(null);
+  const [pyqAnswersMap, setPyqAnswersMap] = useState<Record<string, string>>({});
   const [newFolderTitle, setNewFolderTitle] = useState('New Folder');
   const [deleteTarget, setDeleteTarget] = useState<FileItem | null>(null);
   const [moveTarget, setMoveTarget] = useState<FileItem | null>(null);
@@ -124,13 +125,24 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
           path: `${initialPath}/✨ My Study Notes`,
           uploadedAt: new Date().toISOString(),
         });
-        fetchedItems.unshift({
-          id: 'virtual-pyq',
-          name: '✨ My PYQ Answers',
-          type: 'folder',
-          path: `${initialPath}/✨ My PYQ Answers`,
-          uploadedAt: new Date().toISOString(),
-        });
+      }
+
+      // If we are inside PYQ folder, fetch available AI answers for these PDFs
+      if (initialPath.endsWith('/PYQ')) {
+        try {
+          const subjectPath = initialPath.replace(/\/PYQ$/, '');
+          const aiRes = await fetch(`/api/study/my-ai-content?type=pyq&subjectPath=${encodeURIComponent(subjectPath)}`);
+          if (aiRes.ok) {
+            const aiData = await aiRes.json();
+            const map: Record<string, string> = {};
+            (aiData.items || []).forEach((item: any) => {
+              map[item.pdfName] = item._id;
+            });
+            setPyqAnswersMap(map);
+          }
+        } catch (err) {
+          console.error('Failed to fetch PYQ answers map:', err);
+        }
       }
 
       setItems(fetchedItems);
@@ -483,9 +495,8 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
     }
   };
 
-  const handleGeneratePyqAnswer = async () => {
-    const selectedUrl = Array.from(selectedItems)[0];
-    const pdfFile = processedItems.find(i => (i.type === 'file' ? i.url : i.path) === selectedUrl);
+  const handleGeneratePyqAnswer = (fileUrl: string) => {
+    const pdfFile = processedItems.find(i => (i.type === 'file' ? i.url : i.path) === fileUrl);
     
     if (!pdfFile || !pdfFile.name.endsWith('.pdf')) {
       alert('Please select a single PDF file to generate an answer for.');
@@ -494,6 +505,16 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
 
     setSelectedPyqFile(pdfFile);
     setShowGeneratePyq(true);
+  };
+
+  const handleShowPyqAnswer = (answerId: string) => {
+    setPreviewTarget({
+      id: answerId,
+      name: 'AI Solution',
+      type: 'file',
+      path: '',
+      url: `/virtual/pyq/${answerId}`
+    } as any);
   };
 
   const handleAIOrganizeClick = async () => {
@@ -631,8 +652,6 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         }}
         showExamButton={initialPath.split('/').length === 6 && initialPath.startsWith('UniExamPrep/')}
         onExamClick={() => setShowGenerateNotes(true)}
-        showGenerateAnswer={initialPath.endsWith('/PYQ')}
-        onGenerateAnswerClick={handleGeneratePyqAnswer}
       />
 
       {isOperating && (
@@ -655,6 +674,9 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         sortConfig={sortConfig}
         onSort={handleSort}
         isReadOnly={isReadOnly}
+        pyqAnswersMap={initialPath.endsWith('/PYQ') ? pyqAnswersMap : undefined}
+        onGeneratePyqAnswer={handleGeneratePyqAnswer}
+        onShowPyqAnswer={handleShowPyqAnswer}
       />
 
       {!isReadOnly && (
@@ -750,7 +772,7 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         repo={initialPath.split('/')[1]}
         pdfFile={selectedPyqFile}
         onSuccess={() => {
-          alert('Successfully generated PYQ answers! You can view them in the ✨ My PYQ Answers folder.');
+          alert('Successfully generated PYQ answers!');
           setSelectedItems(new Set());
           setShowGeneratePyq(false);
           fetchFiles();

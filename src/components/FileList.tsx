@@ -24,6 +24,9 @@ interface FileListProps {
   sortConfig: SortConfig;
   onSort: (column: SortColumn) => void;
   isReadOnly?: boolean;
+  pyqAnswersMap?: Record<string, string>;
+  onGeneratePyqAnswer?: (url: string) => void;
+  onShowPyqAnswer?: (answerId: string) => void;
 }
 
 export function FileList({
@@ -39,6 +42,9 @@ export function FileList({
   sortConfig,
   onSort,
   isReadOnly = false,
+  pyqAnswersMap,
+  onGeneratePyqAnswer,
+  onShowPyqAnswer,
 }: FileListProps) {
   const allSelected = items.length > 0 && items.every(item =>
     selectedItems.has(item.type === 'file' ? item.url! : item.path)
@@ -112,6 +118,10 @@ export function FileList({
               onRename={(newName) => onRenameItem(item, newName)}
               onPreview={() => onPreviewItem(item)}
               isReadOnly={isReadOnly}
+              pyqAnswerId={pyqAnswersMap ? pyqAnswersMap[item.name] : undefined}
+              isPyqContext={!!pyqAnswersMap}
+              onGeneratePyqAnswer={onGeneratePyqAnswer ? () => onGeneratePyqAnswer(item.url!) : undefined}
+              onShowPyqAnswer={onShowPyqAnswer}
             />
           ))}
         </div>
