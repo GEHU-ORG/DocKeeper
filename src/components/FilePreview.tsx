@@ -17,6 +17,9 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
   const [textContent, setTextContent] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
+  const [isPublic, setIsPublic] = useState(true);
+  const [isToggling, setIsToggling] = useState(false);
 
   const isVirtual = fileUrl?.startsWith('/virtual/');
   const category = isVirtual ? 'markdown' : getFileCategory(fileName);
@@ -26,15 +29,68 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
       setIsLoading(true);
       setError(null);
       setTextContent(null);
+      setIsOwner(false);
 
-      if (isVirtual) {
-        // e.g. /virtual/notes/123
+      if (fileUrl.startsWith('/virtual/pyq-generate/')) {
+        // e.g. /virtual/pyq-generate/repo/subjectPathBase64/pdfSha/pdfNameBase64
+        const parts = fileUrl.split('/');
+        const repo = parts[3];
+        const subjectPath = decodeURIComponent(parts[4]);
+        const sha = parts[5];
+        const pdfName = decodeURIComponent(parts[6]);
+
+        setIsLoading(false);
+        setTextContent('');
+        
+        fetch('/api/study/generate-pyq-stream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ repo, subjectPath, pdfFile: { sha, name: pdfName, repo } })
+        }).then(res => {
+          if (!res.ok) throw new Error('Failed to start generation');
+          const reader = res.body?.getReader();
+          if (!reader) throw new Error('No reader available');
+          
+          const decoder = new TextDecoder();
+          let buffer = '';
+
+          const processStream = async () => {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split('\n\n');
+              buffer = lines.pop() || '';
+              
+              for (const line of lines) {
+                if (line.startsWith('event: ')) {
+                  const eventMatch = line.match(/event: ([\s\S]*?)\ndata: ([\s\S]*)/);
+                  if (eventMatch) {
+                    const eventName = eventMatch[1];
+                    const data = JSON.parse(eventMatch[2]);
+                    
+                    if (eventName === 'chunk') {
+                      setTextContent(prev => (prev || '') + data.text);
+                    } else if (eventName === 'status') {
+                      // Optional: could show status in UI, but textContent streaming is enough
+                    } else if (eventName === 'complete') {
+                      setIsOwner(true);
+                      setIsPublic(data.isPublic);
+                      // Update the URL in parent component to point to the actual answer? Not strictly necessary if we just keep showing it.
+                    } else if (eventName === 'error') {
+                      setError(data.error);
+                    }
+                  }
+                }
+              }
+            }
+          };
+          processStream();
+        }).catch(err => setError(err.message));
+        
+      } else if (isVirtual) {
         const [, , type, id] = fileUrl.split('/');
-        // Extract the subjectPath from the current URL if possible, or we don't need it if we have ID
-        // Wait, the API needs subjectPath, but we passed id. The API has id so it works!
-        // Let's call the API
-        // But our API requires subjectPath in the backend. Wait, let me check the API:
-        // url.searchParams.get('subjectPath') is checked! Let's pass a dummy subjectPath since we have id.
         const url = `/api/study/my-ai-content?type=${type}&id=${id}&subjectPath=dummy`;
         fetch(url)
           .then(res => {
@@ -47,6 +103,8 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
             } else {
               setTextContent(data.content || 'No content found');
             }
+            setIsOwner(!!data.isOwner);
+            setIsPublic(!!data.isPublic);
           })
           .catch(err => setError(err.message))
           .finally(() => setIsLoading(false));
@@ -63,6 +121,25 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
     }
   }, [isOpen, fileUrl, category, isVirtual]);
 
+  const togglePrivacy = async () => {
+    if (!isVirtual) return;
+    const [, , type, id] = fileUrl.split('/');
+    setIsToggling(true);
+    try {
+      const res = await fetch(`/api/study/my-ai-content?type=${type}&id=${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isPublic: !isPublic })
+      });
+      if (res.ok) {
+        setIsPublic(!isPublic);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    setIsToggling(false);
+  };
+
   if (!isOpen) return null;
 
   const renderPreview = () => {
@@ -77,11 +154,33 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
             overflow: 'auto', 
             padding: '2rem 3rem', 
             color: 'var(--text-primary)',
+            position: 'relative'
           }}>
+            {isOwner && (
+              <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
+                <button 
+                  onClick={togglePrivacy} 
+                  disabled={isToggling}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid var(--border-color)',
+                    background: isPublic ? 'var(--bg-secondary)' : 'var(--accent)',
+                    color: isPublic ? 'var(--text-primary)' : '#000',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    opacity: isToggling ? 0.7 : 1
+                  }}
+                >
+                  {isPublic ? '🌍 Public' : '🔒 Private'}
+                </button>
+              </div>
+            )}
             {isLoading && <div className="loading-spinner" style={{ margin: '2rem auto' }} />}
             {error && <div style={{ color: 'var(--error)' }}>{error}</div>}
             {!isLoading && !error && textContent !== null && (
-              <div className="prose prose-invert" style={{ maxWidth: '800px', margin: '0 auto' }}>
+              <div className="prose prose-invert" style={{ maxWidth: '800px', margin: '0 auto', paddingTop: isOwner ? '1rem' : '0' }}>
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {textContent}
                 </ReactMarkdown>

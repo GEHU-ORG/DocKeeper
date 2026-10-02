@@ -519,8 +519,20 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
       return;
     }
 
-    setSelectedPyqFile(pdfFile);
-    setShowGeneratePyq(true);
+    const subjectPath = initialPath.replace(/\/PYQ$/, '');
+    const repo = initialPath.split('/')[1] || 'GEU';
+
+    const encodedSubjectPath = encodeURIComponent(subjectPath);
+    const encodedPdfName = encodeURIComponent(pdfFile.name);
+    const virtualUrl = `/virtual/pyq-generate/${repo}/${encodedSubjectPath}/${pdfFile.sha}/${encodedPdfName}`;
+
+    setPreviewTarget({
+      id: 'generate',
+      name: `Generating Answers for ${pdfFile.name}...`,
+      type: 'file',
+      path: '',
+      url: virtualUrl
+    } as any);
   };
 
   const handleShowPyqAnswer = (answerId: string) => {
@@ -781,19 +793,7 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         }}
       />
 
-      <GeneratePyqModal
-        isOpen={showGeneratePyq}
-        onClose={() => setShowGeneratePyq(false)}
-        subjectPath={initialPath.replace(/\/PYQ$/, '')}
-        repo={initialPath.split('/')[1]}
-        pdfFile={selectedPyqFile}
-        onSuccess={() => {
-          alert('Successfully generated PYQ answers!');
-          setSelectedItems(new Set());
-          setShowGeneratePyq(false);
-          fetchFiles();
-        }}
-      />
+      {/* GeneratePyqModal removed in favor of streaming via FilePreview */}
     </div>
   );
 }

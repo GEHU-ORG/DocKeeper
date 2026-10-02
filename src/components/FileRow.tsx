@@ -296,25 +296,32 @@ export function FileRow({
 
   return (
     <div 
-      className={`file-row ${isReadOnly ? 'readonly' : ''}`}
-      style={{ 
-        transform: `translateX(${swipeOffset}px)`, 
-        transition: swipeOffset === 0 ? 'transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)' : 'none',
-        position: 'relative'
-      }}
+      className={`file-row-wrapper ${isReadOnly ? 'readonly' : ''}`}
+      style={{ position: 'relative', overflow: 'hidden', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', marginBottom: '8px' }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Mobile Swipe Indicators behind the row */}
-      <div style={{ position: 'absolute', left: '-80px', top: 0, bottom: 0, display: 'flex', alignItems: 'center', color: 'var(--accent)', opacity: swipeOffset > 20 ? 1 : 0, transition: 'opacity 0.2s' }}>
+      {/* Background Indicators */}
+      <div style={{ position: 'absolute', left: '16px', top: 0, bottom: 0, display: 'flex', alignItems: 'center', color: 'var(--accent)', opacity: swipeOffset > 20 ? 1 : 0, transition: 'opacity 0.2s', fontWeight: 600 }}>
         👁 Preview
       </div>
-      <div style={{ position: 'absolute', right: '-80px', top: 0, bottom: 0, display: 'flex', alignItems: 'center', color: '#10b981', opacity: swipeOffset < -20 ? 1 : 0, transition: 'opacity 0.2s' }}>
+      <div style={{ position: 'absolute', right: '16px', top: 0, bottom: 0, display: 'flex', alignItems: 'center', color: '#10b981', opacity: swipeOffset < -20 ? 1 : 0, transition: 'opacity 0.2s', fontWeight: 600 }}>
         ✨ AI Answer
       </div>
       
-      {content}
+      {/* Foreground Sliding Row */}
+      <div 
+        className="file-row"
+        style={{ 
+          transform: `translateX(${swipeOffset}px)`, 
+          transition: swipeOffset === 0 ? 'transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)' : 'none',
+          background: 'var(--bg-primary)',
+          margin: 0
+        }}
+      >
+        {content}
+      </div>
     </div>
   );
 }

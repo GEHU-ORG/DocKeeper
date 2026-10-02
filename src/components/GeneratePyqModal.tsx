@@ -72,11 +72,11 @@ export function GeneratePyqModal({ isOpen, onClose, subjectPath, repo, pdfFile, 
         {!isGenerating ? (
           <>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '16px' }}>
-              The AI will read <strong>{pdfFile.name}</strong>, extract all questions, and write a detailed 10-mark answer for each one.
+              The AI will read <strong>{pdfFile.name}</strong>, extract all questions, and write a detailed answer tailored to the question's marks.
             </p>
             
             <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: 'var(--radius-md)', marginBottom: '16px', fontSize: '0.875rem' }}>
-              <strong>Note:</strong> This process uses complex reasoning and may take 30-60 seconds depending on the length of the paper.
+              <strong>Note:</strong> This process uses complex reasoning and may take a minute depending on the length of the paper.
             </div>
           </>
         ) : (

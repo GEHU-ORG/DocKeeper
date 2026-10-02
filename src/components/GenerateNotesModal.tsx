@@ -16,6 +16,7 @@ export function GenerateNotesModal({ isOpen, onClose, subjectPath, onSuccess }: 
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
+  const [noteType, setNoteType] = useState<'1-pager' | 'all-topics'>('1-pager');
 
   // Fetch PDFs from the subject's subfolders (PYQ, Notes, Syllabus)
   useEffect(() => {
@@ -88,6 +89,7 @@ export function GenerateNotesModal({ isOpen, onClose, subjectPath, onSuccess }: 
           subjectPath,
           subjectName,
           selectedFiles,
+          noteType,
         })
       });
 
@@ -138,6 +140,42 @@ export function GenerateNotesModal({ isOpen, onClose, subjectPath, onSuccess }: 
 
         {error && <p className="dialog-error">{error}</p>}
 
+        {!isGenerating && pdfs.length > 0 && (
+          <div style={{ marginBottom: '16px' }}>
+            <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px' }}>Note Type:</p>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={() => setNoteType('1-pager')}
+                style={{
+                  flex: 1, padding: '8px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)',
+                  background: noteType === '1-pager' ? 'var(--accent)' : 'var(--bg-secondary)',
+                  color: noteType === '1-pager' ? '#fff' : 'var(--text-primary)',
+                  fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s'
+                }}
+              >
+                📝 1-Pager (Important Topics)
+              </button>
+              <button
+                type="button"
+                onClick={() => setNoteType('all-topics')}
+                style={{
+                  flex: 1, padding: '8px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)',
+                  background: noteType === 'all-topics' ? 'var(--accent)' : 'var(--bg-secondary)',
+                  color: noteType === 'all-topics' ? '#fff' : 'var(--text-primary)',
+                  fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s'
+                }}
+              >
+                📚 Detailed (All Topics)
+              </button>
+            </div>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', marginTop: '8px' }}>
+              {noteType === '1-pager' 
+                ? 'Generates a condensed frequency table ranking important topics using PYQs and Syllabus prediction.'
+                : 'Generates comprehensive notes covering all topics from the syllabus and provided PDFs.'}
+            </p>
+          </div>
+        )}
         <div className="dialog-actions">
           <button type="button" className="dialog-btn dialog-btn-cancel" onClick={onClose} disabled={isGenerating}>
             Cancel

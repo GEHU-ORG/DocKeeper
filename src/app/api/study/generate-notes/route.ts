@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const userId = ((session.user as any).githubUsername ?? session.user.email ?? 'anonymous') as string;
 
-  const { repo, subjectPath, subjectName, selectedFiles } = await req.json();
+  const { repo, subjectPath, subjectName, selectedFiles, noteType } = await req.json();
   if (!repo || !subjectPath || !selectedFiles?.length) {
     return NextResponse.json({ error: 'Missing params' }, { status: 400 });
   }
@@ -58,16 +58,30 @@ export async function POST(req: NextRequest) {
 
   // 2. Generate with Gemini
   const model = customGenai.getGenerativeModel({ model: customModel });
-  const prompt = `You are a university exam study assistant. Analyze the provided documents for the subject "${subjectName}" and generate comprehensive pre-processed study notes.
+  
+  let prompt = '';
+  if (noteType === '1-pager') {
+    prompt = `You are a university exam study assistant. Analyze the provided documents (which may include Syllabus, PYQs, and Notes) for the subject "${subjectName}" and generate a highly effective 1-Pager revision sheet.
+
+Format your response in beautiful Markdown. Include:
+1. **Subject Overview:** Brief overview in 2-3 sentences.
+2. **🔥 Important Topics Frequency Table:** Rank the topics based on their frequency of appearance in the provided PYQs and Syllabus. Use a Markdown table with columns: [Topic, Frequency (High/Medium/Low), Key Concepts, Predicted to appear in next exam? (Yes/No)].
+3. **Must-Know Concepts:** Briefly summarize the 5 most critical concepts.
+4. **Cheat Sheet / Formulas:** Any critical formulas, definitions, or memory aids (mnemonics) to memorize before the exam.
+
+Keep this strictly to a highly condensed, exam-focused 1-pager format.`;
+  } else {
+    prompt = `You are a university exam study assistant. Analyze the provided documents for the subject "${subjectName}" and generate comprehensive pre-processed study notes covering EVERY topic found in the syllabus and materials.
 
 Format your response in beautiful Markdown with clear headings. Include:
 1. **Subject Overview:** Brief overview in 2-3 sentences.
-2. **Key Concepts:** 5-8 key concepts with detailed explanations.
-3. **Likely Exam Questions:** 5-8 Q&As based on important topics.
+2. **Comprehensive Topic Breakdown:** For every topic identified, provide a detailed explanation, key points, and examples.
+3. **Likely Exam Questions:** 10+ Q&As covering the entire syllabus.
 4. **PYQ Solutions (if applicable):** Any past year questions found in the documents along with your solved answers.
-5. **Study Tips:** 3-5 memory tips or important formulas.
+5. **Study Tips:** Memory tips or important formulas.
 
-Focus entirely on exam-relevant content.`;
+Do not skip any major topics. Provide a detailed, all-encompassing guide.`;
+  }
 
   let generatedText: string;
   try {
