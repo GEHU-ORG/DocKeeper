@@ -14,6 +14,7 @@ import { FilePreview } from './FilePreview';
 import { AIOrganizeDialog, type AIMove } from './AIOrganizeDialog';
 import { JoinOrgPrompt } from './JoinOrgPrompt';
 import { AddUniversityModal } from './AddUniversityModal';
+import { ExamModal } from './ExamModal';
 
 interface FileBrowserProps {
   initialPath: string;
@@ -37,6 +38,7 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
 
   // Dialog states
   const [showAddUni, setShowAddUni] = useState(false);
+  const [showExamModal, setShowExamModal] = useState(false);
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<FileItem | null>(null);
   const [moveTarget, setMoveTarget] = useState<FileItem | null>(null);
@@ -542,6 +544,8 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         onAddCourse={handleAddCourse}
         showAddDepartment={initialPath.split('/').length === 3 && initialPath.startsWith('UniExamPrep/')}
         onAddDepartment={handleAddDepartment}
+        showExamButton={initialPath.split('/').length >= 6 && initialPath.startsWith('UniExamPrep/')}
+        onExamClick={() => setShowExamModal(true)}
       />
 
       {isOperating && (
@@ -639,6 +643,13 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
           setShowAddUni(false);
           fetchFiles(); // Refresh file list to show new repo
         }}
+      />
+
+      <ExamModal 
+        isOpen={showExamModal}
+        onClose={() => setShowExamModal(false)}
+        path={initialPath}
+        selectedFiles={processedItems.filter(item => item.type === 'file' && selectedItems.has(item.url!))}
       />
     </div>
   );

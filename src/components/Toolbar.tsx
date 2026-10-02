@@ -14,6 +14,8 @@ interface ToolbarProps {
   onAddCourse?: () => void;
   showAddDepartment?: boolean;
   onAddDepartment?: () => void;
+  showExamButton?: boolean;
+  onExamClick?: () => void;
 }
 
 export function Toolbar({
@@ -30,6 +32,8 @@ export function Toolbar({
   onAddCourse,
   showAddDepartment = false,
   onAddDepartment,
+  showExamButton = false,
+  onExamClick,
 }: ToolbarProps) {
   return (
     <div className="toolbar">
@@ -79,6 +83,11 @@ export function Toolbar({
             <button className="toolbar-btn" onClick={onAIOrganize} style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>
               <span style={{ marginRight: '4px' }}>✨</span> AI Organize
             </button>
+            {showExamButton && onExamClick && (
+              <button className="toolbar-btn" onClick={onExamClick} style={{ background: '#f59e0b', color: '#fff', borderColor: '#f59e0b' }}>
+                <span style={{ marginRight: '4px' }}>🎓</span> Exam
+              </button>
+            )}
           </>
         )}
       </div>

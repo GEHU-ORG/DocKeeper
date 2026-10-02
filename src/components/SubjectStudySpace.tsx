@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { getSubjectDetails, updateSubjectField, saveStudyNote, deleteStudyNote } from '@/app/exam-portal/actions';
 import { ModelSelector } from './ModelSelector';
 
-export function SubjectStudySpace({ subjectId, onBack }: { subjectId: string, onBack: () => void }) {
+export function SubjectStudySpace({ subjectId, subjectName, isReadOnly, selectedFiles = [] }: { subjectId: string, subjectName?: string, isReadOnly?: boolean, selectedFiles?: any[] }) {
   const [subject, setSubject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -80,8 +80,12 @@ PYQ (Previous Year Questions) Analysis:
 ${pyqAnalysis || 'Not provided'}
     `;
 
+    const fileContext = selectedFiles.length > 0 
+      ? `\nAdditionally, the user has selected the following files as context for this generation:\n${selectedFiles.map(f => `- ${f.name}`).join('\n')}\n(Assume the contents of these files heavily dictate the final output).`
+      : '';
+
     const prompt1Pager = `You are an expert academic tutor. Based on the syllabus and PYQ analysis provided below, generate a high-yield, densely packed "1-Pager" study sheet. 
-Focus only on the most critical concepts, heavily tested topics, and quick formulas/definitions. Make it highly scannable with bullet points and bold text.\n\n${baseContext}`;
+Focus only on the most critical concepts, heavily tested topics, and quick formulas/definitions. Make it highly scannable with bullet points and bold text.\n\n${baseContext}${fileContext}`;
     
     const promptDetailed = `You are an expert academic tutor. Based on the syllabus and PYQ analysis provided below, generate a highly detailed explanation and comprehensive study guide.
 Break down each unit, explain the core concepts required for the exam, and provide step-by-step guidance on how to tackle the expected questions from the PYQs.\n\n${baseContext}`;
@@ -113,10 +117,7 @@ Break down each unit, explain the core concepts required for the exam, and provi
   return (
     <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3 style={{ fontSize: '1.5rem', fontWeight: 700 }}>{subject?.name} - Study Space</h3>
-        <button onClick={onBack} style={{ padding: '6px 12px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-primary)' }}>
-          ← Back to Subjects
-        </button>
+        <h3 style={{ fontSize: '1.5rem', fontWeight: 700 }}>{subjectName || subject?.name} - Study Space</h3>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
@@ -172,6 +173,17 @@ Break down each unit, explain the core concepts required for the exam, and provi
             <div style={{ marginBottom: '16px' }}>
               <ModelSelector onModelSelect={(id, apiKey) => setModelConfig({ id, apiKey })} />
             </div>
+
+            {selectedFiles && selectedFiles.length > 0 && (
+              <div style={{ padding: '12px', background: 'var(--bg-tertiary)', borderRadius: '8px', border: '1px solid var(--accent)', marginBottom: '16px' }}>
+                <strong>📎 Using {selectedFiles.length} selected files as context:</strong>
+                <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px', fontSize: '0.9rem' }}>
+                  {selectedFiles.map(f => (
+                    <li key={f.id}>{f.name}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
               <button 
