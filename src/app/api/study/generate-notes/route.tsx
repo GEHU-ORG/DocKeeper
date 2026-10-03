@@ -80,8 +80,9 @@ Format:
   ]
 }
 Rules:
-1. Provide exactly 9 to 12 boxes (so it forms a 3-column grid).
-2. For "color", randomly select one of: "pink", "yellow", "blue", "green", "purple", "orange". Try to distribute colors evenly.`;
+1. Since the user provides the FULL syllabus, you must output exactly 15 to 21 boxes (so it forms a massive 3-column grid filling the entire page).
+2. Organize the boxes UNIT-WISE (e.g. "Unit 1: Intereference", "Unit 2: Diffraction").
+3. For "color", randomly select one of: "pink", "yellow", "blue", "green", "purple", "orange". Distribute colors evenly.`;
 
     let generatedText = '';
     let cheatSheetData = null;
@@ -180,7 +181,7 @@ Rules:
         await dbConnect();
         const chat = await Chat.create({
           userId, subjectPath, title: `1-Pager: ${subjectName}`,
-          messages: [{ role: 'assistant', content: `![1-Pager Infographic](https://raw.githubusercontent.com/${ORG}/${repo}/main/${encodeURI(filePath)})\n\n*Your visual 1-Pager Infographic was successfully generated and uploaded to GitHub as ${fileName}!*` }],
+          messages: [{ role: 'assistant', content: `![1-Pager Infographic](https://raw.githubusercontent.com/${ORG}/${repo}/main/${encodeURI(filePath)})` }],
           isPublic,
         });
         chatId = chat._id;

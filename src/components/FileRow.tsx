@@ -319,43 +319,41 @@ export function FileRow({
       className={`file-row-wrapper ${isReadOnly ? 'readonly' : ''}`}
       style={{ position: 'relative', overflow: 'hidden', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', marginBottom: '12px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}
     >
+      {/* Background Actions (revealed when sliding) */}
+      {item.type === 'file' && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', justifyContent: 'space-between', zIndex: 0 }}>
+          {/* Left Background (Action: Preview) */}
+          <div style={{ width: '50%', background: 'var(--red)', display: 'flex', alignItems: 'center', paddingLeft: '24px', color: 'white', fontWeight: 600 }}>
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+             Preview PDF
+          </div>
+          {/* Right Background (Action: Generate) */}
+          <div style={{ width: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '24px', color: 'white', fontWeight: 600 }}>
+             Generate AI Notes
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px' }}><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          </div>
+        </div>
+      )}
+
       {/* Foreground Row */}
       <div 
         className="file-row"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         style={{ 
           background: 'var(--bg-primary)',
           margin: 0,
-          borderBottom: item.type === 'file' ? '1px solid var(--border-color)' : 'none'
+          borderBottom: item.type === 'file' ? '1px solid var(--border-color)' : 'none',
+          transform: `translateX(${swipeOffset}px)`,
+          transition: swipeOffset === 0 ? 'transform 0.3s ease-out' : 'none',
+          position: 'relative',
+          zIndex: 1,
+          width: '100%'
         }}
       >
         {content}
       </div>
-
-      {/* Explicit Bottom Action Bar for Files (Red Left, Accent Right) */}
-      {item.type === 'file' && (
-        <div style={{ display: 'flex', width: '100%', background: 'var(--bg-tertiary)' }}>
-          <button 
-             onClick={(e) => { e.stopPropagation(); onPreview(); }}
-             style={{ flex: 1, padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--red)', border: 'none', background: 'transparent', fontSize: '0.85rem', fontWeight: 600, borderRight: '1px solid var(--border-color)', cursor: 'pointer' }}
-          >
-             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
-             Preview PDF
-          </button>
-          
-          <button 
-             onClick={(e) => {
-                e.stopPropagation();
-                if (isPyqContext) { pyqAnswerId ? onShowPyqAnswer?.(pyqAnswerId) : onGeneratePyqAnswer?.(); }
-                else if (isSyllabusContext) { onTrackSyllabus?.(); }
-                else { onGeneratePyqAnswer?.(); }
-             }}
-             style={{ flex: 1, padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--accent)', border: 'none', background: 'transparent', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}
-          >
-             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-             {isSyllabusContext ? 'Track Syllabus' : pyqAnswerId ? 'View AI Solution' : 'Generate AI Notes / PYQ'}
-          </button>
-        </div>
-      )}
     </div>
   );
 }
