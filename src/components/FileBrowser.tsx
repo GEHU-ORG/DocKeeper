@@ -140,14 +140,14 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
       }
 
       // If we are inside PYQ folder, fetch available AI answers for these PDFs
-      if (initialPath.endsWith('/PYQ')) {
+      if (initialPath.includes('/PYQ')) {
         try {
-          const subjectPath = initialPath.replace(/\/PYQ$/, '');
+          const subjectPath = initialPath.split('/PYQ')[0];
           const aiRes = await fetch(`/api/study/my-ai-content?type=pyq&subjectPath=${encodeURIComponent(subjectPath)}`);
           if (aiRes.ok) {
             const aiData = await aiRes.json();
             const map: Record<string, string> = {};
-            (aiData.items || []).forEach((item: any) => {
+            (aiData.items || []).reverse().forEach((item: any) => {
               map[item.pdfName] = item._id;
             });
             setPyqAnswersMap(map);
@@ -515,7 +515,7 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
       return;
     }
 
-    const subjectPath = initialPath.replace(/\/PYQ$/, '');
+    const subjectPath = initialPath.split('/PYQ')[0];
     const repo = initialPath.split('/')[1] || 'GEU';
 
     const encodedSubjectPath = encodeURIComponent(subjectPath);
@@ -652,7 +652,7 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         sortConfig={sortConfig}
         onSort={handleSort}
         isReadOnly={isReadOnly}
-        pyqAnswersMap={initialPath.endsWith('/PYQ') ? pyqAnswersMap : undefined}
+        pyqAnswersMap={initialPath.includes('/PYQ') ? pyqAnswersMap : undefined}
         onGeneratePyqAnswer={handleGeneratePyqAnswer}
         onShowPyqAnswer={handleShowPyqAnswer}
       />
