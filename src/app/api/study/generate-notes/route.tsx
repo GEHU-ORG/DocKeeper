@@ -108,26 +108,26 @@ Provide exactly 6 to 8 cards containing the most important topics to memorize.`;
     try {
       const imageResp = new ImageResponse(
         (
-          <div style={{ display: 'flex', flexDirection: 'column', backgroundColor: '#0f172a', width: '100%', height: '100%', padding: '60px', fontFamily: 'sans-serif' }}>
-            <div style={{ display: 'flex', fontSize: '72px', fontWeight: 'bold', color: '#38bdf8', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', backgroundColor: '#ffffff', width: '100%', height: '100%', padding: '60px', fontFamily: 'sans-serif' }}>
+            <div style={{ display: 'flex', fontSize: '72px', fontWeight: 'bold', color: '#2563eb', marginBottom: '20px' }}>
               {cheatSheetData.title}
             </div>
-            <div style={{ display: 'flex', fontSize: '32px', color: '#94a3b8', marginBottom: '60px' }}>
+            <div style={{ display: 'flex', fontSize: '32px', color: '#475569', marginBottom: '60px' }}>
               {cheatSheetData.overview}
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}>
               {cheatSheetData.cards.map((card: any, idx: number) => (
-                <div key={idx} style={{ display: 'flex', flexDirection: 'column', width: '48%', backgroundColor: '#1e293b', borderRadius: '16px', padding: '30px', marginBottom: '40px', borderLeft: card.importance === 'High' ? '8px solid #ef4444' : '8px solid #3b82f6' }}>
-                  <div style={{ display: 'flex', fontSize: '40px', fontWeight: 'bold', color: '#f8fafc', marginBottom: '20px' }}>
+                <div key={idx} style={{ display: 'flex', flexDirection: 'column', width: '48%', backgroundColor: '#f1f5f9', borderRadius: '16px', padding: '30px', marginBottom: '40px', borderLeft: card.importance === 'High' ? '8px solid #ef4444' : '8px solid #3b82f6' }}>
+                  <div style={{ display: 'flex', fontSize: '40px', fontWeight: 'bold', color: '#0f172a', marginBottom: '20px' }}>
                     {card.title} {card.importance === 'High' ? '🔥' : '📘'}
                   </div>
-                  <div style={{ display: 'flex', fontSize: '28px', color: '#cbd5e1', lineHeight: 1.5 }}>
+                  <div style={{ display: 'flex', fontSize: '28px', color: '#334155', lineHeight: 1.5 }}>
                     {card.body}
                   </div>
                 </div>
               ))}
             </div>
-            <div style={{ display: 'flex', fontSize: '24px', color: '#64748b', marginTop: 'auto', alignSelf: 'center' }}>
+            <div style={{ display: 'flex', fontSize: '24px', color: '#94a3b8', marginTop: 'auto', alignSelf: 'center' }}>
               Generated dynamically by DocsKeeper AI - 1-Pager Engine
             </div>
           </div>
