@@ -161,24 +161,67 @@ export async function deleteItem(path: string, userToken?: string): Promise<void
   // Use the user's token for authorization, or fallback to the admin token (not recommended)
   const client = userToken ? new Octokit({ auth: userToken }) : octokit;
 
-  // Get SHA
-  const { data } = await client.repos.getContent({
-    owner: ORG_NAME,
-    repo,
-    path: innerPath,
-  });
+  let isFolder = false;
+  let fileSha = '';
 
-  if (Array.isArray(data)) {
-    throw new Error('Deleting folders is not supported. Please delete files individually.');
+  try {
+    const { data } = await client.repos.getContent({
+      owner: ORG_NAME,
+      repo,
+      path: innerPath,
+    });
+    
+    if (Array.isArray(data)) {
+      isFolder = true;
+    } else {
+      fileSha = (data as any).sha;
+    }
+  } catch (e: any) {
+    if (e.status === 404) {
+      // It's possible the folder exists but has > 1000 items, or it's purely a tree.
+      // getContent on a large dir might fail, but let's assume it's a folder if it's not a file.
+      isFolder = true;
+    } else {
+      throw e;
+    }
   }
 
-  await client.repos.deleteFile({
-    owner: ORG_NAME,
-    repo,
-    path: innerPath,
-    message: `Delete ${innerPath} via UniExamPrep`,
-    sha: data.sha,
-  });
+  if (isFolder) {
+    const { data: ref } = await client.git.getRef({ owner: ORG_NAME, repo, ref: 'heads/main' });
+    const latestCommitSha = ref.object.sha;
+
+    const { data: commit } = await client.git.getCommit({ owner: ORG_NAME, repo, commit_sha: latestCommitSha });
+    const baseTreeSha = commit.tree.sha;
+
+    const { data: fullTree } = await client.git.getTree({ owner: ORG_NAME, repo, tree_sha: baseTreeSha, recursive: '1' });
+    const prefix = innerPath + '/';
+    const treeUpdates: any[] = [];
+    
+    for (const item of fullTree.tree) {
+      if (item.path?.startsWith(prefix) || item.path === innerPath) {
+        treeUpdates.push({
+          path: item.path,
+          mode: '100644', 
+          type: item.type === 'tree' ? 'tree' : 'blob',
+          sha: null,
+        });
+      }
+    }
+
+    if (treeUpdates.length === 0) return; // Nothing to delete
+
+    const { data: newTree } = await client.git.createTree({ owner: ORG_NAME, repo, base_tree: baseTreeSha, tree: treeUpdates });
+    const { data: newCommit } = await client.git.createCommit({ owner: ORG_NAME, repo, message: `Delete folder ${innerPath} via UniExamPrep`, tree: newTree.sha, parents: [latestCommitSha] });
+    await client.git.updateRef({ owner: ORG_NAME, repo, ref: 'heads/main', sha: newCommit.sha });
+  } else {
+    await client.repos.deleteFile({
+      owner: ORG_NAME,
+      repo,
+      path: innerPath,
+      message: `Delete ${innerPath} via UniExamPrep`,
+      sha: fileSha,
+    });
+  }
 }
 
 export async function uploadFile(path: string, content: string | Buffer, userToken?: string, uploaderTag?: string): Promise<void> {
