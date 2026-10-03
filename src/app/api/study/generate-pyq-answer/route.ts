@@ -147,11 +147,15 @@ async function handleSolve(userId: string, session: any, { answerId, questionId,
 
   const model = customGenai.getGenerativeModel({ model: customModel });
   
-  const qPrompt = `You are a university exam solver. A student has asked you to solve the following question from the provided exam paper PDF:
+  const qPrompt = `You are an expert university professor and tutor. A student has asked you to solve the following question from the provided exam paper PDF:
 Question: "${question.questionText}" ${question.marks ? `(${question.marks})` : ''}
 
-Write an answer that is appropriate in length and depth for the marks assigned. If no marks are visible, provide a comprehensive standard answer.
-Include bullet points and examples where applicable. Format your answer in Markdown.
+Provide a highly understandable, human-readable, and easy-to-learn answer. Follow these strict rules:
+1. Explain concepts simply and intuitively, as if teaching a student.
+2. Break down complex explanations into smaller, digestible paragraphs, bullet points, and numbered lists.
+3. DO NOT use LaTeX math symbols (like $ or $$) as the UI does not support them. Use plain text for math (e.g., "I_E = V_E / R_E" instead of "$I_E = \\frac{V_E}{R_E}$").
+4. If the question requires code, use proper markdown code blocks.
+5. Provide a comprehensive answer appropriate for the marks assigned.
 Rely on the provided PDF for any necessary context (like figures or specific paper instructions).`;
 
   try {

@@ -92,29 +92,41 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
       } else if (isVirtual) {
         const [, , type, id] = fileUrl.split('/');
         const url = `/api/study/my-ai-content?type=${type}&id=${id}&subjectPath=dummy`;
-        fetch(url)
-          .then(res => {
-            if (!res.ok) throw new Error('Failed to load AI content');
-            return res.json();
-          })
-          .then(data => {
-            if (type === 'notes') {
-              setTextContent(data.messages?.[0]?.content || 'No content found');
-            } else {
-              if (data.questions && Array.isArray(data.questions)) {
-                const md = data.questions.map((q: any, i: number) => {
-                  return `### Q${i+1}: ${q.questionText} ${q.marks ? `(${q.marks})` : ''}\n\n**Answer:**\n\n${q.isSolved ? q.answer : '*Solving...*'}\n\n---\n`;
-                }).join('\n');
-                setTextContent(md || 'No questions found.');
+        
+        let pollTimer: NodeJS.Timeout;
+        const pollData = () => {
+          fetch(url)
+            .then(res => {
+              if (!res.ok) throw new Error('Failed to load AI content');
+              return res.json();
+            })
+            .then(data => {
+              if (type === 'notes') {
+                setTextContent(data.messages?.[0]?.content || 'No content found');
               } else {
-                setTextContent(data.content || 'No content found');
+                if (data.questions && Array.isArray(data.questions)) {
+                  const md = data.questions.map((q: any, i: number) => {
+                    return `### Q${i+1}: ${q.questionText} ${q.marks ? `(${q.marks})` : ''}\n\n**Answer:**\n\n${q.isSolved ? q.answer : '*Solving in background...*'}\n\n---\n`;
+                  }).join('\n');
+                  setTextContent(md || 'No questions found.');
+
+                  const hasUnsolved = data.questions.some((q: any) => !q.isSolved && !q.hasError);
+                  if (hasUnsolved && isOpen) {
+                    pollTimer = setTimeout(pollData, 3000);
+                  }
+                } else {
+                  setTextContent(data.content || 'No content found');
+                }
               }
-            }
-            setIsOwner(!!data.isOwner);
-            setIsPublic(!!data.isPublic);
-          })
-          .catch(err => setError(err.message))
-          .finally(() => setIsLoading(false));
+              setIsOwner(!!data.isOwner);
+              setIsPublic(!!data.isPublic);
+            })
+            .catch(err => setError(err.message))
+            .finally(() => setIsLoading(false));
+        };
+        
+        pollData();
+        return () => clearTimeout(pollTimer);
       } else {
         fetch(fileUrl)
           .then(res => {

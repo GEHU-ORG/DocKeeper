@@ -5,7 +5,9 @@ import { type FileItem } from '@/lib/github';
 
 interface GeneratePyqModalProps {
   isOpen: boolean;
+  isHidden?: boolean;
   onClose: () => void;
+  onRunInBackground?: (answerId: string) => void;
   subjectPath: string;
   repo: string;
   pdfFile: FileItem | null;
@@ -20,7 +22,7 @@ interface ExtractedQuestion {
   hasError?: boolean;
 }
 
-export function GeneratePyqModal({ isOpen, onClose, subjectPath, repo, pdfFile, onSuccess }: GeneratePyqModalProps) {
+export function GeneratePyqModal({ isOpen, isHidden, onClose, onRunInBackground, subjectPath, repo, pdfFile, onSuccess }: GeneratePyqModalProps) {
   const [phase, setPhase] = useState<'idle' | 'extracting' | 'solving' | 'done'>('idle');
   const [error, setError] = useState('');
   const [questions, setQuestions] = useState<ExtractedQuestion[]>([]);
@@ -55,6 +57,7 @@ export function GeneratePyqModal({ isOpen, onClose, subjectPath, repo, pdfFile, 
   }, [currentSolvingIndex]);
 
   if (!isOpen || !pdfFile) return null;
+  if (isHidden) return null;
 
   const solveSingleQuestion = async (qIndex: number, aId: string, qId: string) => {
     if (isCancelled.current) return;
@@ -216,6 +219,15 @@ export function GeneratePyqModal({ isOpen, onClose, subjectPath, repo, pdfFile, 
               <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderRadius: 'var(--radius-md)', fontWeight: 600, marginTop: '8px' }}>
                 All questions successfully solved and stored in the database!
               </div>
+            )}
+
+            {phase === 'solving' && onRunInBackground && answerId && (
+              <button 
+                onClick={() => onRunInBackground(answerId)} 
+                style={{ width: '100%', padding: '12px', marginTop: '16px', background: 'var(--accent)', color: 'white', borderRadius: 'var(--radius-md)', border: 'none', cursor: 'pointer', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
+              >
+                <span style={{ fontSize: '1.2rem' }}>💬</span> Read Live Chat (Solve in Background)
+              </button>
             )}
           </div>
         )}

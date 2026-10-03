@@ -44,6 +44,7 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
   const [showGenerateNotes, setShowGenerateNotes] = useState(false);
   const [showGeneratePyq, setShowGeneratePyq] = useState(false);
   const [selectedPyqFile, setSelectedPyqFile] = useState<FileItem | null>(null);
+  const [pyqHidden, setPyqHidden] = useState(false);
   const [pyqAnswersMap, setPyqAnswersMap] = useState<Record<string, string>>({});
   
   const [showSyllabusTracker, setShowSyllabusTracker] = useState(false);
@@ -740,14 +741,21 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
 
       <GeneratePyqModal
         isOpen={showGeneratePyq}
+        isHidden={pyqHidden}
         onClose={() => {
           setShowGeneratePyq(false);
+          setPyqHidden(false);
           setSelectedPyqFile(null);
+        }}
+        onRunInBackground={(answerId) => {
+          setPyqHidden(true);
+          setPreviewTarget({ type: 'pyq-answer', name: `Live PYQ Solution`, url: `/virtual/pyq/${answerId}`, path: '' } as unknown as FileItem);
         }}
         subjectPath={initialPath.split('/PYQ')[0]}
         repo={initialPath.split('/')[1] || 'GEU'}
         pdfFile={selectedPyqFile}
         onSuccess={() => {
+          setPyqHidden(false);
           // Re-fetch AI answers map to show the button
           if (initialPath.includes('/PYQ')) {
             const subjectPath = initialPath.split('/PYQ')[0];
