@@ -3,7 +3,7 @@
 interface ToolbarProps {
   onNewFolder: () => void;
   onUpload: () => void;
-  onAIOrganize: () => void;
+
   selectedCount: number;
   onMoveSelected: () => void;
   onDeleteSelected: () => void;
@@ -25,7 +25,7 @@ interface ToolbarProps {
 export function Toolbar({
   onNewFolder,
   onUpload,
-  onAIOrganize,
+
   selectedCount,
   onMoveSelected,
   onDeleteSelected,
@@ -106,9 +106,7 @@ export function Toolbar({
               </svg>
               Upload
             </button>
-            <button className="toolbar-btn" onClick={onAIOrganize} style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>
-              <span style={{ marginRight: '4px' }}>✨</span> AI Organize
-            </button>
+
             {showExamButton && onExamClick && (
               <button className="toolbar-btn" onClick={onExamClick} style={{ background: '#f59e0b', color: '#fff', borderColor: '#f59e0b' }}>
                 <span style={{ marginRight: '4px' }}>🎓</span> Study Session
