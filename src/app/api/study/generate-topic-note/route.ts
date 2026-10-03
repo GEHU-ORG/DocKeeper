@@ -62,7 +62,8 @@ Instructions:
 2. Use clear headings, bullet points, and bold text for key terms.
 3. Include real-world examples or analogies where appropriate.
 4. Keep the explanation entirely focused on the topic: "${topicName}". Do not wander into other syllabus topics.
-5. Format the entire response in clean Markdown.`;
+5. Use proper LaTeX math formatting for all equations (e.g., $I_E = \\frac{V_E}{R_E}$) because the UI fully supports KaTeX rendering.
+6. Format the entire response in clean Markdown.`;
 
   try {
     const result = await model.generateContent(prompt);

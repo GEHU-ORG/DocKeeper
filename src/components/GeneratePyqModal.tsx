@@ -103,7 +103,6 @@ export function GeneratePyqModal({ isOpen, isHidden, onClose, onRunInBackground,
       setAnswerId(extractData.answerId);
       setPhase('solving');
 
-      let allSolved = true;
       for (let i = 0; i < extractData.questions.length; i++) {
         if (isCancelled.current) break;
         await solveSingleQuestion(i, extractData.answerId, extractData.questions[i]._id);
@@ -112,7 +111,10 @@ export function GeneratePyqModal({ isOpen, isHidden, onClose, onRunInBackground,
       if (!isCancelled.current) {
         setPhase('done');
         onSuccess();
-        setTimeout(onClose, 2500);
+        // Only auto-close if the modal is visible (not running in background)
+        if (!isHidden) {
+          setTimeout(onClose, 2500);
+        }
       }
     } catch (err: any) {
       if (err.name === 'AbortError') return;

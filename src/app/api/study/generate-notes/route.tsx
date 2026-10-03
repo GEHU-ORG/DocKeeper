@@ -1,3 +1,5 @@
+export const maxDuration = 60;
+
 import React from 'react';
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
@@ -167,6 +169,7 @@ CRITICAL INSTRUCTIONS:
 - You MUST aggressively reorganize and order the content based on IMPORTANCE.
 - Mark highly important topics clearly using visually distinct icons.
 - Format your response in beautiful Markdown with clear headings.
+- Use proper LaTeX math formatting for all equations (e.g., $I_E = \\frac{V_E}{R_E}$) because the UI fully supports KaTeX rendering. Use $$ for block equations and $ for inline equations.
 Include Subject Overview, Comprehensive Topic Breakdown, Likely Exam Questions, and Study Tips.`;
 
   let generatedText: string;

@@ -48,3 +48,20 @@ CLAUDE.md
 .optimized-cache.json
 .env*.local
 scratch/
+
+# local dev/migration scripts
+*.report.md
+test_*.js
+migrate_*.js
+audit*.js
+check_*.js
+count_*.js
+copy_*.js
+fix_*.js
+delete_*.js
+list_*.js
+sha_*.js
+update_ref*.js
+generate_report.js
+integrity_report.md
+audit_report.md

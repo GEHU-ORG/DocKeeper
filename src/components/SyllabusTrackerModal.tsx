@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { type FileItem } from '@/lib/github';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 
 interface SyllabusTrackerModalProps {
   isOpen: boolean;
@@ -198,7 +200,7 @@ export function SyllabusTrackerModal({ isOpen, onClose, subjectPath, repo, pdfFi
                     </div>
                   ) : topicNotes[activeTopic] ? (
                     <div className="prose prose-invert" style={{ maxWidth: 'none', color: 'var(--text-primary)' }}>
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
                         {topicNotes[activeTopic]}
                       </ReactMarkdown>
                     </div>
