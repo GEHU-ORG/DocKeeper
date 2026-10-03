@@ -8,6 +8,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import dbConnect from '@/lib/mongoose';
 import { PyqAnswer } from '@/models/PyqAnswer';
 import { prisma } from '@/lib/prisma';
+import { checkGlobalRateLimit } from '@/lib/rateLimit';
 
 const octokit = new Octokit({ auth: process.env.GITHUB_PAT });
 const ORG = 'UniExamPrep';
@@ -15,6 +16,15 @@ const ORG = 'UniExamPrep';
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  
+  try {
+    await checkGlobalRateLimit(12);
+  } catch (err: any) {
+    if (err.message === 'TUNNEL_RATE_LIMIT') {
+      return NextResponse.json({ error: 'Global Tunnel Rate Limit hit. Retrying...' }, { status: 429 });
+    }
+  }
+
   const userId = ((session.user as any).githubUsername ?? session.user.email ?? 'anonymous') as string;
 
   const body = await req.json();
@@ -95,6 +105,11 @@ Example: [{"questionText": "What is an operating system?", "marks": "2 Marks"}, 
 
     return NextResponse.json({ success: true, answerId: answer._id, questions: answer.questions });
   } catch (e: any) {
+    if (e.message && e.message.includes('429') && e.message.toLowerCase().includes('quota')) {
+      return NextResponse.json({ 
+        error: 'You have reached your daily Gemini API quota limit. Please use your own API key in Profile settings or try again tomorrow.' 
+      }, { status: 402 }); // 402 Payment Required
+    }
     return NextResponse.json({ error: `AI extraction failed: ${e.message}` }, { status: 500 });
   }
 }
@@ -147,6 +162,11 @@ Rely on the provided PDF for any necessary context (like figures or specific pap
 
     return NextResponse.json({ success: true, answer: question.answer });
   } catch (e: any) {
+    if (e.message && e.message.includes('429') && e.message.toLowerCase().includes('quota')) {
+      return NextResponse.json({ 
+        error: 'You have reached your daily Gemini API quota limit. Please use your own API key in Profile settings or try again tomorrow.' 
+      }, { status: 402 }); // 402 Payment Required
+    }
     return NextResponse.json({ error: `AI generation failed: ${e.message}` }, { status: 500 });
   }
 }
