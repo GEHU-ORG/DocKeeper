@@ -34,6 +34,7 @@ export function GenerateNotesModal({ isOpen, onClose, subjectPath, onSuccess }: 
           if (res.ok) {
             const data = await res.json();
             const folderFiles = (data.items || []).filter((item: FileItem) => item.name.endsWith('.pdf'));
+            folderFiles.forEach((f: any) => f.folder = folder);
             allPdfs.push(...folderFiles);
           }
         }
@@ -123,18 +124,33 @@ export function GenerateNotesModal({ isOpen, onClose, subjectPath, onSuccess }: 
             No PDFs found in PYQ, Notes, or Syllabus folders.
           </div>
         ) : (
-          <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '16px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', padding: '12px' }}>
-            {pdfs.map(pdf => (
-              <label key={pdf.url} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', cursor: 'pointer', borderRadius: 'var(--radius-md)', transition: 'background 0.2s' }}>
-                <input 
-                  type="checkbox" 
-                  checked={selectedUrls.has(pdf.url!)} 
-                  onChange={() => handleToggle(pdf.url!)}
-                  disabled={isGenerating}
-                />
-                <span style={{ fontSize: '0.9rem', wordBreak: 'break-all' }}>{pdf.name}</span>
-              </label>
-            ))}
+          <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '16px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', padding: '12px', border: '1px solid var(--border-color)' }}>
+            {['Syllabus', 'PYQ', 'Notes'].map(folder => {
+               const folderPdfs = pdfs.filter((p: any) => p.folder === folder);
+               if (folderPdfs.length === 0) return null;
+               return (
+                 <div key={folder} style={{ marginBottom: '16px' }}>
+                   <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', paddingLeft: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                     {folder}
+                   </div>
+                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                     {folderPdfs.map(pdf => (
+                       <label key={pdf.url} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px', cursor: 'pointer', borderRadius: 'var(--radius-md)', background: 'var(--bg-tertiary)', transition: 'background 0.2s', border: '1px solid var(--border-color)' }}>
+                         <input 
+                           type="checkbox" 
+                           checked={selectedUrls.has(pdf.url!)} 
+                           onChange={() => handleToggle(pdf.url!)}
+                           disabled={isGenerating}
+                           style={{ width: '16px', height: '16px', accentColor: 'var(--accent)' }}
+                         />
+                         <span style={{ fontSize: '0.85rem', wordBreak: 'break-all', fontWeight: 500 }}>{pdf.name}</span>
+                       </label>
+                     ))}
+                   </div>
+                 </div>
+               );
+            })}
           </div>
         )}
 

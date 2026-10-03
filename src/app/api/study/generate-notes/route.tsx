@@ -80,12 +80,28 @@ Provide exactly 6 to 8 cards containing the most important topics to memorize.`;
     try {
       const result = await model.generateContent([prompt, ...pdfParts]);
       generatedText = result.response.text().trim();
+    } catch (e: any) {
+      if (e.message?.includes('503') || e.message?.includes('Service Unavailable')) {
+        try {
+          // Wait 2 seconds and retry once
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          const result = await model.generateContent([prompt, ...pdfParts]);
+          generatedText = result.response.text().trim();
+        } catch (e2: any) {
+          return NextResponse.json({ error: `AI Image JSON generation failed (503 on retry): ${e2.message}` }, { status: 500 });
+        }
+      } else {
+        return NextResponse.json({ error: `AI Image JSON generation failed: ${e.message}` }, { status: 500 });
+      }
+    }
+
+    try {
       const firstBrace = generatedText.indexOf('{');
       const lastBrace = generatedText.lastIndexOf('}');
       const jsonStr = generatedText.slice(firstBrace, lastBrace + 1);
       cheatSheetData = JSON.parse(jsonStr);
     } catch (e: any) {
-      return NextResponse.json({ error: `AI Image JSON generation failed: ${e.message}` }, { status: 500 });
+      return NextResponse.json({ error: `Failed to parse AI JSON response: ${e.message}` }, { status: 500 });
     }
 
     // Render the React Component for the Image!
@@ -177,10 +193,20 @@ Include Subject Overview, Comprehensive Topic Breakdown, Likely Exam Questions, 
     const result = await model.generateContent([prompt, ...pdfParts]);
     generatedText = result.response.text().trim();
   } catch (e: any) {
-    if (e.message && e.message.includes('429') && e.message.toLowerCase().includes('quota')) {
+    if (e.message?.includes('429') && e.message?.toLowerCase().includes('quota')) {
       return NextResponse.json({ error: 'Daily API Quota Limit Exceeded. Try tomorrow.' }, { status: 402 });
     }
-    return NextResponse.json({ error: `AI generation failed: ${e.message}` }, { status: 500 });
+    if (e.message?.includes('503') || e.message?.includes('Service Unavailable')) {
+      try {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        const result = await model.generateContent([prompt, ...pdfParts]);
+        generatedText = result.response.text().trim();
+      } catch (e2: any) {
+        return NextResponse.json({ error: `AI generation failed (503 on retry): ${e2.message}` }, { status: 500 });
+      }
+    } else {
+      return NextResponse.json({ error: `AI generation failed: ${e.message}` }, { status: 500 });
+    }
   }
 
   await dbConnect();

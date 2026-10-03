@@ -74,8 +74,23 @@ async function handleExtract(userId: string, session: any, { repo, subjectPath, 
 Return ONLY a raw valid JSON array of objects. Each object must have "questionText" (string) and "marks" (string, optional). Do not include markdown formatting like \`\`\`json.
 Example: [{"questionText": "What is an operating system?", "marks": "2 Marks"}, {"questionText": "Explain the OSI model.", "marks": "10 Marks"}]`;
 
-    const extractResult = await model.generateContent([extractPrompt, { inlineData }]);
-    const rawText = extractResult.response.text().trim();
+    let rawText = '';
+    try {
+      const extractResult = await model.generateContent([extractPrompt, { inlineData }]);
+      rawText = extractResult.response.text().trim();
+    } catch (e: any) {
+      if (e.message?.includes('503') || e.message?.includes('Service Unavailable')) {
+        try {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          const extractResult = await model.generateContent([extractPrompt, { inlineData }]);
+          rawText = extractResult.response.text().trim();
+        } catch (e2: any) {
+          throw new Error(`Fallback also failed (503 on retry): ${e2.message}`);
+        }
+      } else {
+        throw e;
+      }
+    }
     const jsonStr = rawText.replace(/^```json\s*/i, '').replace(/\s*```$/i, '');
     
     let questions = [];
@@ -159,8 +174,25 @@ Provide a highly understandable, educational, and easy-to-learn answer. Follow t
 Rely on the provided PDF for any necessary context (like figures or specific paper instructions).`;
 
   try {
-    const res = await model.generateContent([qPrompt, { inlineData }]);
-    question.answer = res.response.text().trim();
+    let answerText = '';
+    try {
+      const res = await model.generateContent([qPrompt, { inlineData }]);
+      answerText = res.response.text().trim();
+    } catch (e: any) {
+      if (e.message?.includes('503') || e.message?.includes('Service Unavailable')) {
+        try {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          const res = await model.generateContent([qPrompt, { inlineData }]);
+          answerText = res.response.text().trim();
+        } catch (e2: any) {
+          throw new Error(`Fallback also failed (503 on retry): ${e2.message}`);
+        }
+      } else {
+        throw e;
+      }
+    }
+
+    question.answer = answerText;
     question.isSolved = true;
     await dbAnswer.save();
 
