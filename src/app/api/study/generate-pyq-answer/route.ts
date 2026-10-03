@@ -70,9 +70,11 @@ async function handleExtract(userId: string, session: any, { repo, subjectPath, 
   const model = customGenai.getGenerativeModel({ model: customModel });
   
   try {
-    const extractPrompt = `Analyze the provided Past Year Question (PYQ) paper PDF. Extract all the major questions along with their assigned marks if visible (e.g., "(5 marks)", "[2]").
+    const extractPrompt = `Analyze the provided Past Year Question (PYQ) paper PDF. Extract all the questions.
+CRITICAL: If a major question has sub-parts (e.g., (a), (b), (c) or i, ii, iii), you MUST extract EACH sub-part as a completely SEPARATE question object in the JSON array. Do not combine them!
+Ignore instructions like "Attempt any two". We want all questions extracted.
 Return ONLY a raw valid JSON array of objects. Each object must have "questionText" (string) and "marks" (string, optional). Do not include markdown formatting like \`\`\`json.
-Example: [{"questionText": "What is an operating system?", "marks": "2 Marks"}, {"questionText": "Explain the OSI model.", "marks": "10 Marks"}]`;
+Example: [{"questionText": "1(a). What is an operating system?", "marks": "5 Marks"}, {"questionText": "1(b). Explain the OSI model.", "marks": "5 Marks"}]`;
 
     let rawText = '';
     try {
@@ -171,6 +173,7 @@ Provide a highly understandable, educational, and easy-to-learn answer. Follow t
 3. Use proper LaTeX math formatting for all equations (e.g., $I_E = \\frac{V_E}{R_E}$) because the UI fully supports KaTeX rendering. Use $$ for block equations and $ for inline equations.
 4. If the question requires code, use proper markdown code blocks.
 5. Provide a comprehensive answer appropriate for the marks assigned.
+6. CRITICAL: Ignore instructions like "Attempt any two". You MUST solve ALL parts and sub-parts of the question provided above. Do not skip any part!
 Rely on the provided PDF for any necessary context (like figures or specific paper instructions).`;
 
   try {
