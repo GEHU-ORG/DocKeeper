@@ -77,16 +77,21 @@ Include the following sections strictly:
 
 Keep this strictly to a highly condensed, exam-focused 1-pager format.`;
   } else {
-    prompt = `You are a university exam study assistant. Analyze the provided documents for the subject "${subjectName}" and generate comprehensive pre-processed study notes covering EVERY topic found in the syllabus and materials.
+    prompt = `You are a university exam study assistant. Analyze the provided documents (Syllabus, PYQs, and Notes) for the subject "${subjectName}" and generate comprehensive pre-processed study notes covering EVERY topic found in the syllabus and materials.
 
-Format your response in beautiful Markdown with clear headings. Include:
+CRITICAL INSTRUCTIONS:
+- You MUST aggressively reorganize and order the content based on IMPORTANCE. The most important, high-frequency topics (based on PYQs and syllabus weightage) MUST appear first.
+- Mark highly important topics clearly using visually distinct icons (e.g., 🔴 HIGH IMPORTANCE, 🌟, or ⚠️).
+- Format your response in beautiful Markdown with clear headings.
+
+Include:
 1. **Subject Overview:** Brief overview in 2-3 sentences.
-2. **Comprehensive Topic Breakdown:** For every topic identified, provide a detailed explanation, key points, and examples.
-3. **Likely Exam Questions:** 10+ Q&As covering the entire syllabus.
+2. **Comprehensive Topic Breakdown (Sorted by Importance):** For every topic identified, provide a detailed explanation, key points, and examples. The most frequently asked exam topics must be placed at the very top of this section and explicitly marked as important.
+3. **Likely Exam Questions:** 10+ Q&As covering the entire syllabus, prioritizing the most important ones.
 4. **PYQ Solutions (if applicable):** Any past year questions found in the documents along with your solved answers.
 5. **Study Tips:** Memory tips or important formulas.
 
-Do not skip any major topics. Provide a detailed, all-encompassing guide.`;
+Do not skip any major topics, but strictly arrange them so the student learns the highest-yield exam topics first.`;
   }
 
   let generatedText: string;
