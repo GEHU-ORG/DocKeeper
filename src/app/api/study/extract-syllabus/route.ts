@@ -9,6 +9,7 @@ import dbConnect from '@/lib/mongoose';
 import { Syllabus } from '@/models/Syllabus';
 import { TopicNote } from '@/models/TopicNote';
 import { prisma } from '@/lib/prisma';
+import { checkGlobalRateLimit } from '@/lib/rateLimit';
 
 const octokit = new Octokit({ auth: process.env.GITHUB_PAT });
 const ORG = 'UniExamPrep';
@@ -16,6 +17,15 @@ const ORG = 'UniExamPrep';
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  
+  try {
+    await checkGlobalRateLimit(12);
+  } catch (err: any) {
+    if (err.message === 'TUNNEL_RATE_LIMIT') {
+      return NextResponse.json({ error: 'Global Tunnel Rate Limit hit. Retrying...' }, { status: 429 });
+    }
+  }
+
   const userId = ((session.user as any).githubUsername ?? session.user.email ?? 'anonymous') as string;
 
   const { repo, subjectPath, pdfFile, effectiveYear } = await req.json();

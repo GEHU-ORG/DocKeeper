@@ -87,7 +87,19 @@ export function SyllabusTrackerModal({ isOpen, onClose, subjectPath, repo, pdfFi
         body: JSON.stringify({ syllabusId, topicName: topic, subjectPath })
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to generate note');
+      
+      if (!res.ok) {
+        if (res.status === 429) {
+          // Tunnel Rate Limit hit! Retry after 5 seconds.
+          setTopicNotes(prev => ({ ...prev, [topic]: `*Tunnel queued... waiting for API capacity...*` }));
+          setTimeout(() => {
+            setGeneratingTopic(null);
+            handleTopicClick(topic); // Retry
+          }, 5000);
+          return;
+        }
+        throw new Error(data.error || 'Failed to generate note');
+      }
       
       setTopicNotes(prev => ({ ...prev, [topic]: data.note.content }));
     } catch (err: any) {
