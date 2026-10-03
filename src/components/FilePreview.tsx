@@ -22,6 +22,7 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
   const [isOwner, setIsOwner] = useState(false);
   const [isPublic, setIsPublic] = useState(true);
   const [isToggling, setIsToggling] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const isVirtual = fileUrl?.startsWith('/virtual/');
   const category = isVirtual ? 'markdown' : getFileCategory(fileName);
@@ -169,39 +170,18 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
         return (
           <div className="preview-markdown-container" style={{ 
             width: '100%', 
-            height: '75vh', 
+            height: isFullscreen ? '100vh' : '75vh', 
             background: 'var(--bg-primary)', 
-            borderRadius: 'var(--radius-md)', 
+            borderRadius: isFullscreen ? '0' : 'var(--radius-md)', 
             overflow: 'auto', 
-            padding: '2rem 3rem', 
+            padding: '1.5rem clamp(1rem, 4vw, 3rem)', 
             color: 'var(--text-primary)',
             position: 'relative'
           }}>
-            {isOwner && (
-              <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
-                <button 
-                  onClick={togglePrivacy} 
-                  disabled={isToggling}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--border-color)',
-                    background: isPublic ? 'var(--bg-secondary)' : 'var(--accent)',
-                    color: isPublic ? 'var(--text-primary)' : '#000',
-                    cursor: 'pointer',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    opacity: isToggling ? 0.7 : 1
-                  }}
-                >
-                  {isPublic ? '🌍 Public' : '🔒 Private'}
-                </button>
-              </div>
-            )}
             {isLoading && <div className="loading-spinner" style={{ margin: '2rem auto' }} />}
             {error && <div style={{ color: 'var(--error)' }}>{error}</div>}
             {!isLoading && !error && textContent !== null && (
-              <div className="prose prose-invert" style={{ maxWidth: '800px', margin: '0 auto', paddingTop: isOwner ? '1rem' : '0' }}>
+              <div className="prose prose-invert" style={{ maxWidth: '100%', margin: '0 auto' }}>
                 <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
                   {textContent}
                 </ReactMarkdown>
@@ -272,11 +252,37 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
   };
 
   return (
-    <div className="dialog-overlay preview-overlay" onClick={onClose}>
-      <div className="preview-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="dialog-overlay preview-overlay" onClick={onClose} style={isFullscreen ? { padding: 0 } : undefined}>
+      <div className="preview-modal" onClick={(e) => e.stopPropagation()} style={isFullscreen ? { width: '100%', height: '100%', maxWidth: '100%', maxHeight: '100%', borderRadius: 0, margin: 0 } : undefined}>
         <div className="preview-header">
           <h3 className="preview-title">{fileName}</h3>
           <div className="preview-header-actions">
+            {/* Privacy toggle — only visible to owner, compact in header */}
+            {isOwner && isVirtual && (
+              <button 
+                className="action-btn" 
+                onClick={togglePrivacy} 
+                disabled={isToggling}
+                title={isPublic ? 'Public — click to make private' : 'Private — click to make public'}
+                style={{ opacity: isToggling ? 0.5 : 1, fontSize: '14px' }}
+              >
+                {isPublic ? '🌍' : '🔒'}
+              </button>
+            )}
+            {/* Fullscreen toggle */}
+            <button className="action-btn" onClick={() => setIsFullscreen(!isFullscreen)} title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}>
+              {isFullscreen ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="4 14 10 14 10 20" /><polyline points="20 10 14 10 14 4" />
+                  <line x1="14" y1="10" x2="21" y2="3" /><line x1="3" y1="21" x2="10" y2="14" />
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" />
+                  <line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" />
+                </svg>
+              )}
+            </button>
             <a
               href={fileUrl}
               download={fileName}
