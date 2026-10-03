@@ -46,7 +46,7 @@ async function handleExtract(userId: string, session: any, { repo, subjectPath, 
 
   let apiKey = process.env.GEMINI_API_KEY!;
   let isPublic = true;
-  let customModel = 'gemini-2.5-flash';
+  let customModel = 'gemini-1.5-flash';
 
   if (session.user.email) {
     const dbUser = await prisma.user.findUnique({ where: { email: session.user.email }, select: { geminiApiKey: true, geminiModel: true } });
@@ -125,7 +125,7 @@ async function handleSolve(userId: string, session: any, { answerId, questionId,
   if (!question) return NextResponse.json({ error: 'Question not found' }, { status: 404 });
 
   let apiKey = process.env.GEMINI_API_KEY!;
-  let customModel = 'gemini-2.5-flash';
+  let customModel = 'gemini-1.5-flash';
 
   if (session.user.email) {
     const dbUser = await prisma.user.findUnique({ where: { email: session.user.email }, select: { geminiApiKey: true, geminiModel: true } });
