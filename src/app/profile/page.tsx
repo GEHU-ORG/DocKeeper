@@ -13,7 +13,7 @@ export default function ProfilePage() {
   const [deleteEmailInput, setDeleteEmailInput] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [apiKey, setApiKey] = useState('');
-  const [modelName, setModelName] = useState('gemini-1.5-flash');
+  const [modelName, setModelName] = useState('gemini-2.5-flash-lite');
   const [isSavingApiKey, setIsSavingApiKey] = useState(false);
 
   const githubUsername = (session?.user as any)?.githubUsername;
@@ -30,7 +30,7 @@ export default function ProfilePage() {
         .then(r => r.json())
         .then(data => {
           setApiKey(data.apiKey || '');
-          setModelName(data.modelName || 'gemini-1.5-flash');
+          setModelName(data.modelName || 'gemini-2.5-flash-lite');
         })
         .catch(() => {});
     }
@@ -264,8 +264,8 @@ export default function ProfilePage() {
                 onChange={(e) => setModelName(e.target.value)}
                 style={{ ...inputStyle, cursor: 'pointer', width: '200px' }}
               >
-                <option value="gemini-1.5-flash">gemini-1.5-flash</option>
-                <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+                <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite</option>
+                <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite</option>
                 <option value="gemini-1.5-pro">gemini-1.5-pro</option>
               </select>
               <button
