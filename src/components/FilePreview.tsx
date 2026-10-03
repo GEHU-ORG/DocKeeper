@@ -101,7 +101,14 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
             if (type === 'notes') {
               setTextContent(data.messages?.[0]?.content || 'No content found');
             } else {
-              setTextContent(data.content || 'No content found');
+              if (data.questions && Array.isArray(data.questions)) {
+                const md = data.questions.map((q: any, i: number) => {
+                  return `### Q${i+1}: ${q.questionText} ${q.marks ? `(${q.marks})` : ''}\n\n**Answer:**\n\n${q.isSolved ? q.answer : '*Solving...*'}\n\n---\n`;
+                }).join('\n');
+                setTextContent(md || 'No questions found.');
+              } else {
+                setTextContent(data.content || 'No content found');
+              }
             }
             setIsOwner(!!data.isOwner);
             setIsPublic(!!data.isPublic);
