@@ -186,7 +186,7 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
             {isLoading && <div className="loading-spinner" style={{ margin: '2rem auto' }} />}
             {error && <div style={{ color: 'var(--error)' }}>{error}</div>}
             {!isLoading && !error && textContent !== null && (
-              <div className="ai-markdown-content" style={{ margin: '0 auto', width: '100%' }}>
+              <div className="ai-markdown-content" style={{ width: '100%', overflowX: 'hidden' }}>
                 <ReactMarkdown 
                   remarkPlugins={[remarkGfm, remarkMath]} 
                   rehypePlugins={[rehypeKatex]}

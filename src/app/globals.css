@@ -2113,6 +2113,9 @@ a.file-row:hover {
   line-height: 1.7;
   max-width: 100%; /* Use full width */
   width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 .ai-markdown-content > *:first-child {
@@ -2217,6 +2220,18 @@ a.file-row:hover {
   overflow-y: hidden;
   padding: 1em 0;
   margin: 0;
+  text-align: left !important;
+}
+
+.ai-markdown-content .katex-display > .katex {
+  text-align: left !important;
+}
+
+.ai-markdown-content .katex {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  display: inline-block;
 }
 
 /* --- Chat Question Bubble --- */
