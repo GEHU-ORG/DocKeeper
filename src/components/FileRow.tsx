@@ -317,31 +317,45 @@ export function FileRow({
   return (
     <div 
       className={`file-row-wrapper ${isReadOnly ? 'readonly' : ''}`}
-      style={{ position: 'relative', overflow: 'hidden', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', marginBottom: '8px' }}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
+      style={{ position: 'relative', overflow: 'hidden', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', marginBottom: '12px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}
     >
-      {/* Background Indicators */}
-      <div style={{ position: 'absolute', left: '16px', top: 0, bottom: 0, display: 'flex', alignItems: 'center', color: 'var(--accent)', opacity: swipeOffset > 20 ? 1 : 0, transition: 'opacity 0.2s', fontWeight: 600 }}>
-        👁 Preview
-      </div>
-      <div style={{ position: 'absolute', right: '16px', top: 0, bottom: 0, display: 'flex', alignItems: 'center', color: '#10b981', opacity: swipeOffset < -20 ? 1 : 0, transition: 'opacity 0.2s', fontWeight: 600 }}>
-        ✨ AI Answer
-      </div>
-      
-      {/* Foreground Sliding Row */}
+      {/* Foreground Row */}
       <div 
         className="file-row"
         style={{ 
-          transform: `translateX(${swipeOffset}px)`, 
-          transition: swipeOffset === 0 ? 'transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)' : 'none',
           background: 'var(--bg-primary)',
-          margin: 0
+          margin: 0,
+          borderBottom: item.type === 'file' ? '1px solid var(--border-color)' : 'none'
         }}
       >
         {content}
       </div>
+
+      {/* Explicit Bottom Action Bar for Files (Red Left, Accent Right) */}
+      {item.type === 'file' && (
+        <div style={{ display: 'flex', width: '100%', background: 'var(--bg-tertiary)' }}>
+          <button 
+             onClick={(e) => { e.stopPropagation(); onPreview(); }}
+             style={{ flex: 1, padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--red)', border: 'none', background: 'transparent', fontSize: '0.85rem', fontWeight: 600, borderRight: '1px solid var(--border-color)', cursor: 'pointer' }}
+          >
+             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+             Preview PDF
+          </button>
+          
+          <button 
+             onClick={(e) => {
+                e.stopPropagation();
+                if (isPyqContext) { pyqAnswerId ? onShowPyqAnswer?.(pyqAnswerId) : onGeneratePyqAnswer?.(); }
+                else if (isSyllabusContext) { onTrackSyllabus?.(); }
+                else { onGeneratePyqAnswer?.(); }
+             }}
+             style={{ flex: 1, padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--accent)', border: 'none', background: 'transparent', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}
+          >
+             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+             {isSyllabusContext ? 'Track Syllabus' : pyqAnswerId ? 'View AI Solution' : 'Generate AI Notes / PYQ'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
