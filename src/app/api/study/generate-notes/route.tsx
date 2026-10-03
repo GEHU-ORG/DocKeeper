@@ -63,17 +63,19 @@ export async function POST(req: NextRequest) {
   // IMAGE GENERATION (1-PAGER)
   // ==========================================
   if (noteType === '1-pager') {
-    const prompt = `You are a visual design assistant. Analyze the provided study materials for "${subjectName}".
-You MUST extract the core concepts and output ONLY a raw JSON object (no markdown, no backticks).
+    const prompt = `Analyze the provided study materials for "${subjectName}".
+Unit ka one pager bana do Hinglish (Hindi + English) mein simple aur easy language mein jise padh kar pure marks aa jaye aur jo pura syllabus cover karta ho. Language strictly Hinglish honi chahiye! I need to print this on an A4 sheet.
+
+You MUST extract the core concepts and output ONLY a raw valid JSON object (no markdown, no backticks).
 Format:
 {
-  "title": "Cheat Sheet: ${subjectName}",
-  "overview": "A brief 2 sentence overview of the entire subject.",
+  "title": "Catchy title for ${subjectName}",
+  "overview": "A brief 2 sentence overview of the entire subject in simple Hinglish.",
   "cards": [
-    { "title": "Topic Name", "body": "2-3 bullet points or key formulas", "importance": "High" }
+    { "title": "Topic Name", "body": "2-3 bullet points or key formulas in simple Hinglish so I can get full marks", "importance": "High" }
   ]
 }
-Provide exactly 6 to 8 cards containing the most important topics to memorize.`;
+Provide exactly 6 to 8 cards containing the most important topics from the syllabus.`;
 
     let generatedText = '';
     let cheatSheetData = null;
