@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     
     return NextResponse.json({ 
       apiKey: user?.geminiApiKey || '',
-      modelName: user?.geminiModel || 'gemini-2.5-flash-lite'
+      modelName: user?.geminiModel || 'gemini-3.1-flash-lite'
     });
   } catch (e: any) {
     return NextResponse.json({ error: 'Failed to fetch API key' }, { status: 500 });
@@ -41,8 +41,8 @@ export async function POST(req: NextRequest) {
       const genai = new GoogleGenerativeAI(apiKey);
       const modelsToTry = [
         modelName,
-        'gemini-2.5-flash-lite',
-        'gemini-2.5-flash-lite',
+        'gemini-3.1-flash-lite',
+        'gemini-3.1-flash-lite',
         'gemini-1.5-pro'
       ].filter(Boolean); // Ensure no empty strings
 

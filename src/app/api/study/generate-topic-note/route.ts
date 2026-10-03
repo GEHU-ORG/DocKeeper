@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
 
   let apiKey = process.env.GEMINI_API_KEY!;
   let isPublic = true;
-  let customModel = 'gemini-2.5-flash-lite';
+  let customModel = 'gemini-3.1-flash-lite';
 
   if (session.user.email) {
     const dbUser = await prisma.user.findUnique({ where: { email: session.user.email }, select: { geminiApiKey: true, geminiModel: true } });
