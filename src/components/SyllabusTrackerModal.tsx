@@ -59,6 +59,11 @@ export function SyllabusTrackerModal({ isOpen, onClose, subjectPath, repo, pdfFi
       
       setUnits(data.units);
       setSyllabusId(data.syllabusId);
+      
+      if (data.notesMap) {
+        setTopicNotes(data.notesMap);
+      }
+
       setPhase('ready');
       if (data.units.length > 0) setExpandedUnit(data.units[0].unitNumber);
     } catch (err: any) {
@@ -149,10 +154,12 @@ export function SyllabusTrackerModal({ isOpen, onClose, subjectPath, repo, pdfFi
                             textAlign: 'left', padding: '8px 12px', background: 'transparent',
                             border: 'none', borderLeft: activeTopic === topic ? '2px solid var(--accent)' : '2px solid transparent',
                             color: activeTopic === topic ? 'var(--accent)' : 'var(--text-secondary)',
-                            cursor: 'pointer', fontSize: '0.9rem', transition: 'all 0.2s'
+                            cursor: 'pointer', fontSize: '0.9rem', transition: 'all 0.2s',
+                            display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                           }}
                         >
-                          {topic}
+                          <span style={{ flex: 1, paddingRight: '8px' }}>{topic}</span>
+                          {topicNotes[topic] && <span title="AI Note Available">✅</span>}
                         </button>
                       ))}
                     </div>

@@ -7,6 +7,7 @@ import { Octokit } from '@octokit/rest';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dbConnect from '@/lib/mongoose';
 import { Syllabus } from '@/models/Syllabus';
+import { TopicNote } from '@/models/TopicNote';
 import { prisma } from '@/lib/prisma';
 
 const octokit = new Octokit({ auth: process.env.GITHUB_PAT });
@@ -20,6 +21,24 @@ export async function POST(req: NextRequest) {
   const { repo, subjectPath, pdfFile, effectiveYear } = await req.json();
   if (!repo || !subjectPath || !pdfFile) {
     return NextResponse.json({ error: 'Missing params' }, { status: 400 });
+  }
+
+  await dbConnect();
+  const existingSyllabus = await Syllabus.findOne({ pdfUrl: pdfFile.url || pdfFile.path });
+  
+  if (existingSyllabus) {
+    const existingNotes = await TopicNote.find({ syllabusId: existingSyllabus._id }).select('topicName content');
+    const notesMap: Record<string, string> = {};
+    existingNotes.forEach(n => {
+      notesMap[n.topicName] = n.content;
+    });
+
+    return NextResponse.json({ 
+      success: true, 
+      syllabusId: existingSyllabus._id, 
+      units: existingSyllabus.units,
+      notesMap 
+    });
   }
 
   let apiKey = process.env.GEMINI_API_KEY!;
@@ -62,7 +81,14 @@ Format strictly as:
 
     const extractResult = await model.generateContent([extractPrompt, { inlineData }]);
     const rawText = extractResult.response.text().trim();
-    const jsonStr = rawText.replace(/^```json\s*/i, '').replace(/\s*```$/i, '');
+    
+    // Robust JSON extraction
+    const firstBracket = rawText.indexOf('[');
+    const lastBracket = rawText.lastIndexOf(']');
+    if (firstBracket === -1 || lastBracket === -1) {
+      throw new Error('No JSON array found in AI response');
+    }
+    const jsonStr = rawText.slice(firstBracket, lastBracket + 1);
     
     let units = [];
     try {
