@@ -65,17 +65,20 @@ export async function POST(req: NextRequest) {
 
 CRITICAL INSTRUCTIONS:
 - You MUST format your response in beautiful, fully complete Markdown.
+- GitHub natively renders Mermaid diagrams. You MUST include at least one visual flowchart, mindmap, or architecture diagram using \`\`\`mermaid syntax!
 - NEVER leave a table empty. ALWAYS populate the table with the most important topics found in the documents.
 - If you cannot determine frequency from PYQs, estimate importance based on the depth of coverage in the notes.
+- Use emojis liberally to make it visually engaging and readable.
 
 Include the following sections strictly:
-1. **Subject Overview:** Brief overview in 2-3 sentences.
+1. **🌟 Subject Overview:** Brief overview in 2-3 sentences.
 2. **🔥 Important Topics Frequency Table:** Use a fully formatted Markdown table with columns: | Topic | Frequency (High/Medium/Low) | Key Concepts | Predicted for Next Exam? (Yes/No) |
    -> You MUST provide at least 5 rows in this table.
-3. **Must-Know Concepts:** Briefly summarize the 5 most critical concepts.
-4. **Cheat Sheet / Formulas:** Critical formulas, definitions, or memory aids (mnemonics) to memorize before the exam.
+3. **📊 Concept Mindmap / Flowchart:** Use \`\`\`mermaid syntax to draw a beautiful mindmap or flowchart connecting the core concepts of this subject.
+4. **🧠 Must-Know Concepts:** Briefly summarize the 5 most critical concepts.
+5. **⚡ Cheat Sheet / Formulas:** Critical formulas, definitions, or memory aids (mnemonics) to memorize before the exam.
 
-Keep this strictly to a highly condensed, exam-focused 1-pager format.`;
+Keep this strictly to a highly condensed, beautiful, exam-focused 1-pager format that will look amazing on GitHub.`;
   } else {
     prompt = `You are a university exam study assistant. Analyze the provided documents (Syllabus, PYQs, and Notes) for the subject "${subjectName}" and generate comprehensive pre-processed study notes covering EVERY topic found in the syllabus and materials.
 
@@ -105,6 +108,7 @@ Do not skip any major topics, but strictly arrange them so the student learns th
   // 3. Save to MongoDB
   await dbConnect();
   
+  let chatId;
   try {
     const chat = await Chat.create({
       userId,
@@ -118,14 +122,50 @@ Do not skip any major topics, but strictly arrange them so the student learns th
       ],
       isPublic,
     });
-
-    return NextResponse.json({
-      success: true,
-      chatId: chat._id,
-      content: generatedText,
-    });
+    chatId = chat._id;
   } catch (e: any) {
     return NextResponse.json({ error: `Failed to save to database: ${e.message}` }, { status: 500 });
   }
+
+  // 4. Upload to GitHub as a .md file!
+  try {
+    const fileName = noteType === '1-pager' ? '1-Pager_CheatSheet.md' : 'Comprehensive_Notes.md';
+    const filePath = `${subjectPath}/Notes/${fileName}`;
+    const fileContent = Buffer.from(generatedText).toString('base64');
+    
+    // Check if file exists to get SHA for updating
+    let fileSha = undefined;
+    try {
+      const { data: fileData } = await octokit.repos.getContent({
+        owner: ORG,
+        repo: repo,
+        path: filePath,
+      });
+      if (!Array.isArray(fileData)) {
+        fileSha = fileData.sha;
+      }
+    } catch (e) {
+      // File doesn't exist, which is fine
+    }
+
+    await octokit.repos.createOrUpdateFileContents({
+      owner: ORG,
+      repo: repo,
+      path: filePath,
+      message: `DocsKeeper AI: Generated ${fileName}`,
+      content: fileContent,
+      sha: fileSha,
+    });
+
+  } catch (e: any) {
+    console.error("Failed to upload to GitHub", e);
+    // We don't fail the request if GitHub upload fails, just log it.
+  }
+
+  return NextResponse.json({
+    success: true,
+    chatId: chatId,
+    content: generatedText,
+  });
 }
 
