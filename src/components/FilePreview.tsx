@@ -5,6 +5,8 @@ import { getFileCategory } from '@/lib/github';
 import { VideoPlayer } from './VideoPlayer';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 
 interface FilePreviewProps {
   isOpen: boolean;
@@ -200,7 +202,7 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
             {error && <div style={{ color: 'var(--error)' }}>{error}</div>}
             {!isLoading && !error && textContent !== null && (
               <div className="prose prose-invert" style={{ maxWidth: '800px', margin: '0 auto', paddingTop: isOwner ? '1rem' : '0' }}>
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
                   {textContent}
                 </ReactMarkdown>
               </div>
