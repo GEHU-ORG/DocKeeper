@@ -21,6 +21,7 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
   const [error, setError] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const [isPublic, setIsPublic] = useState(true);
+  const [canTogglePrivacy, setCanTogglePrivacy] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -33,6 +34,7 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
       setError(null);
       setTextContent(null);
       setIsOwner(false);
+      setCanTogglePrivacy(false);
 
       if (fileUrl.startsWith('/virtual/pyq-generate/')) {
         // e.g. /virtual/pyq-generate/repo/subjectPathBase64/pdfSha/pdfNameBase64
@@ -80,7 +82,8 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
                     } else if (eventName === 'complete') {
                       setIsOwner(true);
                       setIsPublic(data.isPublic);
-                      // Update the URL in parent component to point to the actual answer? Not strictly necessary if we just keep showing it.
+                      // Only allow privacy toggle for user-key generated content (initially private)
+                      setCanTogglePrivacy(!data.isPublic);
                     } else if (eventName === 'error') {
                       setError(data.error);
                     }
@@ -123,6 +126,8 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
               }
               setIsOwner(!!data.isOwner);
               setIsPublic(!!data.isPublic);
+              // Only allow privacy toggle for user-key generated content (initially private)
+              if (data.isOwner && !data.isPublic) setCanTogglePrivacy(true);
             })
             .catch(err => setError(err.message))
             .finally(() => setIsLoading(false));
@@ -257,8 +262,8 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
         <div className="preview-header">
           <h3 className="preview-title">{fileName}</h3>
           <div className="preview-header-actions">
-            {/* Privacy toggle — only visible to owner, compact in header */}
-            {isOwner && isVirtual && (
+            {/* Privacy toggle — only visible if user used their own API key (canTogglePrivacy) */}
+            {canTogglePrivacy && isVirtual && (
               <button 
                 className="action-btn" 
                 onClick={togglePrivacy} 
