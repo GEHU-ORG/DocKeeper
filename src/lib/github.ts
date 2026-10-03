@@ -13,6 +13,7 @@ export interface FileItem {
   size?: number;
   uploadedAt?: Date;
   sha?: string;
+  isEmpty?: boolean;
 }
 
 export async function listItems(path: string): Promise<FileItem[]> {
@@ -44,15 +45,38 @@ export async function listItems(path: string): Promise<FileItem[]> {
     });
 
     if (Array.isArray(data)) {
-      return data.map(item => ({
-        id: item.sha,
-        name: item.name,
-        type: (item.type === 'dir' ? 'folder' : 'file') as 'folder' | 'file',
-        path: `${ORG_NAME}/${repo}/${item.path}`,
-        url: item.download_url || undefined,
-        size: item.size,
-        sha: item.sha,
-      })).sort((a, b) => {
+      let fullTree: any[] = [];
+      try {
+        const { data: treeData } = await octokit.git.getTree({
+          owner: ORG_NAME,
+          repo,
+          tree_sha: 'heads/main',
+          recursive: '1'
+        });
+        fullTree = treeData.tree;
+      } catch (e) {
+        console.error('Failed to fetch tree for empty folder check:', e);
+      }
+
+      return data.map(item => {
+        let isEmpty = false;
+        if (item.type === 'dir') {
+           const folderPrefix = item.path + '/';
+           const hasFiles = fullTree.some(t => t.type === 'blob' && t.path?.startsWith(folderPrefix) && !t.path.endsWith('.keep'));
+           isEmpty = !hasFiles;
+        }
+
+        return {
+          id: item.sha,
+          name: item.name,
+          type: (item.type === 'dir' ? 'folder' : 'file') as 'folder' | 'file',
+          path: `${ORG_NAME}/${repo}/${item.path}`,
+          url: item.download_url || undefined,
+          size: item.size,
+          sha: item.sha,
+          isEmpty,
+        };
+      }).sort((a, b) => {
         if (a.type !== b.type) return a.type === 'folder' ? -1 : 1;
         return a.name.localeCompare(b.name);
       });
