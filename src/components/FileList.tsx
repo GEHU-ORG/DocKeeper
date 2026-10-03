@@ -27,6 +27,7 @@ interface FileListProps {
   pyqAnswersMap?: Record<string, string>;
   onGeneratePyqAnswer?: (url: string) => void;
   onShowPyqAnswer?: (answerId: string) => void;
+  onTrackSyllabus?: (url: string) => void;
 }
 
 export function FileList({
@@ -45,6 +46,7 @@ export function FileList({
   pyqAnswersMap,
   onGeneratePyqAnswer,
   onShowPyqAnswer,
+  onTrackSyllabus,
 }: FileListProps) {
   const allSelected = items.length > 0 && items.every(item =>
     selectedItems.has(item.type === 'file' ? item.url! : item.path)
@@ -122,6 +124,8 @@ export function FileList({
               isPyqContext={!!pyqAnswersMap}
               onGeneratePyqAnswer={onGeneratePyqAnswer ? () => onGeneratePyqAnswer(item.url!) : undefined}
               onShowPyqAnswer={onShowPyqAnswer}
+              isSyllabusContext={!!onTrackSyllabus}
+              onTrackSyllabus={onTrackSyllabus ? () => onTrackSyllabus(item.url!) : undefined}
             />
           ))}
         </div>

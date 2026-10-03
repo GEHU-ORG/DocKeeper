@@ -16,7 +16,7 @@ import { JoinOrgPrompt } from './JoinOrgPrompt';
 import { AddUniversityModal } from './AddUniversityModal';
 import { GenerateNotesModal } from './GenerateNotesModal';
 import { GeneratePyqModal } from './GeneratePyqModal';
-
+import { SyllabusTrackerModal } from './SyllabusTrackerModal';
 
 interface FileBrowserProps {
   initialPath: string;
@@ -45,6 +45,10 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
   const [showGeneratePyq, setShowGeneratePyq] = useState(false);
   const [selectedPyqFile, setSelectedPyqFile] = useState<FileItem | null>(null);
   const [pyqAnswersMap, setPyqAnswersMap] = useState<Record<string, string>>({});
+  
+  const [showSyllabusTracker, setShowSyllabusTracker] = useState(false);
+  const [selectedSyllabusFile, setSelectedSyllabusFile] = useState<FileItem | null>(null);
+
   const [newFolderTitle, setNewFolderTitle] = useState('New Folder');
   const [deleteTarget, setDeleteTarget] = useState<FileItem | null>(null);
   const [moveTarget, setMoveTarget] = useState<FileItem | null>(null);
@@ -515,20 +519,18 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
       return;
     }
 
-    const subjectPath = initialPath.split('/PYQ')[0];
-    const repo = initialPath.split('/')[1] || 'GEU';
+    setSelectedPyqFile(pdfFile);
+    setShowGeneratePyq(true);
+  };
 
-    const encodedSubjectPath = encodeURIComponent(subjectPath);
-    const encodedPdfName = encodeURIComponent(pdfFile.name);
-    const virtualUrl = `/virtual/pyq-generate/${repo}/${encodedSubjectPath}/${pdfFile.sha}/${encodedPdfName}`;
-
-    setPreviewTarget({
-      id: 'generate',
-      name: `Generating Answers for ${pdfFile.name}...`,
-      type: 'file',
-      path: '',
-      url: virtualUrl
-    } as any);
+  const handleTrackSyllabus = (fileUrl: string) => {
+    const pdfFile = processedItems.find(i => (i.type === 'file' ? i.url : i.path) === fileUrl);
+    if (!pdfFile || !pdfFile.name.endsWith('.pdf')) {
+      alert('Please select a Syllabus PDF file.');
+      return;
+    }
+    setSelectedSyllabusFile(pdfFile);
+    setShowSyllabusTracker(true);
   };
 
   const handleShowPyqAnswer = (answerId: string) => {
@@ -655,6 +657,7 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         pyqAnswersMap={initialPath.includes('/PYQ') ? pyqAnswersMap : undefined}
         onGeneratePyqAnswer={handleGeneratePyqAnswer}
         onShowPyqAnswer={handleShowPyqAnswer}
+        onTrackSyllabus={initialPath.includes('/Syllabus') ? handleTrackSyllabus : undefined}
       />
 
       {!isReadOnly && (
@@ -735,7 +738,43 @@ export function FileBrowser({ initialPath, isReadOnly = false, isSignedIn = fals
         }}
       />
 
-      {/* GeneratePyqModal removed in favor of streaming via FilePreview */}
+      <GeneratePyqModal
+        isOpen={showGeneratePyq}
+        onClose={() => {
+          setShowGeneratePyq(false);
+          setSelectedPyqFile(null);
+        }}
+        subjectPath={initialPath.split('/PYQ')[0]}
+        repo={initialPath.split('/')[1] || 'GEU'}
+        pdfFile={selectedPyqFile}
+        onSuccess={() => {
+          // Re-fetch AI answers map to show the button
+          if (initialPath.includes('/PYQ')) {
+            const subjectPath = initialPath.split('/PYQ')[0];
+            fetch(`/api/study/my-ai-content?type=pyq&subjectPath=${encodeURIComponent(subjectPath)}`)
+              .then(res => res.json())
+              .then(aiData => {
+                const map: Record<string, string> = {};
+                (aiData.items || []).reverse().forEach((item: any) => {
+                  map[item.pdfName] = item._id;
+                });
+                setPyqAnswersMap(map);
+              })
+              .catch(console.error);
+          }
+        }}
+      />
+
+      <SyllabusTrackerModal
+        isOpen={showSyllabusTracker}
+        onClose={() => {
+          setShowSyllabusTracker(false);
+          setSelectedSyllabusFile(null);
+        }}
+        subjectPath={initialPath.split('/Syllabus')[0]}
+        repo={initialPath.split('/')[1] || 'GEU'}
+        pdfFile={selectedSyllabusFile}
+      />
     </div>
   );
 }

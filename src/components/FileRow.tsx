@@ -18,6 +18,8 @@ interface FileRowProps {
   isPyqContext?: boolean;
   onGeneratePyqAnswer?: () => void;
   onShowPyqAnswer?: (answerId: string) => void;
+  isSyllabusContext?: boolean;
+  onTrackSyllabus?: () => void;
 }
 
 function FileIcon({ item }: { item: FileItem }) {
@@ -67,6 +69,8 @@ export function FileRow({
   isPyqContext = false,
   onGeneratePyqAnswer,
   onShowPyqAnswer,
+  isSyllabusContext = false,
+  onTrackSyllabus,
 }: FileRowProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameName, setRenameName] = useState(item.name);
@@ -91,12 +95,16 @@ export function FileRow({
     if (swipeOffset > 60) {
       // Swipe Right -> Open PDF (Preview)
       if (item.type === 'file') onPreview();
-    } else if (swipeOffset < -60 && isPyqContext && item.type === 'file' && item.name.endsWith('.pdf')) {
+    } else if (swipeOffset < -60 && item.type === 'file' && item.name.endsWith('.pdf')) {
       // Swipe Left -> Open Answer or Generate
-      if (pyqAnswerId && onShowPyqAnswer) {
-        onShowPyqAnswer(pyqAnswerId);
-      } else if (onGeneratePyqAnswer) {
-        onGeneratePyqAnswer();
+      if (isPyqContext) {
+        if (pyqAnswerId && onShowPyqAnswer) {
+          onShowPyqAnswer(pyqAnswerId);
+        } else if (onGeneratePyqAnswer) {
+          onGeneratePyqAnswer();
+        }
+      } else if (isSyllabusContext && onTrackSyllabus) {
+        onTrackSyllabus();
       }
     }
     setSwipeOffset(0);
@@ -279,6 +287,18 @@ export function FileRow({
                 ✨ Generate Answer
               </button>
             )}
+          </div>
+        )}
+
+        {/* Syllabus Inline Actions for PC */}
+        {isSyllabusContext && item.type === 'file' && item.name.endsWith('.pdf') && (
+          <div style={{ marginLeft: '12px', paddingLeft: '12px', borderLeft: '1px solid var(--border-color)', display: 'flex', gap: '8px' }}>
+            <button
+              onClick={(e) => { e.stopPropagation(); onTrackSyllabus?.(); }}
+              style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '4px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+            >
+              📚 Track Syllabus
+            </button>
           </div>
         )}
       </div>
