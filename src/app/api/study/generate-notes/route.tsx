@@ -64,18 +64,24 @@ export async function POST(req: NextRequest) {
   // ==========================================
   if (noteType === '1-pager') {
     const prompt = `Analyze the provided study materials for "${subjectName}".
-Unit ka one pager bana do Hinglish (Hindi + English) mein simple aur easy language mein jise padh kar pure marks aa jaye aur jo pura syllabus cover karta ho. Language strictly Hinglish honi chahiye! I need to print this on an A4 sheet.
+Unit ka one pager bana do Hinglish (Hindi + English) mein. I need a dense, high-yield Cheat Sheet covering the syllabus.
 
-You MUST extract the core concepts and output ONLY a raw valid JSON object (no markdown, no backticks).
+You MUST output ONLY a raw valid JSON object.
 Format:
 {
-  "title": "Catchy title for ${subjectName}",
-  "overview": "A brief 2 sentence overview of the entire subject in simple Hinglish.",
-  "cards": [
-    { "title": "Topic Name", "body": "2-3 bullet points or key formulas in simple Hinglish so I can get full marks", "importance": "High" }
+  "title": "UNIT 1: CATCHY TITLE",
+  "subtitle": "ONE PAGE REVISION",
+  "boxes": [
+    { 
+      "title": "1. TOPIC NAME", 
+      "content": "Dense bullet points or key formulas. Keep it very concise and high-yield.",
+      "color": "pink"
+    }
   ]
 }
-Provide exactly 6 to 8 cards containing the most important topics from the syllabus.`;
+Rules:
+1. Provide exactly 9 to 12 boxes (so it forms a 3-column grid).
+2. For "color", randomly select one of: "pink", "yellow", "blue", "green", "purple", "orange". Try to distribute colors evenly.`;
 
     let generatedText = '';
     let cheatSheetData = null;
@@ -85,7 +91,6 @@ Provide exactly 6 to 8 cards containing the most important topics from the sylla
     } catch (e: any) {
       if (e.message?.includes('503') || e.message?.includes('Service Unavailable')) {
         try {
-          // Wait 2 seconds and retry once
           await new Promise(resolve => setTimeout(resolve, 2000));
           const result = await model.generateContent([prompt, ...pdfParts]);
           generatedText = result.response.text().trim();
@@ -106,31 +111,43 @@ Provide exactly 6 to 8 cards containing the most important topics from the sylla
       return NextResponse.json({ error: `Failed to parse AI JSON response: ${e.message}` }, { status: 500 });
     }
 
+    const colorMap: any = {
+      pink: { bg: '#fdf2f8', border: '#fbcfe8', titleBg: '#f9a8d4', text: '#831843' },
+      yellow: { bg: '#fefce8', border: '#fef08a', titleBg: '#fde047', text: '#713f12' },
+      blue: { bg: '#eff6ff', border: '#bfdbfe', titleBg: '#93c5fd', text: '#1e3a8a' },
+      green: { bg: '#f0fdf4', border: '#bbf7d0', titleBg: '#86efac', text: '#14532d' },
+      purple: { bg: '#faf5ff', border: '#e9d5ff', titleBg: '#d8b4fe', text: '#581c87' },
+      orange: { bg: '#fff7ed', border: '#fed7aa', titleBg: '#fdba74', text: '#7c2d12' },
+    };
+
     // Render the React Component for the Image!
     try {
       const imageResp = new ImageResponse(
         (
-          <div style={{ display: 'flex', flexDirection: 'column', backgroundColor: '#ffffff', width: '100%', height: '100%', padding: '60px', fontFamily: 'sans-serif' }}>
-            <div style={{ display: 'flex', fontSize: '72px', fontWeight: 'bold', color: '#2563eb', marginBottom: '20px' }}>
-              {cheatSheetData.title}
+          <div style={{ display: 'flex', flexDirection: 'column', backgroundColor: '#f8fafc', width: '100%', height: '100%', padding: '40px', fontFamily: 'sans-serif' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '6px solid #1e293b', paddingBottom: '20px', marginBottom: '30px' }}>
+              <div style={{ display: 'flex', fontSize: '50px', fontWeight: '900', color: '#0f172a', textTransform: 'uppercase' }}>
+                {cheatSheetData.title || subjectName}
+              </div>
+              <div style={{ display: 'flex', fontSize: '32px', fontWeight: 'bold', backgroundColor: '#ef4444', color: 'white', padding: '12px 24px', borderRadius: '30px' }}>
+                {cheatSheetData.subtitle || 'ONE PAGE REVISION'}
+              </div>
             </div>
-            <div style={{ display: 'flex', fontSize: '32px', color: '#475569', marginBottom: '60px' }}>
-              {cheatSheetData.overview}
-            </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-              {cheatSheetData.cards.map((card: any, idx: number) => (
-                <div key={idx} style={{ display: 'flex', flexDirection: 'column', width: '48%', backgroundColor: '#f1f5f9', borderRadius: '16px', padding: '30px', marginBottom: '40px', borderLeft: card.importance === 'High' ? '8px solid #ef4444' : '8px solid #3b82f6' }}>
-                  <div style={{ display: 'flex', fontSize: '40px', fontWeight: 'bold', color: '#0f172a', marginBottom: '20px' }}>
-                    {card.title} {card.importance === 'High' ? '🔥' : '📘'}
+            
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'flex-start' }}>
+              {(cheatSheetData.boxes || []).map((box: any, idx: number) => {
+                const theme = colorMap[box.color] || colorMap.blue;
+                return (
+                  <div key={idx} style={{ display: 'flex', flexDirection: 'column', width: '31.5%', backgroundColor: theme.bg, border: `3px solid ${theme.border}`, borderRadius: '12px', overflow: 'hidden', marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', backgroundColor: theme.titleBg, padding: '12px 16px', fontSize: '26px', fontWeight: 'bold', color: theme.text }}>
+                      {box.title}
+                    </div>
+                    <div style={{ display: 'flex', padding: '16px', fontSize: '22px', color: '#334155', lineHeight: 1.5 }}>
+                      {box.content}
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', fontSize: '28px', color: '#334155', lineHeight: 1.5 }}>
-                    {card.body}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div style={{ display: 'flex', fontSize: '24px', color: '#94a3b8', marginTop: 'auto', alignSelf: 'center' }}>
-              Generated dynamically by DocsKeeper AI - 1-Pager Engine
+                );
+              })}
             </div>
           </div>
         ),
