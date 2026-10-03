@@ -186,8 +186,34 @@ export function FilePreview({ isOpen, fileName, fileUrl, onClose }: FilePreviewP
             {isLoading && <div className="loading-spinner" style={{ margin: '2rem auto' }} />}
             {error && <div style={{ color: 'var(--error)' }}>{error}</div>}
             {!isLoading && !error && textContent !== null && (
-              <div className="prose prose-invert" style={{ maxWidth: '100%', margin: '0 auto' }}>
-                <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+              <div className="ai-markdown-content" style={{ margin: '0 auto', width: '100%' }}>
+                <ReactMarkdown 
+                  remarkPlugins={[remarkGfm, remarkMath]} 
+                  rehypePlugins={[rehypeKatex]}
+                  components={{
+                    h3: ({node, ...props}) => {
+                      // Safely extract text from React children (could be string or array of objects)
+                      let text = '';
+                      if (typeof props.children === 'string') {
+                        text = props.children;
+                      } else if (Array.isArray(props.children)) {
+                        text = props.children.map(child => typeof child === 'string' ? child : '').join('');
+                      }
+                      
+                      // If the heading starts with "Q" (like Q1:, Q2:, etc), wrap it in a chat bubble aligned right
+                      if (text.trim().match(/^Q\d+:/i)) {
+                        return (
+                          <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginTop: '2em', marginBottom: '1.5em' }}>
+                            <div className="chat-question-bubble" style={{ marginTop: 0, marginBottom: 0 }}>
+                              <h3 {...props} />
+                            </div>
+                          </div>
+                        );
+                      }
+                      return <h3 {...props} />;
+                    }
+                  }}
+                >
                   {textContent}
                 </ReactMarkdown>
               </div>
